@@ -9,6 +9,7 @@
 
 	<name>framework-core-parent</name>
 	<description>framework core parent</description>
+	<url>https://github.com/akshaymisra24/framework-core</url>
 
 	<parent>
 		<groupId>org.springframework.boot</groupId>
