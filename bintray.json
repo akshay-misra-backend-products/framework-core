@@ -19,7 +19,9 @@
   [
     {"includePattern": "pom.xml", "uploadPattern": "com/framework/core/framework-core-parent/@project.version@/framework-core-parent-@project.version@.pom"},
     {"includePattern": "framework-core-api/pom.xml", "uploadPattern": "com/framework/core/framework-core-api/@project.version@/framework-core-api-@project.version@.pom"},
-    {"includePattern": "framework-core-api/target/(.*\.jar)", "uploadPattern": "com/framework/core/framework-core-api/@project.version@/$1"}
+    {"includePattern": "framework-core-api/target/(.*\.jar)", "uploadPattern": "com/framework/core/framework-core-api/@project.version@/$1"},
+    {"includePattern": "framework-core-web/pom.xml", "uploadPattern": "com/framework/core/framework-core-web/@project.version@/framework-core-web-@project.version@.pom"},
+    {"includePattern": "framework-core-web/target/(.*\.jar)", "uploadPattern": "com/framework/core/framework-core-web/@project.version@/$1"}
   ],
   "publish": true
 }
