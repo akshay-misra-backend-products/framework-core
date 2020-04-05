@@ -8,7 +8,7 @@ install: true
 branches:
  only:
   - master
-  - /^RELEASE.*$/ # enable building of release tags
+  - /^.*RELEASE$/ # enable building of release tags
 
 cache:
  directories:

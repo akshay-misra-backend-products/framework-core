@@ -34,7 +34,7 @@
 		<connection>scm:git@github.com:akshay-misra-backend-products/framework-core.git</connection>
 		<developerConnection>scm:git:git@github.com:akshay-misra-backend-products/framework-core.git</developerConnection>
 		<url>https://github.com/akshay-misra-backend-products/framework-core</url>
-		<tag>v0.0.1</tag>
+		<tag>0.0.1</tag>
 	</scm>
 
 	<distributionManagement>
