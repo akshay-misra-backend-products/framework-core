@@ -34,7 +34,7 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>com.framework-core</groupId>
+			<groupId>com.framework.core</groupId>
 			<artifactId>framework-core-api</artifactId>
 			<version>${project.version}</version>
 			<scope>compile</scope>
