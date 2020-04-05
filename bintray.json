@@ -15,5 +15,11 @@
     "released": "@maven.build.timestamp@",
     "vcs_tag": "@project.version@"
   },
+  "files":
+  [
+    {"includePattern": "pom.xml"},
+    {"includePattern": "framework-core-api/pom.xml"},
+    {"includePattern": "framework-core-api/target/(.*\.jar)"}
+  ],
   "publish": true
 }
