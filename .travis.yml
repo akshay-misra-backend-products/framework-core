@@ -23,7 +23,7 @@ deploy:
  # Deploy releases to bintray
  - provider: bintray
    skip_cleanup: true
-   file: target/bintray.json
+   file: bintray.json
    user: akki2488
    key: $BINTRAY_API_KEY
    on:
