@@ -21,6 +21,7 @@
 	<modules>
 		<module>framework-core-web</module>
 		<module>framework-core-api</module>
+		<module>framework-core</module>
 	</modules>
 
 	<properties>

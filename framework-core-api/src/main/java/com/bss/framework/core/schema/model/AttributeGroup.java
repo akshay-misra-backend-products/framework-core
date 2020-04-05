@@ -9,7 +9,7 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
 
 /**
- * Created by Rocky on 15-06-2019.
+ * Created by Akshay Misra on 15-06-2019.
  */
 @Document(collection="attributeGroups")
 public class AttributeGroup extends Base {

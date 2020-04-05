@@ -5,7 +5,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import java.math.BigInteger;
 
 /**
- * Created by Rocky on 15-06-2019.
+ * Created by Akshay Misra on 15-06-2019.
  */
 @Document(collection="attributeValues")
 public class AttributeValue extends Base {

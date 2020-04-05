@@ -7,7 +7,7 @@ import javax.validation.constraints.NotBlank;
 import java.util.List;
 
 /**
- * Created by Rocky on 15-06-2019.
+ * Created by Akshay Misra on 15-06-2019.
  */
 @Document(collection="attributes")
 public class Attribute extends Base {

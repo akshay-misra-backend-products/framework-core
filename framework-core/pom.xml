@@ -3,12 +3,12 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>com.framework.core</groupId>
-	<artifactId>framework-core-web</artifactId>
+	<artifactId>framework-core</artifactId>
 	<version>0.0.1</version>
 	<packaging>jar</packaging>
 
-	<name>framework-core-web</name>
-	<description>framework core application layout module</description>
+	<name>framework-core</name>
+	<description>framework core application module</description>
 
 	<parent>
 		<groupId>com.framework.core</groupId>
@@ -26,10 +26,6 @@
 	<dependencies>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-data-mongodb</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
 		</dependency>
 		<dependency>
@@ -40,6 +36,12 @@
 		<dependency>
 			<groupId>com.framework.core</groupId>
 			<artifactId>framework-core-api</artifactId>
+			<version>${project.version}</version>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.framework.core</groupId>
+			<artifactId>framework-core-web</artifactId>
 			<version>${project.version}</version>
 			<scope>compile</scope>
 		</dependency>

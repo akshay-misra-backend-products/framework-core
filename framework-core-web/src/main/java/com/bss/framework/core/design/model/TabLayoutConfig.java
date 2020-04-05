@@ -9,28 +9,30 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import java.util.List;
 
 /**
- * Created by Rocky on 15-06-2019.
+ * Created by Akshay Misra on 15-06-2019.
  */
-@Document(collection="layoutConfigs")
-public class LayoutConfig extends Base {
+@Document(collection="tabLayoutConfigs")
+public class TabLayoutConfig extends Base {
 
     @DBRef(lazy = true)
-    ObjectType objectType;
+    private ObjectType objectType;
 
     @DBRef(lazy = true)
-    List<Attribute> attributes;
+    private List<Attribute> attributes;
 
-    String loadAPI;
+    private String loadAPI;
 
-    String addAPI;
+    private String addAPI;
 
-    String updateAPI;
+    private String updateAPI;
 
-    String deleteAPI;
+    private String deleteAPI;
 
     private int pageSize;
 
-    String layoutType;
+    private String layoutType;
+
+    int order;
 
     public ObjectType getObjectType() {
         return objectType;
@@ -94,5 +96,13 @@ public class LayoutConfig extends Base {
 
     public void setLayoutType(String layoutType) {
         this.layoutType = layoutType;
+    }
+
+    public int getOrder() {
+        return order;
+    }
+
+    public void setOrder(int order) {
+        this.order = order;
     }
 }

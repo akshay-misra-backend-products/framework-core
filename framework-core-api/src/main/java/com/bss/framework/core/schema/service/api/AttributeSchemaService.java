@@ -8,7 +8,7 @@ import com.bss.framework.core.schema.model.ObjectType;
 import java.util.List;
 
 /**
- * Created by Rocky on 16-06-2019.
+ * Created by Akshay Misra on 16-06-2019.
  */
 public interface AttributeSchemaService {
 

@@ -1,7 +1,9 @@
 package com.bss.framework.core.schema.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.mongodb.core.index.IndexDirection;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.lang.Nullable;
@@ -11,13 +13,15 @@ import javax.validation.constraints.Size;
 import java.util.Date;
 
 /**
- * Created by Rocky on 15-06-2019.
+ * Created by Akshay Misra on 15-06-2019.
  */
 @JsonIgnoreProperties(value = {"createdAt"}, allowGetters = true)
 public class Base {
 
     @Id
     private String id;
+
+    private String parentId;
 
     @NotBlank
     @Size(max=100)
@@ -31,7 +35,14 @@ public class Base {
     @Size(max=1000)
     private String description;
 
-    private Date createdAt = new Date();
+    @CreatedDate
+    private Date createdAt;
+
+    @LastModifiedDate
+    private Date lastModifiedAt;
+
+    @Nullable
+    private int order;
 
     public String getId() {
         return id;
@@ -39,6 +50,14 @@ public class Base {
 
     public void setId(String id) {
         this.id = id;
+    }
+
+    public String getParentId() {
+        return parentId;
+    }
+
+    public void setParentId(String parentId) {
+        this.parentId = parentId;
     }
 
     public String getName() {
@@ -67,6 +86,18 @@ public class Base {
 
     public Date getCreatedAt() {
         return createdAt;
+    }
+
+    public Date getLastModifiedAt() {
+        return lastModifiedAt;
+    }
+
+    public int getOrder() {
+        return order;
+    }
+
+    public void setOrder(int order) {
+        this.order = order;
     }
 
     public String toString() {
