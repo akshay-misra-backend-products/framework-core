@@ -27,8 +27,6 @@ public class Attribute extends Base {
     @NotBlank
     private boolean catalog;
 
-    private int sortOrder;
-
     public AttributeGroup getAttributeGroup() {
         return attributeGroup;
     }
@@ -67,13 +65,5 @@ public class Attribute extends Base {
 
     public void setCatalog(boolean catalog) {
         this.catalog = catalog;
-    }
-
-    public int getSortOrder() {
-        return sortOrder;
-    }
-
-    public void setSortOrder(int sortOrder) {
-        this.sortOrder = sortOrder;
     }
 }

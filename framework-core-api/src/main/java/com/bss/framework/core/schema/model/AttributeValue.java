@@ -12,21 +12,11 @@ public class AttributeValue extends Base {
 
     private BigInteger attributeId;
 
-    private int sortOrder;
-
     public BigInteger getAttributeId() {
         return attributeId;
     }
 
     public void setAttributeId(BigInteger attributeId) {
         this.attributeId = attributeId;
-    }
-
-    public int getSortOrder() {
-        return sortOrder;
-    }
-
-    public void setSortOrder(int sortOrder) {
-        this.sortOrder = sortOrder;
     }
 }

@@ -32,8 +32,6 @@ public class TabLayoutConfig extends Base {
 
     private String layoutType;
 
-    int order;
-
     public ObjectType getObjectType() {
         return objectType;
     }
@@ -96,13 +94,5 @@ public class TabLayoutConfig extends Base {
 
     public void setLayoutType(String layoutType) {
         this.layoutType = layoutType;
-    }
-
-    public int getOrder() {
-        return order;
-    }
-
-    public void setOrder(int order) {
-        this.order = order;
     }
 }

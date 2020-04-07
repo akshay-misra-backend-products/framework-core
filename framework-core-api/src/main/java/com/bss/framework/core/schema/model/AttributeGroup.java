@@ -13,14 +13,4 @@ import javax.validation.constraints.Size;
  */
 @Document(collection="attributeGroups")
 public class AttributeGroup extends Base {
-
-    private int sortOrder;
-
-    public int getSortOrder() {
-        return sortOrder;
-    }
-
-    public void setSortOrder(int sortOrder) {
-        this.sortOrder = sortOrder;
-    }
 }

@@ -6,6 +6,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.mongodb.core.index.IndexDirection;
 import org.springframework.data.mongodb.core.index.Indexed;
+import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.lang.Nullable;
 
 import javax.validation.constraints.NotBlank;
@@ -25,11 +26,12 @@ public class Base {
 
     @NotBlank
     @Size(max=100)
-    @Indexed(unique = true, direction = IndexDirection.DESCENDING, dropDups = true)
+    @Indexed(name = "object_name_index")
     private String name;
 
     @Nullable
     @Size(min=5)
+    @Indexed(name = "object_public_name_index")
     private String publicName;
 
     @Size(max=1000)
