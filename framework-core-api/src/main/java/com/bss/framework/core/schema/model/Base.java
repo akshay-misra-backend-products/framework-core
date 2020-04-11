@@ -4,9 +4,8 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.LastModifiedDate;
-import org.springframework.data.mongodb.core.index.IndexDirection;
+import org.springframework.data.annotation.Version;
 import org.springframework.data.mongodb.core.index.Indexed;
-import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.lang.Nullable;
 
 import javax.validation.constraints.NotBlank;
@@ -21,6 +20,12 @@ public class Base {
 
     @Id
     private String id;
+
+    @Version
+    private Long version;
+
+    @NotBlank
+    private String objectTypeId = "0";
 
     private String parentId;
 
@@ -52,6 +57,14 @@ public class Base {
 
     public void setId(String id) {
         this.id = id;
+    }
+
+    public Long getVersion() {
+        return version;
+    }
+
+    public void setVersion(Long version) {
+        this.version = version;
     }
 
     public String getParentId() {
@@ -90,6 +103,10 @@ public class Base {
         return createdAt;
     }
 
+    public void setCreatedAt(Date createdAt) {
+        this.createdAt = createdAt;
+    }
+
     public Date getLastModifiedAt() {
         return lastModifiedAt;
     }
@@ -100,6 +117,14 @@ public class Base {
 
     public void setOrder(int order) {
         this.order = order;
+    }
+
+    public String getObjectTypeId() {
+        return objectTypeId;
+    }
+
+    public void setObjectTypeId(String objectTypeId) {
+        this.objectTypeId = objectTypeId;
     }
 
     public String toString() {

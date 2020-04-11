@@ -2,7 +2,7 @@ package com.bss.framework.core.schema.model;
 
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.math.BigInteger;
+import javax.validation.constraints.NotNull;
 
 /**
  * Created by Akshay Misra on 15-06-2019.
@@ -10,13 +10,27 @@ import java.math.BigInteger;
 @Document(collection="attributeValues")
 public class AttributeValue extends Base {
 
-    private BigInteger attributeId;
+    private String attributeId;
 
-    public BigInteger getAttributeId() {
+    /*
+    * Propagate from attribute, hide in UI.
+    */
+    @NotNull
+    private int attributeType;
+
+    public String getAttributeId() {
         return attributeId;
     }
 
-    public void setAttributeId(BigInteger attributeId) {
+    public void setAttributeId(String attributeId) {
         this.attributeId = attributeId;
+    }
+
+    public int getAttributeType() {
+        return attributeType;
+    }
+
+    public void setAttributeType(int attributeType) {
+        this.attributeType = attributeType;
     }
 }

@@ -20,7 +20,7 @@ import java.util.Optional;
  * Created by Akshay Misra on 16-06-2019.
  */
 @Service
-public class AttributeSchemaServiceImpl implements AttributeSchemaService {
+public class AttributeSchemaServiceImpl extends ApplicationAuditServiceImpl implements AttributeSchemaService {
 
     @Autowired
     ObjectTypeRepository objectTypeRepository;
@@ -54,6 +54,8 @@ public class AttributeSchemaServiceImpl implements AttributeSchemaService {
     @Override
     public ObjectType updateObjectType(ObjectType objectType) {
         System.out.println("... updateObjectType, objectType: "+objectType);
+        Optional<ObjectType> objectTypeOp = objectTypeRepository.findById(objectType.getId());
+        handleAudit(objectTypeOp.get(), objectType);
         return objectTypeRepository.save(objectType);
     }
 
@@ -88,6 +90,8 @@ public class AttributeSchemaServiceImpl implements AttributeSchemaService {
     @Override
     public AttributeGroup updateAttributeGroup(AttributeGroup attributeGroup) {
         System.out.println("... updateAttributeGroup, attributeGroup: "+attributeGroup);
+        Optional<AttributeGroup> attributeGroupOp = attributeGroupRepository.findById(attributeGroup.getId());
+        handleAudit(attributeGroupOp.get(), attributeGroup);
         return attributeGroupRepository.save(attributeGroup);
     }
 
@@ -122,6 +126,8 @@ public class AttributeSchemaServiceImpl implements AttributeSchemaService {
     @Override
     public Attribute updateAttribute(Attribute attribute) {
         System.out.println("... updateAttribute, attribute: "+attribute);
+        Optional<Attribute> attributeOp = attributeRepository.findById(attribute.getId());
+        handleAudit(attributeOp.get(), attribute);
         return attributeRepository.save(attribute);
     }
 
@@ -156,6 +162,8 @@ public class AttributeSchemaServiceImpl implements AttributeSchemaService {
     @Override
     public AttributeValue updateAttributeValue(AttributeValue attributeValue) {
         System.out.println("... updateAttributeValue, attributeValue: "+attributeValue);
+        Optional<AttributeValue> attributeValueOp = attributeValueRepository.findById(attributeValue.getId());
+        handleAudit(attributeValueOp.get(), attributeValue);
         return attributeValueRepository.save(attributeValue);
     }
 

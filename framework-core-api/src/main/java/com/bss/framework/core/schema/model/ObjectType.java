@@ -3,7 +3,7 @@ package com.bss.framework.core.schema.model;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 import java.util.List;
 
 /**
@@ -13,21 +13,21 @@ import java.util.List;
 public class ObjectType extends Base {
 
     @DBRef(lazy = true)
-    List<Attribute> attributes;
+    private List<Attribute> attributes;
 
-    @DBRef(lazy = true)
-    List<ObjectType> childObjectTypes;
+    @NotNull
+    private boolean sameTypeChildren;
 
-    @NotBlank
-    boolean sameTypeAsChild;
+    private String loadAPI;
 
-    String loadAPI;
+    private String addAPI;
 
-    String addAPI;
+    private String updateAPI;
 
-    String updateAPI;
+    private String deleteAPI;
 
-    String deleteAPI;
+    @NotNull
+    private boolean isSystem;
 
     public List<Attribute> getAttributes() {
         return attributes;
@@ -37,20 +37,12 @@ public class ObjectType extends Base {
         this.attributes = attributes;
     }
 
-    public List<ObjectType> getChildObjectTypes() {
-        return childObjectTypes;
+    public boolean isSameTypeChildren() {
+        return sameTypeChildren;
     }
 
-    public void setChildObjectTypes(List<ObjectType> childObjectTypes) {
-        this.childObjectTypes = childObjectTypes;
-    }
-
-    public boolean isSameTypeAsChild() {
-        return sameTypeAsChild;
-    }
-
-    public void setSameTypeAsChild(boolean sameTypeAsChild) {
-        this.sameTypeAsChild = sameTypeAsChild;
+    public void setSameTypeChildren(boolean sameTypeChildren) {
+        this.sameTypeChildren = sameTypeChildren;
     }
 
     public String getLoadAPI() {
@@ -83,5 +75,13 @@ public class ObjectType extends Base {
 
     public void setDeleteAPI(String deleteAPI) {
         this.deleteAPI = deleteAPI;
+    }
+
+    public boolean isSystem() {
+        return isSystem;
+    }
+
+    public void setSystem(boolean system) {
+        isSystem = system;
     }
 }
