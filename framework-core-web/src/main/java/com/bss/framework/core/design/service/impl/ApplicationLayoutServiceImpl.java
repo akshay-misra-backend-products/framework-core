@@ -7,6 +7,7 @@ import com.bss.framework.core.design.repositories.TabLayoutConfigRepository;
 import com.bss.framework.core.design.repositories.TabLayoutRepository;
 import com.bss.framework.core.design.repositories.TabRepository;
 import com.bss.framework.core.design.service.api.ApplicationLayoutService;
+import com.bss.framework.core.schema.service.impl.ApplicationAuditServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
@@ -18,7 +19,7 @@ import java.util.Optional;
  * Created by Akshay Misra on 05-04-2020.
  */
 @Service
-public class ApplicationLayoutServiceImpl implements ApplicationLayoutService {
+public class ApplicationLayoutServiceImpl extends ApplicationAuditServiceImpl implements ApplicationLayoutService {
 
     @Autowired
     TabRepository tabRepository;
@@ -50,6 +51,8 @@ public class ApplicationLayoutServiceImpl implements ApplicationLayoutService {
     @Override
     public Tab updateTab(Tab tab) {
         System.out.println("... updateTab, tab: "+tab);
+        Optional<Tab> tabOp = tabRepository.findById(tab.getId());
+        handleAudit(tabOp.get(), tab);
         return tabRepository.save(tab);
     }
 
@@ -85,6 +88,8 @@ public class ApplicationLayoutServiceImpl implements ApplicationLayoutService {
     @Override
     public TabLayout updateTabLayout(TabLayout tabLayout) {
         System.out.println("... updateTabLayout, tabLayout: "+tabLayout);
+        Optional<TabLayout> tabLayoutOp = tabLayoutRepository.findById(tabLayout.getId());
+        handleAudit(tabLayoutOp.get(), tabLayout);
         return tabLayoutRepository.save(tabLayout);
     }
 
@@ -120,6 +125,8 @@ public class ApplicationLayoutServiceImpl implements ApplicationLayoutService {
     @Override
     public TabLayoutConfig updateTabLayoutConfig(TabLayoutConfig tabLayoutConfig) {
         System.out.println("... updateTabLayoutConfig, tabLayoutConfig: "+tabLayoutConfig);
+        Optional<TabLayoutConfig> tabLayoutConfigOp = tabLayoutConfigRepository.findById(tabLayoutConfig.getId());
+        handleAudit(tabLayoutConfigOp.get(), tabLayoutConfig);
         return tabLayoutConfigRepository.save(tabLayoutConfig);
     }
 

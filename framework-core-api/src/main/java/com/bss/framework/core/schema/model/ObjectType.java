@@ -20,6 +20,8 @@ public class ObjectType extends Base {
 
     private String loadAPI;
 
+    private String loadByIdAPI;
+
     private String addAPI;
 
     private String updateAPI;
@@ -51,6 +53,14 @@ public class ObjectType extends Base {
 
     public void setLoadAPI(String loadAPI) {
         this.loadAPI = loadAPI;
+    }
+
+    public String getLoadByIdAPI() {
+        return loadByIdAPI;
+    }
+
+    public void setLoadByIdAPI(String loadByIdAPI) {
+        this.loadByIdAPI = loadByIdAPI;
     }
 
     public String getAddAPI() {

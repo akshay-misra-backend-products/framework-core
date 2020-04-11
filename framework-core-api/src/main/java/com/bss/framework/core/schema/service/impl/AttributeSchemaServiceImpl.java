@@ -43,7 +43,13 @@ public class AttributeSchemaServiceImpl extends ApplicationAuditServiceImpl impl
     @Override
     public ObjectType createObjectType(ObjectType objectType) {
         System.out.println("... createObjectType, objectType: "+objectType);
-        return objectTypeRepository.save(objectType);
+        ObjectType objectTypeFromDB = objectTypeRepository.save(objectType);
+        objectTypeFromDB.setLoadAPI("/application/api/"+objectTypeFromDB.getId()+"/load/all");
+        objectTypeFromDB.setLoadByIdAPI("/application/api/"+objectTypeFromDB.getId()+"/load/:id");
+        objectTypeFromDB.setAddAPI("/application/api/"+objectTypeFromDB.getId()+"/add");
+        objectTypeFromDB.setUpdateAPI("/application/api/"+objectTypeFromDB.getId()+"/update");
+        objectTypeFromDB.setDeleteAPI("/application/api/"+objectTypeFromDB.getId()+"/delete/:id");
+        return objectTypeRepository.save(objectTypeFromDB);
     }
 
     @Override
