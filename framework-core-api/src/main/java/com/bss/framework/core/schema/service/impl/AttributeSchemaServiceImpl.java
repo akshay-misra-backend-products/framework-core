@@ -1,5 +1,6 @@
 package com.bss.framework.core.schema.service.impl;
 
+import com.bss.framework.core.schema.constants.SystemConstants;
 import com.bss.framework.core.schema.model.Attribute;
 import com.bss.framework.core.schema.model.AttributeGroup;
 import com.bss.framework.core.schema.model.AttributeValue;
@@ -43,6 +44,7 @@ public class AttributeSchemaServiceImpl extends ApplicationAuditServiceImpl impl
     @Override
     public ObjectType createObjectType(ObjectType objectType) {
         System.out.println("... createObjectType, objectType: "+objectType);
+        objectType.setObjectTypeId(SystemConstants.ObjectTypes.OBJECT_TYPE);
         ObjectType objectTypeFromDB = objectTypeRepository.save(objectType);
         objectTypeFromDB.setLoadAPI("/application/api/"+objectTypeFromDB.getId()+"/load/all");
         objectTypeFromDB.setLoadByIdAPI("/application/api/"+objectTypeFromDB.getId()+"/load/:id");
@@ -85,6 +87,7 @@ public class AttributeSchemaServiceImpl extends ApplicationAuditServiceImpl impl
     @Override
     public AttributeGroup createAttributeGroup(AttributeGroup attributeGroup) {
         System.out.println("... createAttributeGroup, attributeGroup: "+attributeGroup);
+        attributeGroup.setObjectTypeId(SystemConstants.ObjectTypes.ATTRIBUTE_GROUP);
         return attributeGroupRepository.save(attributeGroup);
     }
 
@@ -121,6 +124,7 @@ public class AttributeSchemaServiceImpl extends ApplicationAuditServiceImpl impl
     @Override
     public Attribute createAttribute(Attribute attribute) {
         System.out.println("... createAttribute, attribute: "+attribute);
+        attribute.setObjectTypeId(SystemConstants.ObjectTypes.ATTRIBUTE);
         return attributeRepository.save(attribute);
     }
 
@@ -149,14 +153,17 @@ public class AttributeSchemaServiceImpl extends ApplicationAuditServiceImpl impl
     }
 
     @Override
-    public List<AttributeValue> getAttributeValues() {
+    public List<AttributeValue> getAttributeValues(String attributeId) {
         Sort sortByName = new Sort(Sort.Direction.DESC, "name");
-        return attributeValueRepository.findAll(sortByName);
+        return attributeValueRepository.findByParentId(attributeId);
     }
 
     @Override
     public AttributeValue createAttributeValue(AttributeValue attributeValue) {
         System.out.println("... createAttributeValue, attributeValue: "+attributeValue);
+        Attribute attribute = getAttributeById(attributeValue.getParentId());
+        attributeValue.setAttributeType(attribute.getAttributeType());
+        attributeValue.setObjectTypeId(SystemConstants.ObjectTypes.ATTRIBUTE_VALUE);
         return attributeValueRepository.save(attributeValue);
     }
 

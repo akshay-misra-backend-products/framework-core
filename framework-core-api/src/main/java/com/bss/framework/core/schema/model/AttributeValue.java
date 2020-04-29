@@ -1,7 +1,10 @@
 package com.bss.framework.core.schema.model;
 
+import com.bss.framework.core.schema.constants.SystemConstants;
+import com.bss.framework.core.schema.meta.data.annotations.AttributeId;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
 /**
@@ -10,20 +13,23 @@ import javax.validation.constraints.NotNull;
 @Document(collection="attributeValues")
 public class AttributeValue extends Base {
 
-    private String attributeId;
+    @NotBlank
+    @AttributeId(SystemConstants.Attributes.VALUE)
+    private String value;
 
     /*
     * Propagate from attribute, hide in UI.
     */
     @NotNull
+    @AttributeId(SystemConstants.Attributes.ATTRIBUTE_TYPE)
     private int attributeType;
 
-    public String getAttributeId() {
-        return attributeId;
+    public String getValue() {
+        return value;
     }
 
-    public void setAttributeId(String attributeId) {
-        this.attributeId = attributeId;
+    public void setValue(String value) {
+        this.value = value;
     }
 
     public int getAttributeType() {

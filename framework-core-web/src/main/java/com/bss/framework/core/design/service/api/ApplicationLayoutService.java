@@ -1,8 +1,6 @@
 package com.bss.framework.core.design.service.api;
 
-import com.bss.framework.core.design.model.Tab;
-import com.bss.framework.core.design.model.TabLayout;
-import com.bss.framework.core.design.model.TabLayoutConfig;
+import com.bss.framework.core.design.model.*;
 
 import java.util.List;
 
@@ -40,4 +38,8 @@ public interface ApplicationLayoutService {
     TabLayoutConfig updateTabLayoutConfig(TabLayoutConfig tab);
 
     boolean deleteTabLayoutConfig(String id);
+
+    ObjectLayoutWrapper loadObjectDetailsConfig(String objectTypeId, String id);
+
+    DynamicFormConfig loadObjectFormConfig(String objectTypeId, String id);
 }

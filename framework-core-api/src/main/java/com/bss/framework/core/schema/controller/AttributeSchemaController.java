@@ -23,109 +23,109 @@ import java.util.List;
  * Created by Akshay Misra on 15-06-2019.
  */
 @RestController
-@RequestMapping("/application/schema")
+@RequestMapping("/application/api")
 @CrossOrigin(origins = "*", maxAge = 3600)
 public class AttributeSchemaController {
 
     @Autowired
     AttributeSchemaService attributeSchemaService;
 
-    @GetMapping("/get/object-types")
+    @GetMapping("/5ea86babc8ae3bed0b307a4d/load/all")
     public List<ObjectType> getObjectTypes() {
         return attributeSchemaService.getObjectTypes();
     }
 
-    @PostMapping("/add/object-type")
+    @PostMapping("/5ea86babc8ae3bed0b307a4d/add")
     public ObjectType createObjectType(@Valid @RequestBody ObjectType objectType) {
         return attributeSchemaService.createObjectType(objectType);
     }
 
-    @GetMapping(value="/get/object-type/{id}")
+    @GetMapping(value="/5ea86babc8ae3bed0b307a4d/load/{id}")
     public ObjectType getObjectTypeById(@PathVariable("id") String id) {
         return attributeSchemaService.getObjectTypeById(id);
     }
 
-    @PutMapping(value="/update/object-type")
+    @PutMapping(value="/5ea86babc8ae3bed0b307a4d/update")
     public ObjectType updateObjectType(@Valid @RequestBody ObjectType objectType) {
         return attributeSchemaService.updateObjectType(objectType);
     }
 
-    @DeleteMapping(value="/delete/object-type/{id}")
+    @DeleteMapping(value="/5ea86babc8ae3bed0b307a4d/delete/{id}")
     public boolean deleteObjectType(@PathVariable("id") String id) {
         return attributeSchemaService.deleteObjectType(id);
     }
 
-    @GetMapping("/get/attribute-groups")
+    @GetMapping("/5e934da667ed1fb0bcf0fca8/load/all")
     public List<AttributeGroup> getAttributeGroups() {
         return attributeSchemaService.getAttributeGroups();
     }
 
-    @PostMapping("/add/attribute-group")
+    @PostMapping("/5e934da667ed1fb0bcf0fca8/add")
     public AttributeGroup createAttributeGroup(@Valid @RequestBody AttributeGroup attributeGroup) {
         return attributeSchemaService.createAttributeGroup(attributeGroup);
     }
 
-    @GetMapping(value="/get/attribute-group/{id}")
+    @GetMapping(value="/5e934da667ed1fb0bcf0fca8/load/{id}")
     public AttributeGroup getAttributeGroupById(@PathVariable("id") String id) {
         return attributeSchemaService.getAttributeGroupById(id);
     }
 
-    @PutMapping(value="/update/attribute-group")
+    @PutMapping(value="/5e934da667ed1fb0bcf0fca8/update")
     public AttributeGroup updateAttributeGroup(@Valid @RequestBody AttributeGroup attributeGroup) {
         return attributeSchemaService.updateAttributeGroup(attributeGroup);
     }
 
-    @DeleteMapping(value="/delete/attribute-group/{id}")
+    @DeleteMapping(value="/5e934da667ed1fb0bcf0fca8/delete/{id}")
     public boolean deleteAttributeGroup(@PathVariable("id") String id) {
         return attributeSchemaService.deleteAttributeGroup(id);
     }
 
-    @GetMapping("/get/attributes")
+    @GetMapping("/5e934d4567ed1fb0bcf0fca7/load/all")
     public List<Attribute> getAttributes() {
         return attributeSchemaService.getAttributes();
     }
 
-    @PostMapping("/add/attribute")
+    @PostMapping("/5e934d4567ed1fb0bcf0fca7/add")
     public Attribute createAttribute(@Valid @RequestBody Attribute attribute) {
         return attributeSchemaService.createAttribute(attribute);
     }
 
-    @GetMapping(value="/get/attribute/{id}")
+    @GetMapping(value="/5e934d4567ed1fb0bcf0fca7/load/{id}")
     public Attribute getAttributeById(@PathVariable("id") String id) {
         return attributeSchemaService.getAttributeById(id);
     }
 
-    @PutMapping(value="/update/attribute")
+    @PutMapping(value="/5e934d4567ed1fb0bcf0fca7/update")
     public Attribute updateAttribute(@Valid @RequestBody Attribute attribute) {
         return attributeSchemaService.updateAttribute(attribute);
     }
 
-    @DeleteMapping(value="/delete/attribute/{id}")
+    @DeleteMapping(value="/5e934d4567ed1fb0bcf0fca7/delete/{id}")
     public boolean deleteAttribute(@PathVariable("id") String id) {
         return attributeSchemaService.deleteAttribute(id);
     }
 
-    @GetMapping("/get/attribute-values")
-    public List<AttributeValue> getAttributeValues() {
-        return attributeSchemaService.getAttributeValues();
+    @GetMapping("/5e934d4567ed1fb0bcf0fca7/load/children/{parentId}")
+    public List<AttributeValue> getAttributeValues(@PathVariable("parentId") String attributeId) {
+        return attributeSchemaService.getAttributeValues(attributeId);
     }
 
-    @PostMapping("/add/attribute-value")
+    @PostMapping("/5ea6c35f3fe39bd27a715a33/add")
     public AttributeValue createAttributeValue(@Valid @RequestBody AttributeValue attributeValue) {
         return attributeSchemaService.createAttributeValue(attributeValue);
     }
 
-    @GetMapping(value="/get/attribute-value/{id}")
+    @GetMapping(value="/5ea6c35f3fe39bd27a715a33/load/{id}")
     public AttributeValue getAttributeValueById(@PathVariable("id") String id) {
         return attributeSchemaService.getAttributeValueById(id);
     }
 
-    @PutMapping(value="/update/attribute-value")
+    @PutMapping(value="/5ea6c35f3fe39bd27a715a33/update")
     public AttributeValue updateAttributeValue(@Valid @RequestBody AttributeValue attributeValue) {
         return attributeSchemaService.updateAttributeValue(attributeValue);
     }
 
-    @DeleteMapping(value="/delete/attribute-value/{id}")
+    @DeleteMapping(value="/5ea6c35f3fe39bd27a715a33/delete/{id}")
     public boolean deleteAttributeValue(@PathVariable("id") String id) {
         return attributeSchemaService.deleteAttributeValue(id);
     }

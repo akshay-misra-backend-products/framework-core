@@ -1,10 +1,11 @@
 package com.bss.framework.core.schema.model;
 
+import com.bss.framework.core.schema.constants.SystemConstants;
+import com.bss.framework.core.schema.meta.data.annotations.*;
+import com.bss.framework.core.schema.meta.data.annotations.base.*;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.annotation.LastModifiedDate;
-import org.springframework.data.annotation.Version;
+import org.springframework.core.annotation.Order;
+import org.springframework.data.annotation.*;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.lang.Nullable;
 
@@ -19,37 +20,71 @@ import java.util.Date;
 public class Base {
 
     @Id
+    @ObjectId
+    @Hidden
+    @GroupName(SystemConstants.StringLiterals.BASE_PARAMETERS)
     private String id;
 
     @Version
+    @VersionNumber
+    @UIName("Version Number")
+    @ReadOnly
+    @GroupName(SystemConstants.StringLiterals.BASE_PARAMETERS)
     private Long version;
 
     @NotBlank
+    @ObjectTypeId
+    @Hidden
     private String objectTypeId = "0";
 
+    @ParentId
+    @Hidden
     private String parentId;
 
     @NotBlank
     @Size(max=100)
+    @Mandatory
+    @UIName("Name")
     @Indexed(name = "object_name_index")
+    @Name
+    @GroupName(SystemConstants.StringLiterals.BASE_PARAMETERS)
     private String name;
 
     @Nullable
-    @Size(min=5)
+    @UIName("Public Name")
+    @Size(max=100)
     @Indexed(name = "object_public_name_index")
+    @PublicName
+    @GroupName(SystemConstants.StringLiterals.BASE_PARAMETERS)
     private String publicName;
 
     @Size(max=1000)
+    @UIName("Description")
+    @Description
+    @GroupName(SystemConstants.StringLiterals.BASE_PARAMETERS)
     private String description;
 
+    @Nullable
+    @Order
+    @UIName("Order Number")
+    @OrderNumber
+    @ReadOnly
+    @GroupName(SystemConstants.StringLiterals.BASE_PARAMETERS)
+    private int order;
+
     @CreatedDate
+    @ReadOnly
+    @UIName("Created At")
+    @GroupName(SystemConstants.StringLiterals.AUDIT_INFORMATION)
+    @AttributeId("-70")
     private Date createdAt;
 
     @LastModifiedDate
+    @ReadOnly
+    @UIName("Last Modified At")
+    @GroupName(SystemConstants.StringLiterals.AUDIT_INFORMATION)
+    @AttributeId("-71")
     private Date lastModifiedAt;
-
-    @Nullable
-    private int order;
 
     public String getId() {
         return id;

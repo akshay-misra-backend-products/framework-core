@@ -1,5 +1,9 @@
 package com.bss.framework.core.schema.model;
 
+import com.bss.framework.core.schema.constants.SystemConstants;
+import com.bss.framework.core.schema.meta.data.annotations.AttributeId;
+import com.bss.framework.core.schema.meta.data.annotations.BooleanAttr;
+import com.bss.framework.core.schema.meta.data.annotations.Hidden;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -13,23 +17,39 @@ import java.util.List;
 public class ObjectType extends Base {
 
     @DBRef(lazy = true)
+    @AttributeId(SystemConstants.Attributes.ATTRIBUTES)
     private List<Attribute> attributes;
 
     @NotNull
+    @BooleanAttr(
+            trueId  = SystemConstants.TrueFalseList.TRUE_ID,
+            falseId = SystemConstants.TrueFalseList.FALSE_ID
+    )
+    @AttributeId(SystemConstants.Attributes.SAME_TYPE_CHILDREN)
     private boolean sameTypeChildren;
 
+    @Hidden
     private String loadAPI;
 
+    @Hidden
     private String loadByIdAPI;
 
+    @Hidden
     private String addAPI;
 
+    @Hidden
     private String updateAPI;
 
+    @Hidden
     private String deleteAPI;
 
     @NotNull
-    private boolean isSystem;
+    @BooleanAttr(
+            trueId  = SystemConstants.TrueFalseList.TRUE_ID,
+            falseId = SystemConstants.TrueFalseList.FALSE_ID
+    )
+    @AttributeId(SystemConstants.Attributes.IS_SYSTEM)
+    private boolean system;
 
     public List<Attribute> getAttributes() {
         return attributes;
@@ -88,10 +108,14 @@ public class ObjectType extends Base {
     }
 
     public boolean isSystem() {
-        return isSystem;
+        return system;
     }
 
     public void setSystem(boolean system) {
-        isSystem = system;
+        this.system = system;
+    }
+
+    public String toString() {
+        return super.toString()+"   "+getClass().getName()+"[ attributes: "+this.attributes+", sameTypeChildren: "+this.sameTypeChildren+", isSystem: "+this.system+" ]";
     }
 }

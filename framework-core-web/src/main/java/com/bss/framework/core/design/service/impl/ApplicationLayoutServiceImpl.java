@@ -1,8 +1,8 @@
 package com.bss.framework.core.design.service.impl;
 
-import com.bss.framework.core.design.model.Tab;
-import com.bss.framework.core.design.model.TabLayout;
-import com.bss.framework.core.design.model.TabLayoutConfig;
+import com.bss.framework.core.design.composers.DynamicFormComposer;
+import com.bss.framework.core.design.composers.ObjectDetailsComposer;
+import com.bss.framework.core.design.model.*;
 import com.bss.framework.core.design.repositories.TabLayoutConfigRepository;
 import com.bss.framework.core.design.repositories.TabLayoutRepository;
 import com.bss.framework.core.design.repositories.TabRepository;
@@ -29,6 +29,12 @@ public class ApplicationLayoutServiceImpl extends ApplicationAuditServiceImpl im
 
     @Autowired
     TabLayoutConfigRepository tabLayoutConfigRepository;
+
+    @Autowired
+    DynamicFormComposer dynamicFormComposer;
+
+    @Autowired
+    ObjectDetailsComposer objectDetailsComposer;
 
     @Override
     public List<Tab> getTabs() {
@@ -139,5 +145,15 @@ public class ApplicationLayoutServiceImpl extends ApplicationAuditServiceImpl im
             return true;
         }
         return false;
+    }
+
+    @Override
+    public ObjectLayoutWrapper loadObjectDetailsConfig(String objectTypeId, String id) {
+        return objectDetailsComposer.compose(objectTypeId, id);
+    }
+
+    @Override
+    public DynamicFormConfig loadObjectFormConfig(String objectTypeId, String id) {
+        return dynamicFormComposer.compose(objectTypeId, id);
     }
 }

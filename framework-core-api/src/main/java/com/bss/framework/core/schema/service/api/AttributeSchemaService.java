@@ -42,7 +42,7 @@ public interface AttributeSchemaService {
 
     boolean deleteAttribute(String id);
 
-    List<AttributeValue> getAttributeValues();
+    List<AttributeValue> getAttributeValues(String attributeId);
 
     AttributeValue createAttributeValue(AttributeValue attributeValue);
 

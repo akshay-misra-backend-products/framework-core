@@ -1,9 +1,11 @@
 package com.bss.framework.core.design.controller;
 
+import com.bss.framework.core.design.model.ObjectLayoutWrapper;
 import com.bss.framework.core.design.model.Tab;
 import com.bss.framework.core.design.model.TabLayout;
 import com.bss.framework.core.design.model.TabLayoutConfig;
 import com.bss.framework.core.design.service.api.ApplicationLayoutService;
+import com.bss.framework.core.schema.model.ObjectType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -13,7 +15,7 @@ import java.util.List;
  * Created by Akshay Misra on 15-06-2019.
  */
 @RestController
-@RequestMapping("/application/schema")
+@RequestMapping("/application/api")
 @CrossOrigin(origins = "*", maxAge = 3600)
 public class ApplicationLayoutController {
 
@@ -93,6 +95,12 @@ public class ApplicationLayoutController {
     @DeleteMapping(value="/delete/tab-layout-config/{id}")
     public boolean deleteTabLayoutConfig(String id) {
         return applicationLayoutService.deleteTabLayoutConfig(id);
+    }
+
+    @GetMapping(value="/load/details/{objectTypeId}/{objectId}")
+    public ObjectLayoutWrapper loadObjectDetails(@PathVariable("objectTypeId") String objectTypeId,
+                                                     @PathVariable("objectId") String objectId) {
+        return applicationLayoutService.loadObjectDetailsConfig(objectTypeId, objectId);
     }
 
 }
