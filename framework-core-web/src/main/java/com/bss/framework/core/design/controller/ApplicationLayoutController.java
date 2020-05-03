@@ -1,14 +1,11 @@
 package com.bss.framework.core.design.controller;
 
-import com.bss.framework.core.design.model.ObjectLayoutWrapper;
-import com.bss.framework.core.design.model.Tab;
-import com.bss.framework.core.design.model.TabLayout;
-import com.bss.framework.core.design.model.TabLayoutConfig;
+import com.bss.framework.core.design.model.*;
 import com.bss.framework.core.design.service.api.ApplicationLayoutService;
-import com.bss.framework.core.schema.model.ObjectType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.util.List;
 
 /**
@@ -22,28 +19,33 @@ public class ApplicationLayoutController {
     @Autowired
     ApplicationLayoutService applicationLayoutService;
 
-    @GetMapping("/get/tabs")
-    public List<Tab> getTabs() {
+    @GetMapping("/5eaaa5862e2efbf64a9f4a5b/load/all")
+    public List<NavigationTab> getTabs() {
         return applicationLayoutService.getTabs();
     }
 
-    @GetMapping(value="/get/tab/{id}")
-    public Tab getTabById(String id) {
+    @GetMapping(value="/5eaaa5862e2efbf64a9f4a5b/load/by/parent/{parentId}")
+    public List<NavigationTab> getNavigationTabByParentId(@PathVariable("parentId") String parentId) {
+        return applicationLayoutService.getNavigationTabByParentId(parentId);
+    }
+
+    @GetMapping(value="/5eaaa5862e2efbf64a9f4a5b/load/{id}")
+    public NavigationTab getTabById(@PathVariable("id") String id) {
         return applicationLayoutService.getTabById(id);
     }
 
-    @PostMapping("/add/tab")
-    public Tab createTab(Tab tab) {
+    @PostMapping("/5eaaa5862e2efbf64a9f4a5b/add")
+    public NavigationTab createTab(@Valid @RequestBody NavigationTab tab) {
         return applicationLayoutService.createTab(tab);
     }
 
-    @PutMapping(value="/update/tab")
-    public Tab updateTab(Tab tab) {
+    @PutMapping(value="/5eaaa5862e2efbf64a9f4a5b/update")
+    public NavigationTab updateTab(@Valid @RequestBody NavigationTab tab) {
         return applicationLayoutService.updateTab(tab);
     }
 
-    @DeleteMapping(value="/delete/tab/{id}")
-    public boolean deleteTab(String id) {
+    @DeleteMapping(value="/5eaaa5862e2efbf64a9f4a5b/delete/{id}")
+    public boolean deleteTab(@PathVariable("id") String id) {
         return applicationLayoutService.deleteTab(id);
     }
 
@@ -53,22 +55,22 @@ public class ApplicationLayoutController {
     }
 
     @GetMapping(value="/get/tab-layout/{id}")
-    public TabLayout getTabLayoutById(String id) {
+    public TabLayout getTabLayoutById(@PathVariable("id") String id) {
         return applicationLayoutService.getTabLayoutById(id);
     }
 
     @PostMapping("/add/tab-layout")
-    public TabLayout createTabLayout(TabLayout tabLayout) {
+    public TabLayout createTabLayout(@Valid @RequestBody TabLayout tabLayout) {
         return applicationLayoutService.createTabLayout(tabLayout);
     }
 
     @PutMapping(value="/update/tab-layout")
-    public TabLayout updateTabLayout(TabLayout tabLayout) {
+    public TabLayout updateTabLayout(@Valid @RequestBody TabLayout tabLayout) {
         return applicationLayoutService.updateTabLayout(tabLayout);
     }
 
     @DeleteMapping(value="/delete/tab-layout/{id}")
-    public boolean deleteTabLayout(String id) {
+    public boolean deleteTabLayout(@PathVariable("id") String id) {
         return applicationLayoutService.deleteTabLayout(id);
     }
 
@@ -78,22 +80,22 @@ public class ApplicationLayoutController {
     }
 
     @GetMapping(value="/get/tab-layout-config/{id}")
-    public TabLayoutConfig getTabLayoutConfigById(String id) {
+    public TabLayoutConfig getTabLayoutConfigById(@PathVariable("id") String id) {
         return applicationLayoutService.getTabLayoutConfigById(id);
     }
 
     @PostMapping("/add/tab-layout-config")
-    public TabLayoutConfig createTabLayoutConfig(TabLayoutConfig tabLayoutConfig) {
+    public TabLayoutConfig createTabLayoutConfig(@Valid @RequestBody TabLayoutConfig tabLayoutConfig) {
         return applicationLayoutService.createTabLayoutConfig(tabLayoutConfig);
     }
 
     @PutMapping(value="/update/tab-layout-config")
-    public TabLayoutConfig updateTabLayoutConfig(TabLayoutConfig tabLayoutConfig) {
+    public TabLayoutConfig updateTabLayoutConfig(@Valid @RequestBody TabLayoutConfig tabLayoutConfig) {
         return applicationLayoutService.updateTabLayoutConfig(tabLayoutConfig);
     }
 
     @DeleteMapping(value="/delete/tab-layout-config/{id}")
-    public boolean deleteTabLayoutConfig(String id) {
+    public boolean deleteTabLayoutConfig(@PathVariable("id") String id) {
         return applicationLayoutService.deleteTabLayoutConfig(id);
     }
 
@@ -101,6 +103,16 @@ public class ApplicationLayoutController {
     public ObjectLayoutWrapper loadObjectDetails(@PathVariable("objectTypeId") String objectTypeId,
                                                      @PathVariable("objectId") String objectId) {
         return applicationLayoutService.loadObjectDetailsConfig(objectTypeId, objectId);
+    }
+
+    @GetMapping(value="/load/Form/config/{objectTypeId}")
+    public DynamicFormConfig loadFormConfig(@PathVariable("objectTypeId") String objectTypeId) {
+        return applicationLayoutService.loadFormConfig(objectTypeId);
+    }
+
+    @GetMapping(value="/load/tab/config/{tabId}")
+    public CompositeTableConfig loadNavigationTabConfig(@PathVariable("tabId") String tabId) {
+        return applicationLayoutService.loadNavigationTabConfig(tabId);
     }
 
 }

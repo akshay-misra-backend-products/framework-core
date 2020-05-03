@@ -6,6 +6,8 @@ public class ReferenceFieldConfig extends FieldConfig {
 
     private String loadAPI;
 
+    private boolean refIdAttr;
+
     public ReferenceFieldConfig() {
         setType(FieldType.REFERENCE.value);
     }
@@ -16,5 +18,13 @@ public class ReferenceFieldConfig extends FieldConfig {
 
     public void setLoadAPI(String loadAPI) {
         this.loadAPI = loadAPI;
+    }
+
+    public boolean isRefIdAttr() {
+        return refIdAttr;
+    }
+
+    public void setRefIdAttr(boolean refIdAttr) {
+        this.refIdAttr = refIdAttr;
     }
 }

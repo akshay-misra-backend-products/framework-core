@@ -35,14 +35,19 @@ public class AttributeSchemaController {
         return attributeSchemaService.getObjectTypes();
     }
 
-    @PostMapping("/5ea86babc8ae3bed0b307a4d/add")
-    public ObjectType createObjectType(@Valid @RequestBody ObjectType objectType) {
-        return attributeSchemaService.createObjectType(objectType);
+    @GetMapping(value="/5ea86babc8ae3bed0b307a4d/load/by/parent/{parentId}")
+    public List<ObjectType> getObjectTypeByParentId(@PathVariable("parentId") String parentId) {
+        return attributeSchemaService.getObjectTypeByParentId(parentId);
     }
 
     @GetMapping(value="/5ea86babc8ae3bed0b307a4d/load/{id}")
     public ObjectType getObjectTypeById(@PathVariable("id") String id) {
         return attributeSchemaService.getObjectTypeById(id);
+    }
+
+    @PostMapping("/5ea86babc8ae3bed0b307a4d/add")
+    public ObjectType createObjectType(@RequestBody ObjectType objectType) {
+        return attributeSchemaService.createObjectType(objectType);
     }
 
     @PutMapping(value="/5ea86babc8ae3bed0b307a4d/update")
@@ -60,14 +65,19 @@ public class AttributeSchemaController {
         return attributeSchemaService.getAttributeGroups();
     }
 
-    @PostMapping("/5e934da667ed1fb0bcf0fca8/add")
-    public AttributeGroup createAttributeGroup(@Valid @RequestBody AttributeGroup attributeGroup) {
-        return attributeSchemaService.createAttributeGroup(attributeGroup);
+    @GetMapping(value="/5e934da667ed1fb0bcf0fca8/load/by/parent/{parentId}")
+    public List<AttributeGroup> getAttributeGroupByParentId(@PathVariable("parentId") String parentId) {
+        return attributeSchemaService.getAttributeGroupByParentId(parentId);
     }
 
     @GetMapping(value="/5e934da667ed1fb0bcf0fca8/load/{id}")
     public AttributeGroup getAttributeGroupById(@PathVariable("id") String id) {
         return attributeSchemaService.getAttributeGroupById(id);
+    }
+
+    @PostMapping("/5e934da667ed1fb0bcf0fca8/add")
+    public AttributeGroup createAttributeGroup(@Valid @RequestBody AttributeGroup attributeGroup) {
+        return attributeSchemaService.createAttributeGroup(attributeGroup);
     }
 
     @PutMapping(value="/5e934da667ed1fb0bcf0fca8/update")
@@ -85,14 +95,19 @@ public class AttributeSchemaController {
         return attributeSchemaService.getAttributes();
     }
 
-    @PostMapping("/5e934d4567ed1fb0bcf0fca7/add")
-    public Attribute createAttribute(@Valid @RequestBody Attribute attribute) {
-        return attributeSchemaService.createAttribute(attribute);
+    @GetMapping(value="/5e934d4567ed1fb0bcf0fca7/load/by/parent/{parentId}")
+    public List<Attribute> getAttributeByParentId(@PathVariable("parentId") String parentId) {
+        return attributeSchemaService.getAttributeByParentId(parentId);
     }
 
     @GetMapping(value="/5e934d4567ed1fb0bcf0fca7/load/{id}")
     public Attribute getAttributeById(@PathVariable("id") String id) {
         return attributeSchemaService.getAttributeById(id);
+    }
+
+    @PostMapping("/5e934d4567ed1fb0bcf0fca7/add")
+    public Attribute createAttribute(@Valid @RequestBody Attribute attribute) {
+        return attributeSchemaService.createAttribute(attribute);
     }
 
     @PutMapping(value="/5e934d4567ed1fb0bcf0fca7/update")
@@ -105,9 +120,14 @@ public class AttributeSchemaController {
         return attributeSchemaService.deleteAttribute(id);
     }
 
-    @GetMapping("/5e934d4567ed1fb0bcf0fca7/load/children/{parentId}")
-    public List<AttributeValue> getAttributeValues(@PathVariable("parentId") String attributeId) {
-        return attributeSchemaService.getAttributeValues(attributeId);
+    @GetMapping("/5ea6c35f3fe39bd27a715a33/load/all")
+    public List<AttributeValue> getAttributeValues() {
+        return attributeSchemaService.getAttributeValues();
+    }
+
+    @GetMapping(value="/5ea6c35f3fe39bd27a715a33/load/by/parent/{parentId}")
+    public List<AttributeValue> getAttributeValuesByParentId(@PathVariable("parentId") String parentId) {
+        return attributeSchemaService.getAttributeValuesByParentId(parentId);
     }
 
     @PostMapping("/5ea6c35f3fe39bd27a715a33/add")

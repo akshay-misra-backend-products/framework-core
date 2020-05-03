@@ -4,6 +4,8 @@ import com.bss.framework.core.schema.constants.SystemConstants;
 import com.bss.framework.core.schema.meta.data.annotations.AttributeId;
 import com.bss.framework.core.schema.meta.data.annotations.BooleanAttr;
 import com.bss.framework.core.schema.meta.data.annotations.RefAttr;
+import com.bss.framework.core.schema.meta.data.annotations.RefIdAttr;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -18,14 +20,17 @@ public class Attribute extends Base {
     @DBRef
     @NotNull
     @RefAttr
+    @JsonProperty(SystemConstants.Attributes.ATTRIBUTE_GROUP)
     @AttributeId(SystemConstants.Attributes.ATTRIBUTE_GROUP)
     private AttributeGroup attributeGroup;
 
     @NotNull
+    @JsonProperty(SystemConstants.Attributes.ATTRIBUTE_TYPE)
     @AttributeId(SystemConstants.Attributes.ATTRIBUTE_TYPE)
     private int attributeType;
 
-    @RefAttr
+    @RefIdAttr
+    @JsonProperty(SystemConstants.Attributes.REFERENCE_TO_OBJECT_TYPE)
     @AttributeId(SystemConstants.Attributes.REFERENCE_TO_OBJECT_TYPE)
     private String referenceToObjectType;
 
@@ -34,6 +39,7 @@ public class Attribute extends Base {
             trueId  = SystemConstants.TrueFalseList.TRUE_ID,
             falseId = SystemConstants.TrueFalseList.FALSE_ID
     )
+    @JsonProperty(SystemConstants.Attributes.USAE_AS_FILTER)
     @AttributeId(SystemConstants.Attributes.USAE_AS_FILTER)
     private boolean useAsFilter;
 
@@ -42,6 +48,7 @@ public class Attribute extends Base {
             trueId  = SystemConstants.TrueFalseList.TRUE_ID,
             falseId = SystemConstants.TrueFalseList.FALSE_ID
     )
+    @JsonProperty(SystemConstants.Attributes.FOR_CATALOG)
     @AttributeId(SystemConstants.Attributes.FOR_CATALOG)
     private boolean catalog;
 
@@ -50,6 +57,7 @@ public class Attribute extends Base {
             trueId  = SystemConstants.TrueFalseList.TRUE_ID,
             falseId = SystemConstants.TrueFalseList.FALSE_ID
     )
+    @JsonProperty(SystemConstants.Attributes.IS_SYSTEM)
     @AttributeId(SystemConstants.Attributes.IS_SYSTEM)
     private boolean system;
 
@@ -58,6 +66,7 @@ public class Attribute extends Base {
             trueId  = SystemConstants.TrueFalseList.TRUE_ID,
             falseId = SystemConstants.TrueFalseList.FALSE_ID
     )
+    @JsonProperty(SystemConstants.Attributes.READONLY)
     @AttributeId(SystemConstants.Attributes.READONLY)
     private boolean readonly;
 
@@ -66,6 +75,7 @@ public class Attribute extends Base {
             trueId  = SystemConstants.TrueFalseList.TRUE_ID,
             falseId = SystemConstants.TrueFalseList.FALSE_ID
     )
+    @JsonProperty(SystemConstants.Attributes.REQUIRED)
     @AttributeId(SystemConstants.Attributes.REQUIRED)
     private boolean required;
 
@@ -74,6 +84,7 @@ public class Attribute extends Base {
             trueId  = SystemConstants.TrueFalseList.TRUE_ID,
             falseId = SystemConstants.TrueFalseList.FALSE_ID
     )
+    @JsonProperty(SystemConstants.Attributes.HIDDEN)
     @AttributeId(SystemConstants.Attributes.HIDDEN)
     private boolean hidden;
 
@@ -82,6 +93,7 @@ public class Attribute extends Base {
             trueId  = SystemConstants.TrueFalseList.TRUE_ID,
             falseId = SystemConstants.TrueFalseList.FALSE_ID
     )
+    @JsonProperty(SystemConstants.Attributes.MULTIPLE)
     @AttributeId(SystemConstants.Attributes.MULTIPLE)
     private boolean multiple;
 
@@ -90,6 +102,7 @@ public class Attribute extends Base {
             trueId  = SystemConstants.TrueFalseList.TRUE_ID,
             falseId = SystemConstants.TrueFalseList.FALSE_ID
     )
+    @JsonProperty(SystemConstants.Attributes.SHOW_IN_CREATE)
     @AttributeId(SystemConstants.Attributes.SHOW_IN_CREATE)
     private boolean showInCreate;
 

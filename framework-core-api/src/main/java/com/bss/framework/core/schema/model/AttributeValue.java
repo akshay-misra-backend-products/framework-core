@@ -2,6 +2,7 @@ package com.bss.framework.core.schema.model;
 
 import com.bss.framework.core.schema.constants.SystemConstants;
 import com.bss.framework.core.schema.meta.data.annotations.AttributeId;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import javax.validation.constraints.NotBlank;
@@ -14,6 +15,7 @@ import javax.validation.constraints.NotNull;
 public class AttributeValue extends Base {
 
     @NotBlank
+    @JsonProperty(SystemConstants.Attributes.VALUE)
     @AttributeId(SystemConstants.Attributes.VALUE)
     private String value;
 
@@ -21,6 +23,7 @@ public class AttributeValue extends Base {
     * Propagate from attribute, hide in UI.
     */
     @NotNull
+    @JsonProperty(SystemConstants.Attributes.ATTRIBUTE_TYPE)
     @AttributeId(SystemConstants.Attributes.ATTRIBUTE_TYPE)
     private int attributeType;
 

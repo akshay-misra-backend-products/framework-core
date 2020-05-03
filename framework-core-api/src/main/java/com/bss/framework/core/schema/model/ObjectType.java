@@ -1,9 +1,8 @@
 package com.bss.framework.core.schema.model;
 
 import com.bss.framework.core.schema.constants.SystemConstants;
-import com.bss.framework.core.schema.meta.data.annotations.AttributeId;
-import com.bss.framework.core.schema.meta.data.annotations.BooleanAttr;
-import com.bss.framework.core.schema.meta.data.annotations.Hidden;
+import com.bss.framework.core.schema.meta.data.annotations.*;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -17,6 +16,8 @@ import java.util.List;
 public class ObjectType extends Base {
 
     @DBRef(lazy = true)
+    @RefAttr
+    @JsonProperty(SystemConstants.Attributes.ATTRIBUTES)
     @AttributeId(SystemConstants.Attributes.ATTRIBUTES)
     private List<Attribute> attributes;
 
@@ -25,8 +26,14 @@ public class ObjectType extends Base {
             trueId  = SystemConstants.TrueFalseList.TRUE_ID,
             falseId = SystemConstants.TrueFalseList.FALSE_ID
     )
+    @JsonProperty(SystemConstants.Attributes.SAME_TYPE_CHILDREN)
     @AttributeId(SystemConstants.Attributes.SAME_TYPE_CHILDREN)
     private boolean sameTypeChildren;
+
+    @RefIdAttr
+    @JsonProperty(SystemConstants.Attributes.TAB_ID)
+    @AttributeId(SystemConstants.Attributes.TAB_ID)
+    private String tabId;
 
     @Hidden
     private String loadAPI;
@@ -48,6 +55,7 @@ public class ObjectType extends Base {
             trueId  = SystemConstants.TrueFalseList.TRUE_ID,
             falseId = SystemConstants.TrueFalseList.FALSE_ID
     )
+    @JsonProperty(SystemConstants.Attributes.IS_SYSTEM)
     @AttributeId(SystemConstants.Attributes.IS_SYSTEM)
     private boolean system;
 
@@ -65,6 +73,15 @@ public class ObjectType extends Base {
 
     public void setSameTypeChildren(boolean sameTypeChildren) {
         this.sameTypeChildren = sameTypeChildren;
+    }
+
+    public String getTabId() {
+        return tabId;
+    }
+
+    //@JsonProperty(SystemConstants.Attributes.TAB_ID)
+    public void setTabId(String tabId) {
+        this.tabId = tabId;
     }
 
     public String getLoadAPI() {

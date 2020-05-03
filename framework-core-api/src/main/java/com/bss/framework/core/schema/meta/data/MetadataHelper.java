@@ -176,6 +176,14 @@ public class MetadataHelper<T extends Base> {
         return filteredFields;
     }
 
+    public List<Field> getFieldsWithoutAnnotations(Collection<Field> fields, List<Class<? extends Annotation>> annotations) {
+        List<Field> filteredFields = fields.stream()
+                .filter(field ->  !hasAnyAnnotation(field, annotations))
+                .collect(Collectors.toList());
+
+        return filteredFields;
+    }
+
     public <T> T newInstance(Class<T> clazz) {
         try {
             return clazz.newInstance();

@@ -2,6 +2,7 @@ package com.bss.framework.core.schema.model;
 
 import com.bss.framework.core.schema.constants.SystemConstants;
 import com.bss.framework.core.schema.meta.data.annotations.*;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 

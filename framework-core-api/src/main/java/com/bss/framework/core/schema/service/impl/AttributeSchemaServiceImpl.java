@@ -42,6 +42,16 @@ public class AttributeSchemaServiceImpl extends ApplicationAuditServiceImpl impl
     }
 
     @Override
+    public List<ObjectType> getObjectTypeByParentId(String parentId) {
+        return objectTypeRepository.findByParentId(parentId);
+    }
+
+    @Override
+    public ObjectType getObjectTypeById(String id) {
+        return objectTypeRepository.findById(id).get();
+    }
+
+    @Override
     public ObjectType createObjectType(ObjectType objectType) {
         System.out.println("... createObjectType, objectType: "+objectType);
         objectType.setObjectTypeId(SystemConstants.ObjectTypes.OBJECT_TYPE);
@@ -55,14 +65,16 @@ public class AttributeSchemaServiceImpl extends ApplicationAuditServiceImpl impl
     }
 
     @Override
-    public ObjectType getObjectTypeById(String id) {
-        return objectTypeRepository.findById(id).get();
-    }
-
-    @Override
     public ObjectType updateObjectType(ObjectType objectType) {
         System.out.println("... updateObjectType, objectType: "+objectType);
         Optional<ObjectType> objectTypeOp = objectTypeRepository.findById(objectType.getId());
+        ObjectType objectTypeFromDB = objectTypeOp.get();
+        objectType.setObjectTypeId(SystemConstants.ObjectTypes.OBJECT_TYPE);
+        objectType.setLoadAPI("/application/api/"+objectTypeFromDB.getId()+"/load/all");
+        objectType.setLoadByIdAPI("/application/api/"+objectTypeFromDB.getId()+"/load/:id");
+        objectType.setAddAPI("/application/api/"+objectTypeFromDB.getId()+"/add");
+        objectType.setUpdateAPI("/application/api/"+objectTypeFromDB.getId()+"/update");
+        objectType.setDeleteAPI("/application/api/"+objectTypeFromDB.getId()+"/delete/:id");
         handleAudit(objectTypeOp.get(), objectType);
         return objectTypeRepository.save(objectType);
     }
@@ -85,10 +97,8 @@ public class AttributeSchemaServiceImpl extends ApplicationAuditServiceImpl impl
     }
 
     @Override
-    public AttributeGroup createAttributeGroup(AttributeGroup attributeGroup) {
-        System.out.println("... createAttributeGroup, attributeGroup: "+attributeGroup);
-        attributeGroup.setObjectTypeId(SystemConstants.ObjectTypes.ATTRIBUTE_GROUP);
-        return attributeGroupRepository.save(attributeGroup);
+    public List<AttributeGroup> getAttributeGroupByParentId(String parentId) {
+        return attributeGroupRepository.findByParentId(parentId);
     }
 
     @Override
@@ -97,10 +107,18 @@ public class AttributeSchemaServiceImpl extends ApplicationAuditServiceImpl impl
     }
 
     @Override
+    public AttributeGroup createAttributeGroup(AttributeGroup attributeGroup) {
+        System.out.println("... createAttributeGroup, attributeGroup: "+attributeGroup);
+        attributeGroup.setObjectTypeId(SystemConstants.ObjectTypes.ATTRIBUTE_GROUP);
+        return attributeGroupRepository.save(attributeGroup);
+    }
+
+    @Override
     public AttributeGroup updateAttributeGroup(AttributeGroup attributeGroup) {
         System.out.println("... updateAttributeGroup, attributeGroup: "+attributeGroup);
         Optional<AttributeGroup> attributeGroupOp = attributeGroupRepository.findById(attributeGroup.getId());
         handleAudit(attributeGroupOp.get(), attributeGroup);
+        attributeGroup.setObjectTypeId(SystemConstants.ObjectTypes.ATTRIBUTE_GROUP);
         return attributeGroupRepository.save(attributeGroup);
     }
 
@@ -122,10 +140,8 @@ public class AttributeSchemaServiceImpl extends ApplicationAuditServiceImpl impl
     }
 
     @Override
-    public Attribute createAttribute(Attribute attribute) {
-        System.out.println("... createAttribute, attribute: "+attribute);
-        attribute.setObjectTypeId(SystemConstants.ObjectTypes.ATTRIBUTE);
-        return attributeRepository.save(attribute);
+    public List<Attribute> getAttributeByParentId(String parentId) {
+        return attributeRepository.findByParentId(parentId);
     }
 
     @Override
@@ -134,10 +150,18 @@ public class AttributeSchemaServiceImpl extends ApplicationAuditServiceImpl impl
     }
 
     @Override
+    public Attribute createAttribute(Attribute attribute) {
+        System.out.println("... createAttribute, attribute: "+attribute);
+        attribute.setObjectTypeId(SystemConstants.ObjectTypes.ATTRIBUTE);
+        return attributeRepository.save(attribute);
+    }
+
+    @Override
     public Attribute updateAttribute(Attribute attribute) {
         System.out.println("... updateAttribute, attribute: "+attribute);
         Optional<Attribute> attributeOp = attributeRepository.findById(attribute.getId());
         handleAudit(attributeOp.get(), attribute);
+        attribute.setObjectTypeId(SystemConstants.ObjectTypes.ATTRIBUTE);
         return attributeRepository.save(attribute);
     }
 
@@ -153,9 +177,14 @@ public class AttributeSchemaServiceImpl extends ApplicationAuditServiceImpl impl
     }
 
     @Override
-    public List<AttributeValue> getAttributeValues(String attributeId) {
+    public List<AttributeValue> getAttributeValues() {
         Sort sortByName = new Sort(Sort.Direction.DESC, "name");
-        return attributeValueRepository.findByParentId(attributeId);
+        return attributeValueRepository.findAll(sortByName);
+    }
+
+    @Override
+    public List<AttributeValue> getAttributeValuesByParentId(String parentId) {
+        return attributeValueRepository.findByParentId(parentId);
     }
 
     @Override
@@ -177,6 +206,7 @@ public class AttributeSchemaServiceImpl extends ApplicationAuditServiceImpl impl
         System.out.println("... updateAttributeValue, attributeValue: "+attributeValue);
         Optional<AttributeValue> attributeValueOp = attributeValueRepository.findById(attributeValue.getId());
         handleAudit(attributeValueOp.get(), attributeValue);
+        attributeValue.setObjectTypeId(SystemConstants.ObjectTypes.ATTRIBUTE_VALUE);
         return attributeValueRepository.save(attributeValue);
     }
 

@@ -14,9 +14,11 @@ public interface AttributeSchemaService {
 
     List<ObjectType> getObjectTypes();
 
-    ObjectType createObjectType(ObjectType objectType);
-
     ObjectType getObjectTypeById(String id);
+
+    List<ObjectType> getObjectTypeByParentId(String parentId);
+
+    ObjectType createObjectType(ObjectType objectType);
 
     ObjectType updateObjectType(ObjectType objectType);
 
@@ -28,6 +30,8 @@ public interface AttributeSchemaService {
 
     AttributeGroup getAttributeGroupById(String id);
 
+    List<AttributeGroup> getAttributeGroupByParentId(String parentId);
+
     AttributeGroup updateAttributeGroup(AttributeGroup objectType);
 
     boolean deleteAttributeGroup(String id);
@@ -38,11 +42,15 @@ public interface AttributeSchemaService {
 
     Attribute getAttributeById(String id);
 
+    List<Attribute> getAttributeByParentId(String parentId);
+
     Attribute updateAttribute(Attribute objectType);
 
     boolean deleteAttribute(String id);
 
-    List<AttributeValue> getAttributeValues(String attributeId);
+    List<AttributeValue> getAttributeValues();
+
+    List<AttributeValue> getAttributeValuesByParentId(String parentId);
 
     AttributeValue createAttributeValue(AttributeValue attributeValue);
 

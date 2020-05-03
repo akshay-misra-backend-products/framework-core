@@ -33,12 +33,17 @@ public class Base {
     private Long version;
 
     @NotBlank
+    @UIName("Object Type")
+    @RefIdAttr
     @ObjectTypeId
-    @Hidden
-    private String objectTypeId = "0";
+    //@Hidden
+    @GroupName(SystemConstants.StringLiterals.BASE_PARAMETERS)
+    private String objectTypeId;
 
     @ParentId
+    @UIName("Parent")
     @Hidden
+    @GroupName(SystemConstants.StringLiterals.BASE_PARAMETERS)
     private String parentId;
 
     @NotBlank
@@ -74,12 +79,14 @@ public class Base {
 
     @CreatedDate
     @ReadOnly
+    @Audit
     @UIName("Created At")
     @GroupName(SystemConstants.StringLiterals.AUDIT_INFORMATION)
     @AttributeId("-70")
     private Date createdAt;
 
     @LastModifiedDate
+    @Audit
     @ReadOnly
     @UIName("Last Modified At")
     @GroupName(SystemConstants.StringLiterals.AUDIT_INFORMATION)
@@ -163,6 +170,6 @@ public class Base {
     }
 
     public String toString() {
-        return getClass().getName()+"[ id: "+id+", name: "+name+", description: "+description+" ]";
+        return getClass().getName()+"[ id: "+id+", name: "+name+", description: "+description+", version: "+ version+ " ]";
     }
 }

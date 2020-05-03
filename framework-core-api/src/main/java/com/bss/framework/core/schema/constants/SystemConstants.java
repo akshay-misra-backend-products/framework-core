@@ -6,6 +6,7 @@ public class SystemConstants {
         /* Object Type*/
         String ATTRIBUTES = "5ea87aeec8ae3bed4679f5d9";
         String SAME_TYPE_CHILDREN = "5ea87cbcc8ae3bed4679f5da";
+        String TAB_ID = "5eaaaad52e2efbf6f5c75818";
 
         /* Attribute Entity */
         String ATTRIBUTE_GROUP = "5ea8117bfd96fbebc61418f1";
@@ -15,7 +16,7 @@ public class SystemConstants {
         String FOR_CATALOG = "5ea84422fd96fbebc61418f4";
         String IS_SYSTEM = "5ea84509fd96fbebc61418f5";
         String READONLY = "5ea84655fd96fbebc61418f6";
-        String REQUIRED = "5ea9b3e7f3ba3bf43fbd0bb2";
+        String REQUIRED = "5eac5c08d8415b3394a67e40";
         String HIDDEN = "5ea84695fd96fbebc61418f7";
         String MULTIPLE = "5ea846d7fd96fbebc61418f8";
         String SHOW_IN_CREATE = "5ea84788fd96fbebc61418f9";
@@ -38,6 +39,10 @@ public class SystemConstants {
         String LIST_VALUE = "5ea87973c8ae3bed4679f5d7";
         String MULTI_LIST_VALUE = "5ea879aec8ae3bed4679f5d8";
 
+        /* Tab */
+        String ICON = "5eaa980a2e2efbf64a9f4a59";
+        String REFERENCE_TO_OBJECT_TYPES = "5eaa98932e2efbf64a9f4a5a";
+
     }
 
     public static interface ObjectTypes {
@@ -45,7 +50,8 @@ public class SystemConstants {
         String ATTRIBUTE = "5e934d4567ed1fb0bcf0fca7";
         String ATTRIBUTE_GROUP = "5e934da667ed1fb0bcf0fca8";
         String ATTRIBUTE_VALUE = "5ea6c35f3fe39bd27a715a33";
-
+        String NAVIGATION_TAB = "5eaaa5862e2efbf64a9f4a5b";
+        String OBJECT_CHARACTERISTICS = "5eac03a15316dbfb9a365f3c";
     }
 
     public interface Objects {

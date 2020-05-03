@@ -1,11 +1,9 @@
 package com.bss.framework.core.design.composers;
 
 
-import com.bss.framework.core.design.model.FieldConfig;
-import com.bss.framework.core.design.model.GroupConfig;
-import com.bss.framework.core.design.model.ObjectDetailsConfig;
-import com.bss.framework.core.design.model.ObjectLayoutWrapper;
+import com.bss.framework.core.design.model.*;
 import com.bss.framework.core.design.model.fields.*;
+import com.bss.framework.core.schema.constants.SystemConstants;
 import com.bss.framework.core.schema.factory.ObjectTypeRepositoryMapperFacade;
 import com.bss.framework.core.schema.meta.data.MetadataHelper;
 import com.bss.framework.core.schema.meta.data.annotations.*;
@@ -13,8 +11,11 @@ import com.bss.framework.core.schema.meta.data.annotations.base.*;
 import com.bss.framework.core.schema.model.Attribute;
 import com.bss.framework.core.schema.model.AttributeValue;
 import com.bss.framework.core.schema.model.Base;
+import com.bss.framework.core.schema.model.ObjectType;
 import com.bss.framework.core.schema.repositories.AttributeRepository;
 import com.bss.framework.core.schema.repositories.AttributeValueRepository;
+import com.bss.framework.core.schema.repositories.ObjectTypeRepository;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
@@ -23,14 +24,17 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import java.lang.reflect.Field;
+import java.math.BigInteger;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 public class ObjectDetailsComposer<T extends ObjectLayoutWrapper> implements Composer<T>  {
 
     @Autowired
     ObjectTypeRepositoryMapperFacade objectTypeRepositoryMapperFacade;
+
+    @Autowired
+    ObjectTypeRepository objectTypeRepository;
 
     @Autowired
     AttributeRepository attributeRepository;
@@ -40,6 +44,9 @@ public class ObjectDetailsComposer<T extends ObjectLayoutWrapper> implements Com
 
     @Autowired
     MetadataHelper metadataHelper;
+
+    @Autowired
+    DynamicTableComposer dynamicTableComposer;
 
     @Override
     public T compose(String objectTypeId, String objectId) {
@@ -52,24 +59,48 @@ public class ObjectDetailsComposer<T extends ObjectLayoutWrapper> implements Com
         System.out.println("********** ObjectDetailsComposer, repository base fields: "+ base);
         detail.setId(objectId);
         detail.setObjectName(base.getPublicName() == null ? base.getName() : base.getPublicName());
+        detail.setUpdateAPI("/application/api/"+objectTypeId+"/update");
+        detail.setEditable(true);
         objectLayoutWrapper.setObjectName(base.getPublicName() == null ? base.getName() : base.getPublicName());
 
         Set<Field> fields = metadataHelper.getFields(base.getClass());
-        System.out.println("********** ObjectDetailsComposer,  fields size: "+ fields.size());
         Set<Field> baseFields = metadataHelper.getBaseFields();
-        System.out.println("********** ObjectDetailsComposer,  baseFields size: "+ baseFields.size());
         List<GroupConfig> groupConfigs = getBaseGroupConfigs(baseFields, base);
         fields.removeAll(baseFields);
         groupConfigs.addAll(getExtendedGroupConfigs(fields, base));
         detail.setGroups(groupConfigs);
 
-        /*for (Field field : fields) {
-            Object value = metadataHelper.getValue(base, base.getClass(), field);
-            System.out.println("------------------value-------------------"+ value);
-            generateFieldGroupConfig(field, baseFields, value);
-        }*/
+        objectLayoutWrapper.setChildren(composeChildTableConfigs(objectTypeId, objectId));
 
         return (T) objectLayoutWrapper;
+    }
+
+    private CompositeTableConfig composeChildTableConfigs(String objectTypeId, String objectId) {
+        System.out.println("********** ObjectDetailsComposer, composeChildTableConfigs, objectTypeId: "+ objectTypeId+", objectId: "+objectId);
+        CompositeTableConfig compositeTableConfig = new CompositeTableConfig();
+        List<String> childObjectTypes = new ArrayList<>();
+        ObjectType currentOT = objectTypeRepository.findById(objectTypeId).get();
+        System.out.println("********** ObjectDetailsComposer, composeChildTableConfigs, currentOT: "+currentOT);
+        List<DynamicTableConfig> tables = new ArrayList<>();
+        if (currentOT.isSameTypeChildren() && !SystemConstants.ObjectTypes.OBJECT_TYPE.equals(objectId)) {
+            System.out.println("********** ObjectDetailsComposer, composeChildTableConfigs, isSameTypeChildren ... ");
+            DynamicTableConfig dynamicTableConfig = dynamicTableComposer.compose(currentOT.getId(), objectId);
+            tables.add(dynamicTableConfig);
+        }
+
+        List<ObjectType> childOTs = objectTypeRepository.findByParentId(objectTypeId);
+        if (CollectionUtils.isNotEmpty(childOTs)) {
+            childOTs.stream().map(objectType -> childObjectTypes.add(objectType.getId()));
+        }
+
+        for (String childOT : childObjectTypes) {
+            DynamicTableConfig dynamicTableConfig = dynamicTableComposer.compose(childOT, null);
+            tables.add(dynamicTableConfig);
+        }
+
+        compositeTableConfig.setTables(tables);
+
+        return compositeTableConfig;
     }
 
     private List<GroupConfig> getExtendedGroupConfigs(Set<Field> fields, Base base) {
@@ -77,11 +108,9 @@ public class ObjectDetailsComposer<T extends ObjectLayoutWrapper> implements Com
         Map<String, List<FieldConfig>> groupToFieldConfig = new HashMap<>();
 
         for (Field field : fields) {
-            System.out.println("********** ObjectDetailsComposer, getExtendedGroupConfigs, name: " + field.getName());
             AttributeId attributeIdAn = field.getAnnotation(AttributeId.class);
             if (attributeIdAn != null) {
                 String attributeId = attributeIdAn.value();
-                System.out.println("********** ObjectDetailsComposer, getExtendedGroupConfigs, attributeId: " + attributeId);
                 Optional<Attribute> attributeOp = attributeRepository.findById(attributeId);
                 if (attributeOp.isPresent()) {
                     Attribute attribute = attributeOp.get();
@@ -97,7 +126,6 @@ public class ObjectDetailsComposer<T extends ObjectLayoutWrapper> implements Com
             }
         }
 
-        System.out.println("********** ObjectDetailsComposer, getExtendedGroupConfigs, groupToFieldConfig: "+ groupToFieldConfig);
         for (Map.Entry<String, List<FieldConfig>> entry : groupToFieldConfig.entrySet()) {
             GroupConfig groupConfig = new GroupConfig();
             groupConfig.setGroupName(entry.getKey());
@@ -105,26 +133,34 @@ public class ObjectDetailsComposer<T extends ObjectLayoutWrapper> implements Com
             groupConfigs.add(groupConfig);
         }
 
-        System.out.println("********** ObjectDetailsComposer, getExtendedGroupConfigs, groupConfigs: "+ groupConfigs);
-
         return groupConfigs;
     }
 
     private FieldConfig getExtendedFieldConfig(Field field, Attribute attribute, Base base) {
-        FieldConfig fieldConfig = getExtendedFieldConfigInstance(field, attribute, base);
+        FieldConfig fieldConfig = getExtendedFieldConfigInstance(field, attribute);
         fieldConfig.setLabel(attribute.getPublicName());
-        fieldConfig.setName(field.getName());
+        fieldConfig.setName(attribute.getId());
         fieldConfig.setMultiple(attribute.isMultiple());
         fieldConfig.setReadonly(attribute.isReadonly());
         fieldConfig.setRequired(attribute.isRequired());
         Object value = metadataHelper.getValue(base, base.getClass(), field);
-        System.out.println("------------------value-------------------"+ value);
-        fieldConfig.setValue(value);
+        if (metadataHelper.hasAnnotation(field, RefIdAttr.class) && value != null) {
+            if (attribute.getReferenceToObjectType() != null) {
+                MongoRepository repository = objectTypeRepositoryMapperFacade.
+                        getRepositoryByObjectTypeId(attribute.getReferenceToObjectType());
+                Base refIdValue = (Base) repository.findById(value).get();
+                fieldConfig.setValue(refIdValue);
+            } else {
+                fieldConfig.setValue(value);
+            }
+        } else {
+            fieldConfig.setValue(value);
+        }
 
         return fieldConfig;
     }
 
-    private FieldConfig getExtendedFieldConfigInstance(Field field, Attribute attribute, Base base) {
+    private FieldConfig getExtendedFieldConfigInstance(Field field, Attribute attribute) {
         FieldConfig fieldConfig;
 
         if (FieldType.TEXT.value == attribute.getAttributeType()) {
@@ -133,17 +169,26 @@ public class ObjectDetailsComposer<T extends ObjectLayoutWrapper> implements Com
             fieldConfig = new NumberFieldConfig();
         } else if (FieldType.REFERENCE.value == attribute.getAttributeType()) {
             fieldConfig = new ReferenceFieldConfig();
+            String loadAPI = "/application/api/" + attribute.getReferenceToObjectType()+"/load/all";
+            ((ReferenceFieldConfig) fieldConfig).setLoadAPI(loadAPI);
+        } else if (FieldType.REFERENCE_ID.value == attribute.getAttributeType()) {
+            fieldConfig = new ReferenceFieldConfig();
+            String loadAPI = "";
+            if (attribute.getReferenceToObjectType() == null &&
+                    SystemConstants.Attributes.REFERENCE_TO_OBJECT_TYPE.equals(attribute.getId())) {
+                loadAPI = "/application/api/" + SystemConstants.ObjectTypes.OBJECT_TYPE +"/load/all";
+            } else {
+                loadAPI = "/application/api/" + attribute.getReferenceToObjectType() + "/load/all";
+            }
+            ((ReferenceFieldConfig) fieldConfig).setLoadAPI(loadAPI);
+            ((ReferenceFieldConfig) fieldConfig).setRefIdAttr(true);
         } else if (FieldType.LIST.value == attribute.getAttributeType()) {
             List<ListFieldConfig.Options> options = new ArrayList<>();
             fieldConfig = new ListFieldConfig();
-            if (field.isAnnotationPresent(BooleanAttr.class)) {
-                ListFieldConfig.Options trueValue = new ListFieldConfig.Options(true, "Yes");
-                ListFieldConfig.Options falseValue = new ListFieldConfig.Options(false, "No");
-                options.add(trueValue);
-                options.add(falseValue);
+            if (SystemConstants.Attributes.ATTRIBUTE_TYPE.equals(attribute.getId())) {
+                options.addAll(getAttributeTypeOptions());
             } else {
                 List<AttributeValue> attributeValues = attributeValueRepository.findByParentId(attribute.getId());
-                System.out.println("********** ObjectDetailsComposer, getExtendedFieldConfig, attributeValues: " + attributeValues);
                 attributeValues.stream()
                         .map(attributeValue -> {
                             ListFieldConfig.Options option = new ListFieldConfig.Options(attributeValue.getId(),
@@ -152,7 +197,14 @@ public class ObjectDetailsComposer<T extends ObjectLayoutWrapper> implements Com
                             return null;
                         });
             }
-            System.out.println("********** ObjectDetailsComposer, getExtendedFieldConfig, options: "+ options);
+            ((ListFieldConfig) fieldConfig).setOptions(options);
+        } else if (FieldType.BOOLEAN.value == attribute.getAttributeType()) {
+            List<ListFieldConfig.Options> options = new ArrayList<>();
+            fieldConfig = new ListFieldConfig();
+            ListFieldConfig.Options trueValue = new ListFieldConfig.Options(true, "Yes");
+            ListFieldConfig.Options falseValue = new ListFieldConfig.Options(false, "No");
+            options.add(trueValue);
+            options.add(falseValue);
             ((ListFieldConfig) fieldConfig).setOptions(options);
         } else if (FieldType.TEXTAREA.value == attribute.getAttributeType()) {
             fieldConfig = new TextareaFieldConfig();
@@ -177,6 +229,40 @@ public class ObjectDetailsComposer<T extends ObjectLayoutWrapper> implements Com
         return fieldConfig;
     }
 
+    private List<ListFieldConfig.Options> getAttributeTypeOptions() {
+        List<ListFieldConfig.Options> options = new ArrayList<>();
+        ListFieldConfig.Options text = new ListFieldConfig.Options(0, "Text");
+        ListFieldConfig.Options number = new ListFieldConfig.Options(1, "Number");
+        ListFieldConfig.Options reference = new ListFieldConfig.Options(2, "Reference");
+        ListFieldConfig.Options list = new ListFieldConfig.Options(3, "List");
+        ListFieldConfig.Options memo = new ListFieldConfig.Options(4, "Memo");
+        ListFieldConfig.Options date = new ListFieldConfig.Options(5, "Date");
+        ListFieldConfig.Options currency = new ListFieldConfig.Options(6, "Currency");
+        ListFieldConfig.Options ipAddress = new ListFieldConfig.Options(7, "Ip Address");
+        ListFieldConfig.Options attachment = new ListFieldConfig.Options(8, "Attachment");
+        ListFieldConfig.Options email = new ListFieldConfig.Options(9, "Email");
+        ListFieldConfig.Options password = new ListFieldConfig.Options(10, "Password");
+        ListFieldConfig.Options color = new ListFieldConfig.Options(11, "Color");
+        ListFieldConfig.Options refId = new ListFieldConfig.Options(12, "Reference Id");
+        ListFieldConfig.Options booleanList = new ListFieldConfig.Options(13, "Yes/No List");
+        options.add(text);
+        options.add(number);
+        options.add(reference);
+        options.add(list);
+        options.add(memo);
+        options.add(date);
+        options.add(currency);
+        options.add(ipAddress);
+        options.add(attachment);
+        options.add(email);
+        options.add(password);
+        options.add(color);
+        options.add(refId);
+        options.add(booleanList);
+
+        return options;
+    }
+
     private List<GroupConfig> getBaseGroupConfigs(Set<Field> baseFields, Base base) {
         List<Field> visibleBaseFields = metadataHelper.getFieldsWithoutAnnotation(baseFields, Hidden.class);
         List<GroupConfig> groupConfigs = new ArrayList<>();
@@ -193,15 +279,12 @@ public class ObjectDetailsComposer<T extends ObjectLayoutWrapper> implements Com
                 }
             }
         }
-        System.out.println("********** ObjectDetailsComposer, getBaseGroupConfigs, groupToFieldConfig: "+ groupToFieldConfig);
         for (Map.Entry<String, List<FieldConfig>> entry : groupToFieldConfig.entrySet()) {
             GroupConfig groupConfig = new GroupConfig();
             groupConfig.setGroupName(entry.getKey());
             groupConfig.setFields(entry.getValue());
             groupConfigs.add(groupConfig);
         }
-
-        System.out.println("********** ObjectDetailsComposer, getBaseGroupConfigs, groupConfigs: "+ groupConfigs);
 
         return groupConfigs;
     }
@@ -211,15 +294,18 @@ public class ObjectDetailsComposer<T extends ObjectLayoutWrapper> implements Com
         UIName uiNameAn = field.getAnnotation(UIName.class);
         if (uiNameAn != null) {
             String name = uiNameAn.value();
-            System.out.println("********** ObjectDetailsComposer, getFieldConfigsByField, UI name: "+ name);
             fieldConfig.setLabel(name);
             fieldConfig.setName(field.getName());
             fieldConfig.setMultiple(false);
             fieldConfig.setReadonly(field.isAnnotationPresent(ReadOnly.class));
             fieldConfig.setRequired(field.isAnnotationPresent(Mandatory.class));
             Object value = metadataHelper.getValue(base, base.getClass(), field);
-            System.out.println("------------------value-------------------"+ value);
-            fieldConfig.setValue(value);
+            if (metadataHelper.hasAnnotation(field, ObjectTypeId.class) && value != null) {
+                Optional<ObjectType> objectType = objectTypeRepository.findById(value.toString());
+                fieldConfig.setValue(objectType.get());
+            } else {
+                fieldConfig.setValue(value);
+            }
         }
         return fieldConfig;
     }
@@ -235,6 +321,10 @@ public class ObjectDetailsComposer<T extends ObjectLayoutWrapper> implements Com
             fieldConfig = new DateFieldConfig();
         } else if (metadataHelper.hasAnnotation(field, Description.class)) {
             fieldConfig = new TextareaFieldConfig();
+        } else if (metadataHelper.hasAnnotation(field, ObjectTypeId.class)) {
+            fieldConfig = new ReferenceFieldConfig();
+            ((ReferenceFieldConfig) fieldConfig).setRefIdAttr(true);
+            ((ReferenceFieldConfig) fieldConfig).setReadonly(true);
         } else {
             fieldConfig = new TextBoxFieldConfig();
         }

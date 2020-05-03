@@ -9,13 +9,15 @@ import java.util.List;
  */
 public interface ApplicationLayoutService {
 
-    List<Tab> getTabs();
+    List<NavigationTab> getTabs();
 
-    Tab getTabById(String id);
+    List<NavigationTab> getNavigationTabByParentId(String parentId);
 
-    Tab createTab(Tab tab);
+    NavigationTab getTabById(String id);
 
-    Tab updateTab(Tab tab);
+    NavigationTab createTab(NavigationTab tab);
+
+    NavigationTab updateTab(NavigationTab tab);
 
     boolean deleteTab(String id);
 
@@ -41,5 +43,7 @@ public interface ApplicationLayoutService {
 
     ObjectLayoutWrapper loadObjectDetailsConfig(String objectTypeId, String id);
 
-    DynamicFormConfig loadObjectFormConfig(String objectTypeId, String id);
+    DynamicFormConfig loadFormConfig(String objectTypeId);
+
+    CompositeTableConfig loadNavigationTabConfig(String tabId);
 }

@@ -1,13 +1,19 @@
 package com.bss.framework.core.design.service.impl;
 
 import com.bss.framework.core.design.composers.DynamicFormComposer;
+import com.bss.framework.core.design.composers.DynamicTabComposer;
+import com.bss.framework.core.design.composers.DynamicTableComposer;
 import com.bss.framework.core.design.composers.ObjectDetailsComposer;
 import com.bss.framework.core.design.model.*;
 import com.bss.framework.core.design.repositories.TabLayoutConfigRepository;
 import com.bss.framework.core.design.repositories.TabLayoutRepository;
 import com.bss.framework.core.design.repositories.TabRepository;
 import com.bss.framework.core.design.service.api.ApplicationLayoutService;
+import com.bss.framework.core.schema.constants.SystemConstants;
+import com.bss.framework.core.schema.model.ObjectType;
+import com.bss.framework.core.schema.service.api.AttributeSchemaService;
 import com.bss.framework.core.schema.service.impl.ApplicationAuditServiceImpl;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
@@ -25,6 +31,9 @@ public class ApplicationLayoutServiceImpl extends ApplicationAuditServiceImpl im
     TabRepository tabRepository;
 
     @Autowired
+    AttributeSchemaService attributeSchemaService;
+
+    @Autowired
     TabLayoutRepository tabLayoutRepository;
 
     @Autowired
@@ -36,28 +45,48 @@ public class ApplicationLayoutServiceImpl extends ApplicationAuditServiceImpl im
     @Autowired
     ObjectDetailsComposer objectDetailsComposer;
 
+    @Autowired
+    DynamicTabComposer dynamicTabComposer;
+
     @Override
-    public List<Tab> getTabs() {
+    public List<NavigationTab> getTabs() {
         Sort sortByName = new Sort(Sort.Direction.DESC, "name");
         return tabRepository.findAll(sortByName);
     }
 
     @Override
-    public Tab getTabById(String id) {
+    public List<NavigationTab> getNavigationTabByParentId(String parentId) {
+        return tabRepository.findByParentId(parentId);
+    }
+
+    @Override
+    public NavigationTab getTabById(String id) {
         System.out.println("... getTabById, id: "+id);
         return tabRepository.findById(id).get();
     }
 
     @Override
-    public Tab createTab(Tab tab) {
+    public NavigationTab createTab(NavigationTab tab) {
         System.out.println("... createTab, tab: "+tab);
-        return tabRepository.save(tab);
+        tab.setObjectTypeId(SystemConstants.ObjectTypes.NAVIGATION_TAB);
+        NavigationTab tabDB = tabRepository.save(tab);
+        List<ObjectType> objectTypes = tabDB.getObjectTypes();
+        System.out.println("........ createTab, tabDB.objectTypes: "+ objectTypes);
+        if (CollectionUtils.isNotEmpty(objectTypes)) {
+            objectTypes.stream().map(objectType -> {
+                objectType.setTabId(tabDB.getId());
+                attributeSchemaService.updateObjectType(objectType);
+                return null;
+            });
+        }
+
+        return tabDB;
     }
 
     @Override
-    public Tab updateTab(Tab tab) {
+    public NavigationTab updateTab(NavigationTab tab) {
         System.out.println("... updateTab, tab: "+tab);
-        Optional<Tab> tabOp = tabRepository.findById(tab.getId());
+        Optional<NavigationTab> tabOp = tabRepository.findById(tab.getId());
         handleAudit(tabOp.get(), tab);
         return tabRepository.save(tab);
     }
@@ -65,7 +94,7 @@ public class ApplicationLayoutServiceImpl extends ApplicationAuditServiceImpl im
     @Override
     public boolean deleteTab(String id) {
         System.out.println("... deleteTab, id: "+id);
-        Optional<Tab> objectType = tabRepository.findById(id);
+        Optional<NavigationTab> objectType = tabRepository.findById(id);
         if (objectType != null) {
             tabRepository.deleteById(id);
             return true;
@@ -153,7 +182,12 @@ public class ApplicationLayoutServiceImpl extends ApplicationAuditServiceImpl im
     }
 
     @Override
-    public DynamicFormConfig loadObjectFormConfig(String objectTypeId, String id) {
-        return dynamicFormComposer.compose(objectTypeId, id);
+    public DynamicFormConfig loadFormConfig(String objectTypeId) {
+        return dynamicFormComposer.compose(objectTypeId, null);
+    }
+
+    @Override
+    public CompositeTableConfig loadNavigationTabConfig(String tabId) {
+        return dynamicTabComposer.compose(null, tabId);
     }
 }

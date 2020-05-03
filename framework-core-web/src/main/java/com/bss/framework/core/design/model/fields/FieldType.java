@@ -13,7 +13,9 @@ public enum FieldType {
     ATTACHMENT(8),
     EMAIL(9),
     PASSWORD(10),
-    COLOR(11);
+    COLOR(11),
+    REFERENCE_ID(12),
+    BOOLEAN(13);
 
     public int value;
     FieldType(int value) {
