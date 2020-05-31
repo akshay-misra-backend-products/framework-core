@@ -1,10 +1,15 @@
 package com.bss.framework.core.design.controller;
 
+import com.bss.framework.core.design.composers.CompositePageComposer;
+import com.bss.framework.core.design.decorators.Layout;
 import com.bss.framework.core.design.model.*;
+import com.bss.framework.core.design.model.fields.CompositeMenuConfig;
+import com.bss.framework.core.design.model.page.PageConfig;
 import com.bss.framework.core.design.service.api.ApplicationLayoutService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import javax.ejb.ObjectNotFoundException;
 import javax.validation.Valid;
 import java.util.List;
 
@@ -18,6 +23,9 @@ public class ApplicationLayoutController {
 
     @Autowired
     ApplicationLayoutService applicationLayoutService;
+
+    @Autowired
+    CompositePageComposer compositePageComposer;
 
     @GetMapping("/5eaaa5862e2efbf64a9f4a5b/load/all")
     public List<NavigationTab> getTabs() {
@@ -99,20 +107,31 @@ public class ApplicationLayoutController {
         return applicationLayoutService.deleteTabLayoutConfig(id);
     }
 
+
+    //TODO: check how to handle exceptions in rest call.
     @GetMapping(value="/load/details/{objectTypeId}/{objectId}")
-    public ObjectLayoutWrapper loadObjectDetails(@PathVariable("objectTypeId") String objectTypeId,
-                                                     @PathVariable("objectId") String objectId) {
-        return applicationLayoutService.loadObjectDetailsConfig(objectTypeId, objectId);
+    public PageConfig loadObjectDetails(@PathVariable("objectTypeId") String objectTypeId,
+                                        @PathVariable("objectId") String objectId) throws ObjectNotFoundException {
+        return applicationLayoutService.getPageContentConfig(objectTypeId, objectId, Layout.DETAILS);
     }
 
-    @GetMapping(value="/load/Form/config/{objectTypeId}")
-    public DynamicFormConfig loadFormConfig(@PathVariable("objectTypeId") String objectTypeId) {
-        return applicationLayoutService.loadFormConfig(objectTypeId);
+    //TODO: check how to handle exceptions in rest call.
+    @GetMapping(value="/load/Form/config/{objectTypeId}/{objectId}")
+    public PageConfig loadFormConfig(@PathVariable("objectTypeId") String objectTypeId,
+                                     @PathVariable("objectId") String objectId) throws ObjectNotFoundException {
+        return applicationLayoutService.getPageContentConfig(objectTypeId, objectId, Layout.FORM);
     }
 
-    @GetMapping(value="/load/tab/config/{tabId}")
-    public CompositeTableConfig loadNavigationTabConfig(@PathVariable("tabId") String tabId) {
-        return applicationLayoutService.loadNavigationTabConfig(tabId);
+    //TODO: check how to handle exceptions in rest call.
+    @GetMapping(value="/load/tab/config/{objectTypeId}/{tabId}")
+    public PageConfig loadNavigationTabConfig(@PathVariable("objectTypeId") String objectTypeId,
+                                                        @PathVariable("tabId") String tabId) throws ObjectNotFoundException {
+        return applicationLayoutService.getPageContentConfig(objectTypeId, tabId, Layout.TABLES);
+    }
+
+    @GetMapping(value="/load/navigation/menu/config")
+    public CompositeMenuConfig loadMenuItemsConfig() {
+        return applicationLayoutService.loadMenuItemsConfig();
     }
 
 }

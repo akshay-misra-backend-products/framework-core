@@ -7,15 +7,12 @@ import javax.annotation.Resource;
 import java.util.Map;
 
 @Service
-public class ObjectTypeRepositoryMapperFacade {
+public class ObjectTypeRepositoryMapperFactory {
 
     @Resource
     private Map<String, MongoRepository> objectTypeRepositoriesMapper;
 
     public MongoRepository getRepositoryByObjectTypeId(String objectTypeId) {
-        System.out.println("@@@@@@@ getRepositoryByObjectTypeId, objectTypeRepositoriesMapper size: "+ objectTypeRepositoriesMapper.size());
-        System.out.println("@@@@@@@ getRepositoryByObjectTypeId, objectTypeId: "+ objectTypeId);
-        System.out.println("@@@@@@@ getRepositoryByObjectTypeId, objectTypeRepositoriesMapper: "+ objectTypeRepositoriesMapper);
         return objectTypeRepositoriesMapper.get(objectTypeId);
     }
 }

@@ -10,6 +10,12 @@ public class ApplicationAuditServiceImpl implements ApplicationAuditService {
         if (fromDB != null) {
             fromUI.setCreatedAt(fromDB.getCreatedAt());
             fromUI.setVersion(fromDB.getVersion());
+            if (fromDB.getParentId() != null) {
+                fromUI.setParentId(fromDB.getParentId());
+            }
+            if (fromDB.getObjectTypeId() != null) {
+                fromUI.setObjectTypeId(fromDB.getObjectTypeId());
+            }
         }
     }
 }

@@ -12,6 +12,8 @@ public class ObjectDetailsConfig {
 
     private String updateAPI;
 
+    private String cancelRoute;
+
     private boolean editable;
 
     public String getId() {
@@ -44,6 +46,14 @@ public class ObjectDetailsConfig {
 
     public void setUpdateAPI(String updateAPI) {
         this.updateAPI = updateAPI;
+    }
+
+    public String getCancelRoute() {
+        return cancelRoute;
+    }
+
+    public void setCancelRoute(String cancelRoute) {
+        this.cancelRoute = cancelRoute;
     }
 
     public boolean isEditable() {

@@ -1,7 +1,11 @@
 package com.bss.framework.core.design.service.api;
 
+import com.bss.framework.core.design.decorators.Layout;
 import com.bss.framework.core.design.model.*;
+import com.bss.framework.core.design.model.fields.CompositeMenuConfig;
+import com.bss.framework.core.design.model.page.PageConfig;
 
+import javax.ejb.ObjectNotFoundException;
 import java.util.List;
 
 /**
@@ -41,9 +45,7 @@ public interface ApplicationLayoutService {
 
     boolean deleteTabLayoutConfig(String id);
 
-    ObjectLayoutWrapper loadObjectDetailsConfig(String objectTypeId, String id);
+    PageConfig getPageContentConfig(String objectTypeId, String id, Layout layout) throws ObjectNotFoundException;
 
-    DynamicFormConfig loadFormConfig(String objectTypeId);
-
-    CompositeTableConfig loadNavigationTabConfig(String tabId);
+    CompositeMenuConfig loadMenuItemsConfig();
 }

@@ -42,6 +42,7 @@ public class SystemConstants {
         /* Tab */
         String ICON = "5eaa980a2e2efbf64a9f4a59";
         String REFERENCE_TO_OBJECT_TYPES = "5eaa98932e2efbf64a9f4a5a";
+        String IS_CONTAINER = "5eca9489c4b81f159cf43f59";
 
     }
 
@@ -55,7 +56,7 @@ public class SystemConstants {
     }
 
     public interface Objects {
-
+        String FAKE_OBJECT = "5ed3d8c70c349b61e1d9631c";
     }
 
     public interface StringLiterals {

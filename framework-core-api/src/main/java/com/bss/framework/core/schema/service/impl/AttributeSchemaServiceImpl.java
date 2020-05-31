@@ -69,7 +69,6 @@ public class AttributeSchemaServiceImpl extends ApplicationAuditServiceImpl impl
         System.out.println("... updateObjectType, objectType: "+objectType);
         Optional<ObjectType> objectTypeOp = objectTypeRepository.findById(objectType.getId());
         ObjectType objectTypeFromDB = objectTypeOp.get();
-        objectType.setObjectTypeId(SystemConstants.ObjectTypes.OBJECT_TYPE);
         objectType.setLoadAPI("/application/api/"+objectTypeFromDB.getId()+"/load/all");
         objectType.setLoadByIdAPI("/application/api/"+objectTypeFromDB.getId()+"/load/:id");
         objectType.setAddAPI("/application/api/"+objectTypeFromDB.getId()+"/add");
@@ -118,7 +117,6 @@ public class AttributeSchemaServiceImpl extends ApplicationAuditServiceImpl impl
         System.out.println("... updateAttributeGroup, attributeGroup: "+attributeGroup);
         Optional<AttributeGroup> attributeGroupOp = attributeGroupRepository.findById(attributeGroup.getId());
         handleAudit(attributeGroupOp.get(), attributeGroup);
-        attributeGroup.setObjectTypeId(SystemConstants.ObjectTypes.ATTRIBUTE_GROUP);
         return attributeGroupRepository.save(attributeGroup);
     }
 
@@ -161,7 +159,6 @@ public class AttributeSchemaServiceImpl extends ApplicationAuditServiceImpl impl
         System.out.println("... updateAttribute, attribute: "+attribute);
         Optional<Attribute> attributeOp = attributeRepository.findById(attribute.getId());
         handleAudit(attributeOp.get(), attribute);
-        attribute.setObjectTypeId(SystemConstants.ObjectTypes.ATTRIBUTE);
         return attributeRepository.save(attribute);
     }
 
@@ -206,7 +203,6 @@ public class AttributeSchemaServiceImpl extends ApplicationAuditServiceImpl impl
         System.out.println("... updateAttributeValue, attributeValue: "+attributeValue);
         Optional<AttributeValue> attributeValueOp = attributeValueRepository.findById(attributeValue.getId());
         handleAudit(attributeValueOp.get(), attributeValue);
-        attributeValue.setObjectTypeId(SystemConstants.ObjectTypes.ATTRIBUTE_VALUE);
         return attributeValueRepository.save(attributeValue);
     }
 

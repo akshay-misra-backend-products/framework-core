@@ -6,6 +6,7 @@ import com.bss.framework.core.design.model.fields.DateFieldConfig;
 import com.bss.framework.core.design.model.fields.NumberFieldConfig;
 import com.bss.framework.core.design.model.fields.TextBoxFieldConfig;
 import com.bss.framework.core.design.model.fields.TextareaFieldConfig;
+import com.bss.framework.core.schema.constants.SystemConstants;
 import com.bss.framework.core.schema.meta.data.MetadataHelper;
 import com.bss.framework.core.schema.meta.data.annotations.Hidden;
 import com.bss.framework.core.schema.meta.data.annotations.Mandatory;
@@ -39,6 +40,7 @@ public class DynamicTableComposer<T extends DynamicTableConfig> implements Compo
     // TODO: for non system OT: /application/api/load/{objectTypeId}/{objectId}
     @Override
     public T compose(String objectTypeId, String objectId) {
+        System.out.println("********** DynamicTableComposer, compose, objectTypeId: " + objectTypeId);
         ObjectType objectType = objectTypeRepository.findById(objectTypeId).get();
         System.out.println("********** DynamicTableComposer, compose, objectType: " + objectType);
         DynamicTableConfig dynamicTableConfig = new DynamicTableConfig();
@@ -51,16 +53,18 @@ public class DynamicTableComposer<T extends DynamicTableConfig> implements Compo
         }
         System.out.println("----- DynamicTableComposer, compose, loadAPI: " + loadAPI);
         dynamicTableConfig.setLoadAPI(loadAPI);
-
-        String createAPI = "/application/design/create/object/" + objectType.getId();
+        String createAPI = null;
+        if (objectId == null) {
+            createAPI = "/application/design/create/object/" + objectType.getId() + "/"
+                    + SystemConstants.Objects.FAKE_OBJECT;
+        } else {
+            createAPI = "/application/design/create/object/" + objectType.getId() + "/" + objectId;
+        }
         dynamicTableConfig.setCreateAPI(createAPI);
-
         String deleteAPI = "/application/api/" + objectType.getId() + "/delete/";
         dynamicTableConfig.setDeleteAPI(deleteAPI);
-
         String detailsAPI = "/application/api/load/details/" + objectType.getId() + "/";
         dynamicTableConfig.setDetailsAPI(detailsAPI);
-
         List<DynamicTableConfig.Column> columns = getColumns();
         System.out.println("********** DynamicTableComposer, compose, columns: " + columns);
         dynamicTableConfig.setColumns(columns);
@@ -90,7 +94,7 @@ public class DynamicTableComposer<T extends DynamicTableConfig> implements Compo
         UIName uiNameAn = field.getAnnotation(UIName.class);
         if (uiNameAn != null) {
             String name = uiNameAn.value();
-            System.out.println("********** DynamicFormComposer, getFieldConfigsByField, UI name: "+ name);
+            System.out.println("********** DynamicTableComposer, getFieldConfigsByField, UI name: "+ name);
             fieldConfig.setLabel(name);
             fieldConfig.setName(field.getName());
             fieldConfig.setMultiple(false);

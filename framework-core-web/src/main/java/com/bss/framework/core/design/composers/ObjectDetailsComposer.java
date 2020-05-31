@@ -1,10 +1,9 @@
 package com.bss.framework.core.design.composers;
 
-
 import com.bss.framework.core.design.model.*;
 import com.bss.framework.core.design.model.fields.*;
 import com.bss.framework.core.schema.constants.SystemConstants;
-import com.bss.framework.core.schema.factory.ObjectTypeRepositoryMapperFacade;
+import com.bss.framework.core.schema.factory.ObjectTypeRepositoryMapperFactory;
 import com.bss.framework.core.schema.meta.data.MetadataHelper;
 import com.bss.framework.core.schema.meta.data.annotations.*;
 import com.bss.framework.core.schema.meta.data.annotations.base.*;
@@ -15,6 +14,7 @@ import com.bss.framework.core.schema.model.ObjectType;
 import com.bss.framework.core.schema.repositories.AttributeRepository;
 import com.bss.framework.core.schema.repositories.AttributeValueRepository;
 import com.bss.framework.core.schema.repositories.ObjectTypeRepository;
+import com.google.common.collect.ImmutableSet;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.annotation.CreatedDate;
@@ -24,14 +24,20 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import java.lang.reflect.Field;
-import java.math.BigInteger;
-import java.util.*;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Optional;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.Set;
+import java.util.Arrays;
+import java.util.stream.Collectors;
 
 @Service
 public class ObjectDetailsComposer<T extends ObjectLayoutWrapper> implements Composer<T>  {
 
     @Autowired
-    ObjectTypeRepositoryMapperFacade objectTypeRepositoryMapperFacade;
+    ObjectTypeRepositoryMapperFactory objectTypeRepositoryFactory;
 
     @Autowired
     ObjectTypeRepository objectTypeRepository;
@@ -54,7 +60,7 @@ public class ObjectDetailsComposer<T extends ObjectLayoutWrapper> implements Com
         ObjectDetailsConfig detail = new ObjectDetailsConfig();
         objectLayoutWrapper.setDetail(detail);
 
-        MongoRepository repository = objectTypeRepositoryMapperFacade.getRepositoryByObjectTypeId(objectTypeId);
+        MongoRepository repository = objectTypeRepositoryFactory.getRepositoryByObjectTypeId(objectTypeId);
         Base base = (Base) repository.findById(objectId).get();
         System.out.println("********** ObjectDetailsComposer, repository base fields: "+ base);
         detail.setId(objectId);
@@ -89,12 +95,14 @@ public class ObjectDetailsComposer<T extends ObjectLayoutWrapper> implements Com
         }
 
         List<ObjectType> childOTs = objectTypeRepository.findByParentId(objectTypeId);
+        System.out.println("********** ########## ObjectDetailsComposer, composeChildTableConfigs, childOTs: "+childOTs);
         if (CollectionUtils.isNotEmpty(childOTs)) {
-            childOTs.stream().map(objectType -> childObjectTypes.add(objectType.getId()));
+            System.out.println("********** ########## ObjectDetailsComposer, composeChildTableConfigs, childOTs, isNotEmpty");
+            childObjectTypes = childOTs.stream().map(ObjectType::getId).collect(Collectors.toList());
         }
-
+        System.out.println("********** ########## ObjectDetailsComposer, composeChildTableConfigs, childObjectTypes: "+childObjectTypes);
         for (String childOT : childObjectTypes) {
-            DynamicTableConfig dynamicTableConfig = dynamicTableComposer.compose(childOT, null);
+            DynamicTableConfig dynamicTableConfig = dynamicTableComposer.compose(childOT, objectId);
             tables.add(dynamicTableConfig);
         }
 
@@ -146,7 +154,7 @@ public class ObjectDetailsComposer<T extends ObjectLayoutWrapper> implements Com
         Object value = metadataHelper.getValue(base, base.getClass(), field);
         if (metadataHelper.hasAnnotation(field, RefIdAttr.class) && value != null) {
             if (attribute.getReferenceToObjectType() != null) {
-                MongoRepository repository = objectTypeRepositoryMapperFacade.
+                MongoRepository repository = objectTypeRepositoryFactory.
                         getRepositoryByObjectTypeId(attribute.getReferenceToObjectType());
                 Base refIdValue = (Base) repository.findById(value).get();
                 fieldConfig.setValue(refIdValue);
@@ -324,8 +332,13 @@ public class ObjectDetailsComposer<T extends ObjectLayoutWrapper> implements Com
         } else if (metadataHelper.hasAnnotation(field, ObjectTypeId.class)) {
             fieldConfig = new ReferenceFieldConfig();
             ((ReferenceFieldConfig) fieldConfig).setRefIdAttr(true);
-            ((ReferenceFieldConfig) fieldConfig).setReadonly(true);
-        } else {
+            fieldConfig.setReadonly(true);
+        } /*else if (metadataHelper.hasAnnotation(field, ParentId.class)) {
+            fieldConfig = new ReferenceFieldConfig();
+            ((ReferenceFieldConfig) fieldConfig).setRefIdAttr(true);
+            String loadAPI = "/application/api/" + SystemConstants.ObjectTypes.OBJECT_TYPE + "/load/all";
+            ((ReferenceFieldConfig) fieldConfig).setLoadAPI(loadAPI);
+        }*/ else {
             fieldConfig = new TextBoxFieldConfig();
         }
 

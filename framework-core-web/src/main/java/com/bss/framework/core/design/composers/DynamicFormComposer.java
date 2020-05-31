@@ -2,7 +2,10 @@ package com.bss.framework.core.design.composers;
 
 import com.bss.framework.core.design.model.*;
 import com.bss.framework.core.design.model.fields.*;
+import com.bss.framework.core.design.service.api.ApplicationLayoutService;
+import com.bss.framework.core.design.service.impl.RestRouteCalculationServiceImpl;
 import com.bss.framework.core.schema.constants.SystemConstants;
+import com.bss.framework.core.schema.factory.ObjectTypeRepositoryMapperFactory;
 import com.bss.framework.core.schema.meta.data.MetadataHelper;
 import com.bss.framework.core.schema.meta.data.annotations.*;
 import com.bss.framework.core.schema.meta.data.annotations.base.*;
@@ -13,6 +16,7 @@ import com.bss.framework.core.schema.model.ObjectType;
 import com.bss.framework.core.schema.repositories.AttributeRepository;
 import com.bss.framework.core.schema.repositories.AttributeValueRepository;
 import com.bss.framework.core.schema.repositories.ObjectTypeRepository;
+import com.bss.framework.core.schema.utils.EntityBuilder;
 import com.google.common.collect.ImmutableSet;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,8 +25,14 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
+import javax.ejb.ObjectNotFoundException;
 import java.lang.reflect.Field;
-import java.util.*;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.Set;
+import java.util.Arrays;
 
 @Service
 public class DynamicFormComposer<T extends DynamicFormConfig> implements Composer<T> {
@@ -37,10 +47,22 @@ public class DynamicFormComposer<T extends DynamicFormConfig> implements Compose
     AttributeValueRepository attributeValueRepository;
 
     @Autowired
+    ApplicationLayoutService applicationLayoutService;
+
+    @Autowired
+    RestRouteCalculationServiceImpl restRouteCalculationService;
+
+    @Autowired
     MetadataHelper metadataHelper;
 
+    @Autowired
+    EntityBuilder entityBuilder;
+
     @Override
-    public T compose(String objectTypeId, String objectId) {
+    public T compose(String objectTypeId, String parentId) throws ObjectNotFoundException {
+        if (SystemConstants.Objects.FAKE_OBJECT.equals(parentId)) {
+            parentId = null;
+        }
 
         DynamicFormConfig formConfig = new DynamicFormConfig();
 
@@ -56,7 +78,7 @@ public class DynamicFormComposer<T extends DynamicFormConfig> implements Compose
         System.out.println("********** DynamicFormComposer,  fields size: "+ fields.size());
         Set<Field> baseFields = metadataHelper.getBaseFields();
         System.out.println("********** DynamicFormComposer,  baseFields size: "+ baseFields.size());
-        List<GroupConfig> groupConfigs = getBaseGroupConfigs(baseFields, objectType);
+        List<GroupConfig> groupConfigs = getBaseGroupConfigs(baseFields, objectType, parentId);
         fields.removeAll(baseFields);
         List<Attribute> extendedAttributes = objectType.getAttributes();
         if (CollectionUtils.isNotEmpty(extendedAttributes)) {
@@ -67,7 +89,25 @@ public class DynamicFormComposer<T extends DynamicFormConfig> implements Compose
         String createAPI = "/application/api/"+objectTypeId+"/add";
         formConfig.setCreateAPI(createAPI);
 
+        formConfig.setCancelLink(getCancelLink(objectType, parentId));
+
         return (T) formConfig;
+    }
+
+    private String getCancelLink(ObjectType objectType, String objectId) throws ObjectNotFoundException {
+        String cancelLink = null;
+        if  (objectId == null || SystemConstants.Objects.FAKE_OBJECT.equals(objectId)) {
+            if (objectType.getTabId() != null) {
+                NavigationTab navItem = applicationLayoutService.getTabById(objectType.getTabId());
+                cancelLink = restRouteCalculationService.getNavItemRoute(navItem);
+            }
+        } else {
+            //when form opened from details.
+            Base base = entityBuilder.getObjectByChildOrCurrentOT(objectType.getId(), objectId);
+            cancelLink = restRouteCalculationService.getObjectDetailsRoute(base);
+        }
+
+        return cancelLink;
     }
 
     private List<GroupConfig> getExtendedGroupConfigs(List<Attribute> attributes) {
@@ -209,10 +249,12 @@ public class DynamicFormComposer<T extends DynamicFormConfig> implements Compose
         return options;
     }
 
-    private List<GroupConfig> getBaseGroupConfigs(Set<Field> baseFields, ObjectType objectType) {
+    private List<GroupConfig> getBaseGroupConfigs(Set<Field> baseFields,
+                                                  ObjectType objectType,
+                                                  String parentId) throws ObjectNotFoundException {
         List<Field> visibleBaseFields = metadataHelper.getFieldsWithoutAnnotations(baseFields,
                 Arrays.asList(Hidden.class, Audit.class, VersionNumber.class));
-        if (objectType.isSameTypeChildren()) {
+        if (objectType.isSameTypeChildren() || parentId != null) {
             visibleBaseFields.addAll(metadataHelper.getFields(Base.class, ImmutableSet.of("parentId")));
         }
         List<GroupConfig> groupConfigs = new ArrayList<>();
@@ -221,10 +263,10 @@ public class DynamicFormComposer<T extends DynamicFormConfig> implements Compose
             GroupName groupNameAn = field.getAnnotation(GroupName.class);
             if (groupNameAn != null && !StringUtils.isEmpty(groupNameAn.value())) {
                 if (groupToFieldConfig.containsKey(groupNameAn.value())) {
-                    groupToFieldConfig.get(groupNameAn.value()).add(getBaseFieldConfig(field, objectType));
+                    groupToFieldConfig.get(groupNameAn.value()).add(getBaseFieldConfig(field, objectType, parentId));
                 } else {
                     List<FieldConfig> fieldConfigs1 = new ArrayList<>();
-                    fieldConfigs1.add(getBaseFieldConfig(field, objectType));
+                    fieldConfigs1.add(getBaseFieldConfig(field, objectType, parentId));
                     groupToFieldConfig.put(groupNameAn.value(), fieldConfigs1);
                 }
             }
@@ -242,8 +284,8 @@ public class DynamicFormComposer<T extends DynamicFormConfig> implements Compose
         return groupConfigs;
     }
 
-    private FieldConfig getBaseFieldConfig(Field field, ObjectType objectType) {
-        FieldConfig fieldConfig = getFieldConfigInstance(field, objectType);
+    private FieldConfig getBaseFieldConfig(Field field, ObjectType objectType, String parentId) throws ObjectNotFoundException {
+        FieldConfig fieldConfig = getFieldConfigInstance(field, objectType, parentId);
         UIName uiNameAn = field.getAnnotation(UIName.class);
         if (uiNameAn != null) {
             String name = uiNameAn.value();
@@ -257,7 +299,7 @@ public class DynamicFormComposer<T extends DynamicFormConfig> implements Compose
         return fieldConfig;
     }
 
-    private FieldConfig getFieldConfigInstance(Field field, ObjectType objectType) {
+    private FieldConfig getFieldConfigInstance(Field field, ObjectType objectType, String parentId) throws ObjectNotFoundException {
         FieldConfig fieldConfig;
 
         if (metadataHelper.hasAnyAnnotation(field, Arrays.asList(VersionNumber.class, OrderNumber.class))) {
@@ -271,12 +313,18 @@ public class DynamicFormComposer<T extends DynamicFormConfig> implements Compose
         } else if (metadataHelper.hasAnnotation(field, ParentId.class)) {
             fieldConfig = new ReferenceFieldConfig();
             ((ReferenceFieldConfig) fieldConfig).setRefIdAttr(true);
-            String loadAPI = "/application/api/"+objectType.getId()+"/load/all";
-            ((ReferenceFieldConfig) fieldConfig).setLoadAPI(loadAPI);
+             if (parentId != null) {
+                Base parent = entityBuilder.getObjectByChildOT(objectType.getId(), parentId);
+                fieldConfig.setValue(parent);
+                fieldConfig.setReadonly(true);
+            } else if (objectType.isSameTypeChildren()) {
+                 String loadAPI = "/application/api/" + objectType.getId() + "/load/all";
+                 ((ReferenceFieldConfig) fieldConfig).setLoadAPI(loadAPI);
+             }
         } else if (metadataHelper.hasAnnotation(field, ObjectTypeId.class)) {
             fieldConfig = new ReferenceFieldConfig();
             ((ReferenceFieldConfig) fieldConfig).setRefIdAttr(true);
-            ((ReferenceFieldConfig) fieldConfig).setReadonly(true);
+            fieldConfig.setReadonly(true);
             fieldConfig.setValue(objectType);
         } else {
             fieldConfig = new TextBoxFieldConfig();

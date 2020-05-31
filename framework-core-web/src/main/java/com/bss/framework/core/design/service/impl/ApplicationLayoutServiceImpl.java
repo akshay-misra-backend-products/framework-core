@@ -1,10 +1,10 @@
 package com.bss.framework.core.design.service.impl;
 
-import com.bss.framework.core.design.composers.DynamicFormComposer;
-import com.bss.framework.core.design.composers.DynamicTabComposer;
-import com.bss.framework.core.design.composers.DynamicTableComposer;
-import com.bss.framework.core.design.composers.ObjectDetailsComposer;
+import com.bss.framework.core.design.composers.*;
+import com.bss.framework.core.design.decorators.Layout;
 import com.bss.framework.core.design.model.*;
+import com.bss.framework.core.design.model.fields.CompositeMenuConfig;
+import com.bss.framework.core.design.model.page.PageConfig;
 import com.bss.framework.core.design.repositories.TabLayoutConfigRepository;
 import com.bss.framework.core.design.repositories.TabLayoutRepository;
 import com.bss.framework.core.design.repositories.TabRepository;
@@ -18,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import javax.ejb.ObjectNotFoundException;
 import java.util.List;
 import java.util.Optional;
 
@@ -40,13 +41,10 @@ public class ApplicationLayoutServiceImpl extends ApplicationAuditServiceImpl im
     TabLayoutConfigRepository tabLayoutConfigRepository;
 
     @Autowired
-    DynamicFormComposer dynamicFormComposer;
+    CompositePageComposer compositePageComposer;
 
     @Autowired
-    ObjectDetailsComposer objectDetailsComposer;
-
-    @Autowired
-    DynamicTabComposer dynamicTabComposer;
+    NavigationMenuComposer navigationMenuComposer;
 
     @Override
     public List<NavigationTab> getTabs() {
@@ -73,10 +71,9 @@ public class ApplicationLayoutServiceImpl extends ApplicationAuditServiceImpl im
         List<ObjectType> objectTypes = tabDB.getObjectTypes();
         System.out.println("........ createTab, tabDB.objectTypes: "+ objectTypes);
         if (CollectionUtils.isNotEmpty(objectTypes)) {
-            objectTypes.stream().map(objectType -> {
+            objectTypes.stream().forEach(objectType -> {
                 objectType.setTabId(tabDB.getId());
                 attributeSchemaService.updateObjectType(objectType);
-                return null;
             });
         }
 
@@ -177,17 +174,12 @@ public class ApplicationLayoutServiceImpl extends ApplicationAuditServiceImpl im
     }
 
     @Override
-    public ObjectLayoutWrapper loadObjectDetailsConfig(String objectTypeId, String id) {
-        return objectDetailsComposer.compose(objectTypeId, id);
+    public PageConfig getPageContentConfig(String objectTypeId, String id, Layout layout) throws ObjectNotFoundException {
+        return compositePageComposer.compose(objectTypeId, id, layout);
     }
 
     @Override
-    public DynamicFormConfig loadFormConfig(String objectTypeId) {
-        return dynamicFormComposer.compose(objectTypeId, null);
-    }
-
-    @Override
-    public CompositeTableConfig loadNavigationTabConfig(String tabId) {
-        return dynamicTabComposer.compose(null, tabId);
+    public CompositeMenuConfig loadMenuItemsConfig() {
+        return navigationMenuComposer.compose(null, null);
     }
 }

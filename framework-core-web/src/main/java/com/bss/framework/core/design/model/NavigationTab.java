@@ -21,6 +21,10 @@ public class NavigationTab extends Base {
     @AttributeId(SystemConstants.Attributes.ICON)
     private String icon;
 
+    @JsonProperty(SystemConstants.Attributes.IS_CONTAINER)
+    @AttributeId(SystemConstants.Attributes.IS_CONTAINER)
+    private boolean container;
+
     @RefAttr
     @DBRef(lazy = true)
     @JsonProperty(SystemConstants.Attributes.REFERENCE_TO_OBJECT_TYPES)
@@ -41,6 +45,14 @@ public class NavigationTab extends Base {
 
     public void setObjectTypes(List<ObjectType> objectTypes) {
         this.objectTypes = objectTypes;
+    }
+
+    public boolean isContainer() {
+        return container;
+    }
+
+    public void setContainer(boolean container) {
+        this.container = container;
     }
 
     public String toString() {
