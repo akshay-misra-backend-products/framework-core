@@ -1,0 +1,45 @@
+<div class="my-3">
+  <div class="container-fluid">
+    <mat-card>
+      <mat-card-header>
+        <!--<div mat-card-avatar class="example-header-image"></div>-->
+        <mat-card-title>{{title}}</mat-card-title>
+        <!--<mat-card-subtitle>Create {{title}}</mat-card-subtitle>-->
+      </mat-card-header>
+      <mat-card-content>
+        <form (ngSubmit)="onSubmit()" [formGroup]="form" class="container-fluid">
+          <div *ngFor="let group of groups">
+            <div class="form-group">
+              <div class="dynamic-form-group-title">
+                <strong class="px-2">{{group.groupName}}</strong>
+              </div>
+              <div class="row">
+                <div class="col-md-6 col-sm-12 col-lg-4 col-xl-4" *ngFor="let field of group.fields">
+                  <fields-view-composer [field]="field" [form]="group.formGroup"></fields-view-composer>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="form-row"></div>
+          <div class="form-group row">
+            <div class="ml-3">
+              <button type="submit" [disabled]="!form.valid" mat-raised-button color="primary" class="">Update</button>
+            </div>
+
+            <div>
+              <span class="mat-button">or</span>
+            </div>
+
+            <div class="">
+              <a routerLink="/application/design/model" mat-button color="warn">Cancel</a>
+            </div>
+          </div>
+        </form>
+      </mat-card-content>
+      <!-- <mat-card-actions>
+         <button mat-button>Create</button>
+         <button mat-button>Cancel</button>
+       </mat-card-actions>-->
+    </mat-card>
+  </div>
+</div>

@@ -1,0 +1,21 @@
+<div [formGroup]="form" class="form-group row">
+  <!--<label class="col-md-3 form-control-label" [attr.for]="field.label">
+    {{field.label}}
+    <strong class="text-danger" *ngIf="field.required">*</strong>
+  </label>-->
+  <div class="col-md-9" [ngSwitch]="field.type">
+    <textbox-field *ngSwitchCase="'0'" [field]="field" [form]="form"></textbox-field>
+    <number-field *ngSwitchCase="'1'" [field]="field" [form]="form"></number-field>
+    <reference-field *ngSwitchCase="'2'" [field]="field" [form]="form"></reference-field>
+    <list-field *ngSwitchCase="'3'" [field]="field" [form]="form"></list-field>
+    <textarea-field *ngSwitchCase="'4'" [field]="field" [form]="form"></textarea-field>
+    <date-field *ngSwitchCase="'5'" [field]="field" [form]="form"></date-field>
+    <currency-field *ngSwitchCase="'6'" [field]="field" [form]="form"></currency-field>
+    <ipaddress-field *ngSwitchCase="'7'" [field]="field" [form]="form"></ipaddress-field>
+    <!--<attachment-field *ngSwitchCase="'8'" [field]="field" [form]="form"></attachment-field>-->
+    <email-field *ngSwitchCase="'9'" [field]="field" [form]="form"></email-field>
+    <password-field *ngSwitchCase="'10'" [field]="field" [form]="form"></password-field>
+    <checkbox-field *ngSwitchCase="'checkbox'" [field]="field" [form]="form"></checkbox-field>
+    <radio-field *ngSwitchCase="'radio'" [field]="field" [form]="form"></radio-field>
+  </div>
+</div>

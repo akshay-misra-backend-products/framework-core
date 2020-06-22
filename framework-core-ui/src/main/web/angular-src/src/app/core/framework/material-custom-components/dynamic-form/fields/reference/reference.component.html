@@ -1,0 +1,46 @@
+<div class="form-group" [formGroup]="form">
+  <mat-form-field class="mat-reference-field" appearance="outline">
+    <mat-label>{{label}}</mat-label>
+    <mat-chip-list [required]="field.required" #chipList aria-label="option selection">
+      <mat-chip
+        selected [color]="primary"
+        *ngFor="let selectedChip of selectedChips"
+        [selectable]="selectable"
+        [removable]="removable"
+        (removed)="remove(selectedChip)">
+        {{selectedChip.name}}
+        <mat-icon matChipRemove *ngIf="removable">cancel</mat-icon>
+      </mat-chip>
+      <input
+        [id]="field.id"
+        [name]="field.name"
+        [formControlName]="field.name"
+        [placeholder]="field.placeholder"
+        [required]="field.required"
+        #chipsInput
+        [formControl]="formControl"
+        [matAutocomplete]="auto"
+        [matChipInputFor]="chipList"
+        [matChipInputSeparatorKeyCodes]="separatorKeysCodes">
+    </mat-chip-list>
+
+    <mat-autocomplete
+      autoActiveFirstOption
+      #auto="matAutocomplete"
+      (optionSelected)="selected($event)">
+      <mat-option *ngIf="isLoading">
+        <mat-progress-spinner [mode]="'indeterminate'" [diameter]="20"></mat-progress-spinner>
+      </mat-option>
+      <ng-container *ngIf="!isLoading">
+        <mat-option *ngFor="let option of filteredOptions | async" [value]="option">
+          {{option.name}}
+        </mat-option>
+      </ng-container>
+    </mat-autocomplete>
+    <mat-hint>{{field.hint}}</mat-hint>
+    <mat-error>Too many chips</mat-error>
+    <!--
+        <mat-error *ngIf="!isValid && isDirty">{{getErrorMessage()}}</mat-error>
+    -->
+  </mat-form-field>
+</div>

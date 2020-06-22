@@ -1,0 +1,10 @@
+<li class="bread-crumb-item">
+  <a class="disabled" fxFlex="" mat-icon-button *ngIf="item.dummy">
+    <mat-icon *ngIf="item.icon">{{item.icon}}</mat-icon> {{item.name}}
+  </a>
+
+  <a *ngIf="!item.dummy" mat-icon-button [routerLink]="[item.route]">
+    <mat-icon *ngIf="item.icon">{{item.icon}}</mat-icon> {{item.name}}
+    <mat-icon>keyboard_arrow_right</mat-icon>
+  </a>
+</li>

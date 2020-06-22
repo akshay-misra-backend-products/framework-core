@@ -1,0 +1,13 @@
+<div class="form-group" [formGroup]="form">
+  <mat-form-field appearance="outline">
+    <mat-label>{{field.label}}</mat-label>
+    <mat-select [id]="field.id"
+                [formControlName]="field.name"
+                [placeholder]="field.placeholder"
+                [required]="field.required">
+      <mat-option *ngFor="let option of field.options" [value]="option.id">{{option.name}}</mat-option>
+    </mat-select>
+    <mat-hint>{{field.hint}}</mat-hint>
+    <mat-error *ngIf="!isValid && isDirty">{{getErrorMessage()}}</mat-error>
+  </mat-form-field>
+</div>

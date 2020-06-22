@@ -1,0 +1,16 @@
+<mat-toolbar
+  class=""
+  color="primary">
+  <mat-toolbar-row
+    fxLayout="row"
+  >
+
+      <ul class="bread-crumb">
+        <ng-container *ngFor="let item of items">
+          <bread-crumb-item [item]="item"></bread-crumb-item>
+        </ng-container>
+      </ul>
+
+
+  </mat-toolbar-row>
+</mat-toolbar>

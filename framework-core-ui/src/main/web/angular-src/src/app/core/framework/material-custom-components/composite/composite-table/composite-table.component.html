@@ -1,0 +1,23 @@
+<div class="my-3">
+  <div class="container-fluid">
+    <div class="card-container">
+      <div class="card">
+        <div class="container-fluid">
+          <mat-tab-group (selectedTabChange)="onTabChange($event)" animationDuration="0ms">
+            <mat-tab [label]="tableConfig.name" *ngFor="let tableConfig of tableConfigs">
+              <ng-template matTabContent>
+                <dynamic-table *ngIf="tableConfig.createAPI"
+                  [dynamicTableConfig] = "tableConfig">
+                </dynamic-table>
+                <multi-type-dynamic-table
+                  *ngIf="tableConfig.createByObjectType"
+                  [dynamicTableConfig] = "tableConfig">
+                  </multi-type-dynamic-table>
+              </ng-template>
+            </mat-tab>
+          </mat-tab-group>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

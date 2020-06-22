@@ -1,0 +1,51 @@
+
+<mat-sidenav-container fxLayout="column" [hasBackdrop]="hasBackDrop" fullscreen>
+
+  <mat-sidenav
+    [autoFocus]="false"
+    #westSidenav mode="over">
+    <vertical-navbar *ngIf="load" (close)="closeWestSideNav()"></vertical-navbar>
+  </mat-sidenav>
+
+  <mat-sidenav-content>
+
+    <div fxLayout="column" style="min-height: 100vh;">
+      <app-header></app-header>
+      <app-alert></app-alert>
+
+      <div fxFlex="1" class="content">
+        <router-outlet></router-outlet>
+      </div>
+
+      <div class="footer">
+        <app-footer></app-footer>
+         <a id="scrollTop"
+            (click)="scrollToTop();
+            $event.stopPropagation();"
+            [ngClass]="{'d-none': !scrollTop}"
+            style="display: block;">
+           <mat-icon>arrow_up</mat-icon>
+         </a>
+      </div>
+
+    </div>
+
+    <!--<notifier-container></notifier-container>-->
+
+
+  </mat-sidenav-content>
+
+  <mat-sidenav
+    position="end"
+    [autoFocus]="false"
+    #eastSidenav mode="over"> <!--fixedInViewport="true"-->
+
+    <notification-panel (close)="closeEastSideNav()"></notification-panel>
+
+  </mat-sidenav>
+
+</mat-sidenav-container>
+
+
+
+<!--  fxLayout.gt-sm="sidenav.close()" not working    -->

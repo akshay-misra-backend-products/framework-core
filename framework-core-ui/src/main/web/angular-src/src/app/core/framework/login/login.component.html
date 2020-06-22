@@ -1,0 +1,26 @@
+<form #loginForm="ngForm" (ngSubmit)="onSubmit()" class="form-signin text-center">
+  <a [routerLink]="['/']" class="navbar-brand mb-3">
+       <span>
+       <fa-icon class="logo-laptop" size="2x" [icon]="faLaptop"></fa-icon>
+       <!--<fa-icon class="logo-handshake" size="3x" [icon]="faHandsHelping"></fa-icon>-->
+      </span>
+  </a>
+  <h3 class="h3 mb-3 font-weight-normal">Login to your account</h3>
+  <label for="username" class="sr-only">Email address</label>
+  <input id="username" #username="ngModel" class="form-control"
+         type="text" [(ngModel)]="user.userName" name="username" placeholder="User Name" required/>
+  <label for="password" class="sr-only">Password</label>
+  <input id="password" type="password" #password="ngModel" class="form-control"
+         [(ngModel)]="user.password" name="password" placeholder="Password" required/>
+  <div class="checkbox mb-3">
+    <label>
+      <input type="checkbox" value="remember-me"> Remember me
+    </label>
+  </div>
+  <img *ngIf="loading" src="data:image/gif;base64,R0lGODlhEAAQAPIAAP///wAAAMLCwkJCQgAAAGJiYoKCgpKSkiH/C05FVFNDQVBFMi4wAwEAAAAh/hpDcmVhdGVkIHdpdGggYWpheGxvYWQuaW5mbwAh+QQJCgAAACwAAAAAEAAQAAADMwi63P4wyklrE2MIOggZnAdOmGYJRbExwroUmcG2LmDEwnHQLVsYOd2mBzkYDAdKa+dIAAAh+QQJCgAAACwAAAAAEAAQAAADNAi63P5OjCEgG4QMu7DmikRxQlFUYDEZIGBMRVsaqHwctXXf7WEYB4Ag1xjihkMZsiUkKhIAIfkECQoAAAAsAAAAABAAEAAAAzYIujIjK8pByJDMlFYvBoVjHA70GU7xSUJhmKtwHPAKzLO9HMaoKwJZ7Rf8AYPDDzKpZBqfvwQAIfkECQoAAAAsAAAAABAAEAAAAzMIumIlK8oyhpHsnFZfhYumCYUhDAQxRIdhHBGqRoKw0R8DYlJd8z0fMDgsGo/IpHI5TAAAIfkECQoAAAAsAAAAABAAEAAAAzIIunInK0rnZBTwGPNMgQwmdsNgXGJUlIWEuR5oWUIpz8pAEAMe6TwfwyYsGo/IpFKSAAAh+QQJCgAAACwAAAAAEAAQAAADMwi6IMKQORfjdOe82p4wGccc4CEuQradylesojEMBgsUc2G7sDX3lQGBMLAJibufbSlKAAAh+QQJCgAAACwAAAAAEAAQAAADMgi63P7wCRHZnFVdmgHu2nFwlWCI3WGc3TSWhUFGxTAUkGCbtgENBMJAEJsxgMLWzpEAACH5BAkKAAAALAAAAAAQABAAAAMyCLrc/jDKSatlQtScKdceCAjDII7HcQ4EMTCpyrCuUBjCYRgHVtqlAiB1YhiCnlsRkAAAOwAAAAAAAAAAAA==" />
+  <button class="btn btn-lg btn-primary btn-block" type="submit">Login</button>
+  <!-- Register -->
+  <span class="mt-1">Not a member?
+    <a class="btn p-0 btn-link alert-link font-weight-bold" [routerLink]="['/register']">Register</a>
+  </span>
+</form>

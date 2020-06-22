@@ -18,10 +18,20 @@
   "files":
   [
     {"includePattern": "pom.xml", "uploadPattern": "com/framework/core/framework-core-parent/@project.version@/framework-core-parent-@project.version@.pom"},
+    {"includePattern": "framework-core-annotations/pom.xml", "uploadPattern": "com/framework/core/framework-core-annotations/@project.version@/framework-core-annotations-@project.version@.pom"},
+    {"includePattern": "framework-core-annotations/target/(.*\.jar)", "uploadPattern": "com/framework/core/framework-core-annotations/@project.version@/$1"},
+    {"includePattern": "framework-core-model/pom.xml", "uploadPattern": "com/framework/core/framework-core-model/@project.version@/framework-core-model-@project.version@.pom"},
+    {"includePattern": "framework-core-model/target/(.*\.jar)", "uploadPattern": "com/framework/core/framework-core-model/@project.version@/$1"},
     {"includePattern": "framework-core-api/pom.xml", "uploadPattern": "com/framework/core/framework-core-api/@project.version@/framework-core-api-@project.version@.pom"},
     {"includePattern": "framework-core-api/target/(.*\.jar)", "uploadPattern": "com/framework/core/framework-core-api/@project.version@/$1"},
-    {"includePattern": "framework-core-web/pom.xml", "uploadPattern": "com/framework/core/framework-core-web/@project.version@/framework-core-web-@project.version@.pom"},
-    {"includePattern": "framework-core-web/target/(.*\.jar)", "uploadPattern": "com/framework/core/framework-core-web/@project.version@/$1"}
+    {"includePattern": "framework-core-impl/pom.xml", "uploadPattern": "com/framework/core/framework-core-impl/@project.version@/framework-core-impl-@project.version@.pom"},
+    {"includePattern": "framework-core-impl/target/(.*\.jar)", "uploadPattern": "com/framework/core/framework-core-impl/@project.version@/$1"},
+    {"includePattern": "framework-core-web-model/pom.xml", "uploadPattern": "com/framework/core/framework-core-web-model/@project.version@/framework-core-web-model-@project.version@.pom"},
+    {"includePattern": "framework-core-web-model/target/(.*\.jar)", "uploadPattern": "com/framework/core/framework-core-web-model/@project.version@/$1"},
+    {"includePattern": "framework-core-web-api/pom.xml", "uploadPattern": "com/framework/core/framework-core-web-api/@project.version@/framework-core-web-api-@project.version@.pom"},
+    {"includePattern": "framework-core-web-api/target/(.*\.jar)", "uploadPattern": "com/framework/core/framework-core-web-api/@project.version@/$1"},
+    {"includePattern": "framework-core-web-impl/pom.xml", "uploadPattern": "com/framework/core/framework-core-web-impl/@project.version@/framework-core-web-impl-@project.version@.pom"},
+    {"includePattern": "framework-core-web-impl/target/(.*\.jar)", "uploadPattern": "com/framework/core/framework-core-web-impl/@project.version@/$1"}
   ],
   "publish": true
 }

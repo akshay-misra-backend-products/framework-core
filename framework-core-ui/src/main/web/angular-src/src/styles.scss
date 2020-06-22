@@ -1,0 +1,60 @@
+/* You can add global styles to this file, and also import other style files */
+
+@import "./bootstrap-custom.scss";
+@import "~angular-notifier/styles";
+@import "@angular/material/prebuilt-themes/indigo-pink.css";
+
+.hidden {
+  display: none;
+}
+
+body, html {
+  background-color: #F1F6F6;
+  font-family: Roboto, "Helvetica Neue", sans-serif;
+}
+
+a {
+  text-decoration: none;
+  color: #323232;
+  position: relative;
+  transition: 0.3s;
+}
+
+.mat-drawer-container {
+  background-color: #F1F6F6;
+}
+
+.mat-button.mat-primary, .mat-icon-button.mat-primary, .mat-stroked-button.mat-primary {
+  color: #06847B;
+}
+
+.mat-form-field-appearance-outline.mat-focused .mat-form-field-outline-thick,
+.mat-form-field-appearance-standard.mat-focused .mat-form-field-underline,
+.mat-form-field-appearance-legacy.mat-focused .mat-form-field-underline {
+  color: #06847B;
+}
+
+.mat-form-field-appearance-legacy.mat-focused .mat-form-field-underline {
+  color: #06847B;
+}
+
+.mat-form-field.mat-focused .mat-form-field-label {
+  color: #06847B;
+}
+
+.mat-tab-group.mat-primary .mat-ink-bar, .mat-tab-nav-bar.mat-primary .mat-ink-bar {
+  background-color: #06847B;
+}
+
+.mat-form-field.mat-focused .mat-form-field-ripple {
+  background-color:#06847B
+}
+
+.cdk-mouse-focused, .cdk-focused {
+	outline: none !important;
+}
+
+.mat-form-field-infix {
+  min-width: 268px !important;
+}
+

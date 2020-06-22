@@ -1,0 +1,11 @@
+<div fxLayout="row" class="top-section">
+  <bread-crumb [items]="items"></bread-crumb>
+
+  <div *ngIf="pageTitle" class="mt-5 page-title">
+    <span >{{pageTitle}}</span>
+  </div>
+</div>
+
+<div class="dynamic-component">
+  <ng-template dynamicComponent></ng-template>
+</div>

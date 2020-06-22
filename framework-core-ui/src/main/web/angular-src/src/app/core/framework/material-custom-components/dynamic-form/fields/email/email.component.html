@@ -1,0 +1,14 @@
+<div class="form-group" [formGroup]="form">
+  <mat-form-field appearance="outline">
+    <mat-label>{{field.label}}</mat-label>
+    <input matInput
+           [email]="true"
+           [id]="field.id"
+           [name]="field.name"
+           [formControlName]="field.name"
+           [placeholder]="field.placeholder"
+           [required]="field.required">
+    <mat-hint>{{field.hint}}</mat-hint>
+    <mat-error *ngIf="!isValid && isDirty">{{getErrorMessage()}}</mat-error>
+  </mat-form-field>
+</div>

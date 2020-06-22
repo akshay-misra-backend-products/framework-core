@@ -1,0 +1,5 @@
+<ul [id]="item.id" class="collapse">
+  <ng-container *ngFor="let item of item.items">
+    <nav-item [item]="item"></nav-item>
+  </ng-container>
+</ul>

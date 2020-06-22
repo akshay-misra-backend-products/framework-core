@@ -1,0 +1,18 @@
+<div class="form-group" [formGroup]="form">
+  <mat-form-field appearance="outline">
+    <mat-label>{{field.label}}</mat-label>
+    <textarea matInput
+              [id]="field.id"
+              [formControlName]="field.name"
+              [name]="field.name"
+              [placeholder]="field.placeholder"
+              cdkTextareaAutosize
+              #autosize="cdkTextareaAutosize"
+              cdkAutosizeMinRows="1"
+              cdkAutosizeMaxRows="5"
+              [required]="field.required">
+    </textarea>
+    <mat-hint>{{field.hint}}</mat-hint>
+    <mat-error *ngIf="!isValid && isDirty">{{getErrorMessage()}}</mat-error>
+  </mat-form-field>
+</div>

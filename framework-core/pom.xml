@@ -35,20 +35,88 @@
 		</dependency>
 		<dependency>
 			<groupId>com.framework.core</groupId>
+			<artifactId>framework-core-annotations</artifactId>
+			<version>${project.version}</version>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.framework.core</groupId>
+			<artifactId>framework-core-model</artifactId>
+			<version>${project.version}</version>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.framework.core</groupId>
 			<artifactId>framework-core-api</artifactId>
 			<version>${project.version}</version>
 			<scope>compile</scope>
 		</dependency>
 		<dependency>
 			<groupId>com.framework.core</groupId>
-			<artifactId>framework-core-web</artifactId>
+			<artifactId>framework-core-impl</artifactId>
 			<version>${project.version}</version>
 			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.framework.core</groupId>
+			<artifactId>framework-core-web-model</artifactId>
+			<version>${project.version}</version>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.framework.core</groupId>
+			<artifactId>framework-core-web-api</artifactId>
+			<version>${project.version}</version>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.framework.core</groupId>
+			<artifactId>framework-core-web-impl</artifactId>
+			<version>${project.version}</version>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.framework.core</groupId>
+			<artifactId>framework-core-ui</artifactId>
+			<version>${project.version}</version>
+			<scope>runtime</scope>
 		</dependency>
 	</dependencies>
 
 	<build>
 		<plugins>
+			<plugin>
+				<artifactId>maven-resources-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>copy-resources</id>
+						<phase>validate</phase>
+						<goals><goal>copy-resources</goal></goals>
+						<configuration>
+							<outputDirectory>${project.build.directory}/classes/resources/</outputDirectory>
+							<resources>
+								<resource>
+									<directory>${project.parent.basedir}/framework-core-ui/src/main/web/angular-src/dist/angular-src/</directory>
+								</resource>
+							</resources>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<!--<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-war-plugin</artifactId>
+				<configuration>
+					<packagingExcludes>WEB-INF/lib/tomcat-*.jar</packagingExcludes>
+					<warName>global-bss-framework-core-app</warName>
+					&lt;!&ndash;<archive>
+						<manifest>
+							<addClasspath>true</addClasspath>
+							<mainClass>com.bss.Application</mainClass>
+						</manifest>
+					</archive>&ndash;&gt;
+				</configuration>
+			</plugin>-->
 			<plugin>
 				<groupId>org.apache.maven.surefire</groupId>
 				<artifactId>surefire-junit4</artifactId>

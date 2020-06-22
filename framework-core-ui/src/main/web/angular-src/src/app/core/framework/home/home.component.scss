@@ -1,0 +1,27 @@
+.top-section {
+  min-height: 300px;
+  height: 300px;
+}
+
+.example-card {
+  max-width: 300px;
+  position: relative;
+  top: -100px;
+}
+
+mat-card-content {
+  min-height: 100px;
+}
+
+mat-card-content ul {
+  margin-top: 20px;
+}
+
+mat-card-content ul li {
+  margin-bottom: 20px;
+}
+
+mat-card-actions button {
+  min-width: 200px;
+}
+

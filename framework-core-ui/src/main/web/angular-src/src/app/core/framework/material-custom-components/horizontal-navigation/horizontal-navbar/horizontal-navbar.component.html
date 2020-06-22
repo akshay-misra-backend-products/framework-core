@@ -1,0 +1,27 @@
+<mat-toolbar
+  fxShow="true"
+  fxHide.lt-md
+  color="primary">
+  <mat-toolbar-row
+    fxLayout="row"
+    fxLayout.xs="column"
+    fxLayoutAlign="start"
+    fxLayoutGap="10px"
+    fxLayoutGap.xs="0"
+  >
+
+    <!-- The following menu items will be hidden on both SM and XS screen sizes -->
+
+    <div class="horz-navbar">
+      <ul>
+        <ng-container *ngFor="let tab of tabs">
+          <menu-item [item]="tab"></menu-item>
+        </ng-container>
+      </ul>
+    </div>
+
+  </mat-toolbar-row>
+</mat-toolbar>
+
+
+

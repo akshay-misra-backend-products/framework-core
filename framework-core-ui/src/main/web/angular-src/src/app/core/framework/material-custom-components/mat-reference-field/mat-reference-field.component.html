@@ -1,0 +1,35 @@
+<mat-form-field class="mat-reference-field" [appearance]="appearance">
+  <mat-label>{{fieldName}}</mat-label>
+  <mat-chip-list #chipList aria-label="option selection">
+    <mat-chip
+      selected [color]="primary"
+      *ngFor="let selectedChip of selectedChips"
+      [selectable]="selectable"
+      [removable]="removable"
+      (removed)="remove(selectedChip)">
+      {{selectedChip.name}}
+      <mat-icon matChipRemove *ngIf="removable">cancel</mat-icon>
+    </mat-chip>
+    <input
+      placeholder=""
+      #chipsInput
+      [formControl]="formControl"
+      [matAutocomplete]="auto"
+      [matChipInputFor]="chipList"
+      [matChipInputSeparatorKeyCodes]="separatorKeysCodes">
+  </mat-chip-list>
+
+    <mat-autocomplete required="fieldConfig.required"
+                      autoActiveFirstOption
+                      #auto="matAutocomplete"
+                      (optionSelected)="selected($event)">
+      <mat-option *ngIf="isLoading">
+        <mat-progress-spinner [mode]="'indeterminate'" [diameter]="20"></mat-progress-spinner>
+      </mat-option>
+      <ng-container *ngIf="!isLoading">
+        <mat-option *ngFor="let option of filteredOptions | async" [value]="option">
+          {{option.name}}
+        </mat-option>
+      </ng-container>
+    </mat-autocomplete>
+</mat-form-field>

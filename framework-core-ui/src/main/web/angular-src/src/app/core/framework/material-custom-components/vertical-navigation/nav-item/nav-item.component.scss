@@ -1,0 +1,96 @@
+/* Menu */
+li  {
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+li a  {
+  text-decoration: none;
+  display: block;
+  padding: 10px;
+  cursor: pointer;
+  border-bottom: 0px solid #F1F6F6;
+  line-height: 0;
+}
+
+li a.parent:after  {
+  font-family: FontAwesome;
+  float: right;
+  margin: 14px 8px;
+}
+
+li a.parent:after  {
+  content: "\f107";
+}
+
+li a.collapsed:after  {
+  content: "\f105";
+}
+
+/* 1st lvl */
+li  {
+  position: relative;
+  border-bottom: 0px solid #F1F6F6;
+}
+
+li > a  {
+  border-bottom: 1px solid #F1F6F6;
+}
+
+.mat-menu-item {
+}
+
+.mat-menu-item .mat-icon-no-color {
+  color: #b3cbdd;
+}
+
+li > a:hover  {
+  background-color: #F1F6F6;
+}
+
+li > a > i  {
+  font-size: 16px;
+  width: 18px;
+}
+
+li.active > a  {
+  color: #0b91d2;
+}
+
+
+/* 2nd lvl */
+li li a  {
+}
+
+li li a:before  {
+  font-size: 13px;
+  margin-left: 10px;
+  margin-right: 10px;
+  transition: margin ease 0.5s;
+}
+
+li li a:hover:before  {
+  margin-right: 20px;
+}
+
+li li a:hover  {
+  background-color: #F1F6F6;
+}
+
+li li a  {
+  padding-left: 20px;
+}
+
+li li li a  {
+  padding-left: 40px;
+}
+
+li li li li a  {
+  padding-left: 60px;
+}
+
+li li li li li a  {
+  padding-left: 80px;
+}
+

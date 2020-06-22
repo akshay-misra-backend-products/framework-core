@@ -1,0 +1,23 @@
+<div class="form-group" [formGroup]="form">
+  <div class="mat-form-field-flex">
+    <mat-label class="mr-3">
+      <span>{{field.label}}<span class="text-danger" *ngIf="field.required">&nbsp;*</span></span>
+    </mat-label>
+    <mat-checkbox class="mr-3" matInput
+      *ngFor="let option of field.options" [value]="option.id"
+    >{{option.name}}
+    </mat-checkbox>
+    <mat-hint>{{field.hint}}</mat-hint>
+    <mat-error *ngIf="!isValid && isDirty">{{getErrorMessage()}}</mat-error>
+  </div>
+</div>
+
+<!--<div [formGroup]="form">
+  <div [formGroupName]="field.name" >
+    <div *ngFor="let opt of field.options" class="form-check form-check">
+      <label class="form-check-label">
+        <input [formControlName]="opt.key" class="form-check-input" type="checkbox" id="inlineCheckbox1" value="option1" />
+        {{opt.label}}</label>
+    </div>
+  </div>
+</div>-->

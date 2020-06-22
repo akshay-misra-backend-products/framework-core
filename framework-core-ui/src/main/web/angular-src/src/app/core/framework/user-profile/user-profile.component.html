@@ -1,0 +1,179 @@
+<div fxLayout="row" class="top-section"></div>
+
+<div class="container">
+  <mat-card class="user-profile-card mx-2">
+    <mat-card-header>
+      <mat-card-title>User Profile</mat-card-title>
+      <!--<mat-card-subtitle>Dog Breed</mat-card-subtitle>-->
+    </mat-card-header>
+    <mat-card-content>
+      <div fxlayout="row">
+        <div fxFlex="" class="col-md-4">
+          <div fxLayout="column" class="card card-cascade narrower">
+            <div  class="view text-center overlay hm-white-slight waves-light" mdbwaveseffect>
+              <mat-icon class="profile-icon">account_circle</mat-icon>
+            </div>
+            <div  class="card-body text-center">
+              <h4  class="card-title mb-2 font-bold">
+                <strong >{{user.firstName}} {{user.lastName}}</strong>
+              </h4>
+              <h5>
+                <strong class="info_color ">User Type</strong>
+              </h5>
+              <h6  class="text-justify">
+                <strong >About:</strong>
+              </h6>
+              <p  class="text-justify">profile description ...</p>
+              <div  class="text-right">
+                <button  class="btn btn-outline-info btn-rounded  btn-sm" mdbwaveseffect type="button">More...</button>
+              </div>
+              <hr >
+              <div  class="row">
+                <div  class="col-md-8 text-left">Followers:</div>
+                <div  class="col-md-4 text-right">
+                  <strong >675</strong>
+                </div>
+              </div>
+              <div  class="row">
+                <div  class="col-md-8 text-left">Group:</div>
+                <div  class="col-md-4 text-right">
+                  <b >Prime</b>
+                </div>
+              </div>
+              <div  class="row">
+                <div  class="col-md-8 text-left">Status:</div>
+                <div  class="col-md-4 text-right">Active</div>
+              </div>
+              <hr>
+              <a  class="icons-sm li-ic px-3">
+                <i  class="fa fa-linkedin">
+
+                </i>
+              </a>
+              <a  class="icons-sm tw-ic px-3">
+                <i  class="fa fa-twitter"></i>
+              </a>
+              <a  class="icons-sm fb-ic px-3">
+                <i  class="fa fa-facebook">
+
+                </i>
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <div fxFlex="" class="col-md-8">
+          <div  class="card card-cascade narrower">
+            <div  class="view gradient-card-header info-background-color">
+              <h4  class="h4-responsive text-white">User Details</h4>
+            </div>
+            <div  class="card-body text-center">
+              <form  novalidate="" class="ng-untouched ng-pristine ng-valid">
+                <div  class="row">
+                  <div  class="col-md-4">
+                    <div  class="md-form">
+                      <input  class="form-control" id="form11" [(ngModel)]="user.userName" name="userName"  type="text" disabled>
+                      <label  class="active" for="form11">User Name (can't be changed)</label>
+                    </div>
+                  </div>
+                  <div  class="col-md-4">
+                    <div  class="md-form">
+                      <input  class="form-control" id="form12" [(ngModel)]="user.firstName" name="firstName"  type="text" mdbInputDirective>
+                      <label  class="active" for="form12">First Name</label>
+                    </div>
+                  </div>
+                  <div  class="col-md-4">
+                    <div  class="md-form">
+                      <input  class="form-control" id="form13" [(ngModel)]="user.lastName" name="lastName" type="text" mdbInputDirective>
+                      <label  class="active" for="form13">Last Name</label>
+                    </div>
+                  </div>
+                </div>
+                <div  class="row">
+                  <div  class="col-md-6">
+                    <!-- E-mail -->
+                    <div class="md-form ">
+                      <input id="email" [(ngModel)]="user.email" name="email" type="email" required class="form-control" mdbInputDirective>
+                      <label for="email">E-mail</label>
+                    </div>
+                  </div>
+                  <div  class="col-md-6">
+                    <!-- Phone number -->
+                    <div class="md-form">
+                      <input type="text" [(ngModel)]="user.mobile" name="mobile" id="phone"  class="form-control" aria-describedby="materialRegisterFormPhoneHelpBlock"
+                             mdbInputDirective>
+                      <label for="phone">Phone number</label>
+                      <small id="materialRegisterFormPhoneHelpBlock" class="form-text text-muted mb-4">
+                        Optional
+                      </small>
+                    </div>
+                  </div>
+                </div>
+                <div  class="row">
+                  <div  class="col-md-6">
+                    <div  class="md-form">
+                      <input  class="form-control" id="form21" type="text" mdbInputDirective>
+                      <label  for="form21" class="active">Address line 1</label>
+                      <span  class="inputVal text-danger" style="visibility: hidden;">wrong</span>
+                      <span  class="inputVal text-success" style="visibility: hidden;">success</span>
+                    </div>
+                  </div>
+                  <div  class="col-md-6"><div  class="md-form">
+                    <input  class="form-control" id="form22" type="text" mdbInputDirective>
+                    <label  for="form22" class="active">Address line 2</label>
+                    <span  class="inputVal text-danger" style="visibility: hidden;">wrong</span>
+                    <span  class="inputVal text-success" style="visibility: hidden;">success</span>
+                  </div>
+                  </div>
+                </div>
+                <div  class="row">
+                  <div  class="col-md-4">
+                    <div  class="md-form">
+                      <input  class="form-control" id="form31" type="text" mdbInputDirective>
+                      <label  class="active" for="form31">City</label>
+                    </div>
+                  </div>
+                  <div  class="col-md-4">
+                    <div  class="md-form">
+                      <input  class="form-control" id="form32" type="text" mdbInputDirective>
+                      <label  class="active" for="form32">Pin Code</label>
+                    </div>
+                  </div>
+                  <div  class="col-md-4">
+                    <div  class="md-form">
+                      <input  class="form-control" id="form33" type="text" mdbInputDirective>
+                      <label  for="form33">Country</label>
+                      <span  class="inputVal text-danger" style="visibility: hidden;">wrong</span>
+                      <span  class="inputVal text-success" style="visibility: hidden;">success</span>
+                    </div>
+                  </div>
+                </div>
+                <div  class="row">
+                  <div  class="col-md-12">
+                    <div  class="md-form">
+                      <textarea  class="md-textarea form-control" id="form76" type="text" mdbInputDirective></textarea>
+                      <label  for="form76" class="active">Bio</label>
+                      <span  class="inputVal text-danger" style="visibility: hidden;">wrong</span>
+                      <span  class="inputVal text-success" style="visibility: hidden;">success</span>
+                    </div>
+                  </div>
+                </div>
+                <div  class="text-center">
+                  <button  class="btn info-background-color btn-rounded waves-light" mdbwaveseffect type="button">Update</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+
+
+    </mat-card-content>
+    <!--<mat-card-actions>
+      <div class="text-center">
+        <button mat-button>Model & Schema</button>
+      </div>
+    </mat-card-actions>-->
+  </mat-card>
+</div>
+

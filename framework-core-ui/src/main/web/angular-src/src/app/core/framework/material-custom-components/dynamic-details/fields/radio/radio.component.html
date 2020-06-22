@@ -1,0 +1,18 @@
+<div class="form-group" [formGroup]="form">
+  <div class="mat-form-field-flex">
+    <mat-label>
+      <span>{{field.label}}<span class="text-danger" *ngIf="field.required">&nbsp;*</span></span>
+    </mat-label>
+    <mat-radio-group
+      class="ml-3 mat-form-field-flex"
+      [id]="field.id"
+      [name]="field.name"
+      [formControlName]="field.name"
+      [required]="field.required"
+    >
+      <mat-radio-button class="mr-3" *ngFor="let option of field.options" [value]="option.id">{{option.name}}</mat-radio-button>
+    </mat-radio-group>
+  </div>
+  <mat-hint>{{field.hint}}</mat-hint>
+  <mat-error *ngIf="!isValid && isDirty">{{getErrorMessage()}}</mat-error>
+</div>

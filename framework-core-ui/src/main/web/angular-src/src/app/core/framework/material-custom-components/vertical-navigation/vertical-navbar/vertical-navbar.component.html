@@ -1,0 +1,45 @@
+<nav id="column-left">
+  <mat-toolbar color="primary">
+    <mat-toolbar-row fxLayout="row" class="header">
+      <div fxFlex="">
+        <a mat-icon-button [routerLink]="['/']" class="navbar-logo navbar-brand">
+          <mat-icon [inline]="true">toys</mat-icon> <span class="logo-name">Framework Core</span>
+        </a>
+      </div>
+      <button fxFlexAlign="end" class="close-drawer" mat-icon-button (click)="close.emit()">
+        <mat-icon>arrow_back</mat-icon>
+      </button>
+    </mat-toolbar-row>
+  </mat-toolbar>
+
+  <ul class="menu">
+    <ng-container *ngFor="let tab of tabs">
+      <nav-item [item]="tab"></nav-item>
+    </ng-container>
+  </ul>
+
+
+  <!--<div id="stats">
+    <ul>
+      <li>
+        <div>Orders Completed <span class="pull-right">0%</span></div>
+        <div class="progress">
+          <div class="progress-bar progress-bar-success" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0%"> <span class="sr-only">0%</span></div>
+        </div>
+      </li>
+      <li>
+        <div>Orders Processing <span class="pull-right">0%</span></div>
+        <div class="progress">
+          <div class="progress-bar progress-bar-warning" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0%"> <span class="sr-only">0%</span></div>
+        </div>
+      </li>
+      <li>
+        <div>Other Statuses <span class="pull-right">0%</span></div>
+        <div class="progress">
+          <div class="progress-bar progress-bar-danger" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0%"> <span class="sr-only">0%</span></div>
+        </div>
+      </li>
+    </ul>
+  </div>-->
+
+</nav>

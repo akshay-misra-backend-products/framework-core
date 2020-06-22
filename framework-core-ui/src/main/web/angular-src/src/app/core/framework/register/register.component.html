@@ -1,0 +1,144 @@
+<!--
+<div class="container w-50 col-md-5 mt-3 pt-2">
+  <h5 class="pb-2 text-center">
+    <p class="">Enter details to create new user</p>
+  </h5>
+  <mdb-card cascade="true" narrower="true">
+    <mdb-card-header class="info-background-color text-white text-center py-2 view gradient-card-header">
+      <h5>
+        <strong class="font-weight-bold">Sign up</strong>
+      </h5>
+    </mdb-card-header>
+    &lt;!&ndash;Card content&ndash;&gt;
+    <mdb-card-body class="px-lg-4 pt-0">
+      &lt;!&ndash; Form &ndash;&gt;
+      <form #registerForm="ngForm" (ngSubmit)="onSubmit()" class="text-center" style="color: #757575;">
+        <div class="form-row">
+          <div class="col">
+            &lt;!&ndash; First name &ndash;&gt;
+            <div class="md-form">
+              <input id="firstName" #firstName="ngModel" class="form-control" placeholder="First name"
+                     type="text" [(ngModel)]="user.firstName" name="firstName" required />
+            </div>
+          </div>
+          <div class="col">
+            &lt;!&ndash; Last name &ndash;&gt;
+            <div class="md-form">
+              <input id="lastName" #lastName="ngModel" class="form-control" placeholder="Last name"
+                     type="text" [(ngModel)]="user.lastName" name="lastName" required />
+            </div>
+          </div>
+        </div>
+
+        &lt;!&ndash; User Name &ndash;&gt;
+        <div class="md-form mt-0">
+          <input id="username" #username="ngModel" class="form-control" placeholder="User Name"
+                 type="text" [(ngModel)]="user.userName" name="username" required />
+        </div>
+
+        &lt;!&ndash; E-mail &ndash;&gt;
+        <div class="md-form mt-0">
+          <input id="email" type="email" [(ngModel)]="user.email" name="email" placeholder="E-mail"
+                 required class="form-control">
+        </div>
+
+        &lt;!&ndash; Password &ndash;&gt;
+        <div class="md-form mt-0">
+          <input id="password" type="password" #password="ngModel" class="form-control"
+                 placeholder="Password(At least 8 characters and 1 digit)" [(ngModel)]="user.password" name="password" required/>
+        </div>
+
+        &lt;!&ndash; Phone number &ndash;&gt;
+        <div class="md-form mt-0">
+          <input type="text" id="phone" [(ngModel)]="user.mobile" name="mobile"  placeholder="Phone number(Optional)"
+                 class="form-control" aria-describedby="materialRegisterFormPhoneHelpBlock">
+        </div>
+
+        &lt;!&ndash; Sign up button &ndash;&gt;
+        <span>
+          <img *ngIf="loading" src="data:image/gif;base64,R0lGODlhEAAQAPIAAP///wAAAMLCwkJCQgAAAGJiYoKCgpKSkiH/C05FVFNDQVBFMi4wAwEAAAAh/hpDcmVhdGVkIHdpdGggYWpheGxvYWQuaW5mbwAh+QQJCgAAACwAAAAAEAAQAAADMwi63P4wyklrE2MIOggZnAdOmGYJRbExwroUmcG2LmDEwnHQLVsYOd2mBzkYDAdKa+dIAAAh+QQJCgAAACwAAAAAEAAQAAADNAi63P5OjCEgG4QMu7DmikRxQlFUYDEZIGBMRVsaqHwctXXf7WEYB4Ag1xjihkMZsiUkKhIAIfkECQoAAAAsAAAAABAAEAAAAzYIujIjK8pByJDMlFYvBoVjHA70GU7xSUJhmKtwHPAKzLO9HMaoKwJZ7Rf8AYPDDzKpZBqfvwQAIfkECQoAAAAsAAAAABAAEAAAAzMIumIlK8oyhpHsnFZfhYumCYUhDAQxRIdhHBGqRoKw0R8DYlJd8z0fMDgsGo/IpHI5TAAAIfkECQoAAAAsAAAAABAAEAAAAzIIunInK0rnZBTwGPNMgQwmdsNgXGJUlIWEuR5oWUIpz8pAEAMe6TwfwyYsGo/IpFKSAAAh+QQJCgAAACwAAAAAEAAQAAADMwi6IMKQORfjdOe82p4wGccc4CEuQradylesojEMBgsUc2G7sDX3lQGBMLAJibufbSlKAAAh+QQJCgAAACwAAAAAEAAQAAADMgi63P7wCRHZnFVdmgHu2nFwlWCI3WGc3TSWhUFGxTAUkGCbtgENBMJAEJsxgMLWzpEAACH5BAkKAAAALAAAAAAQABAAAAMyCLrc/jDKSatlQtScKdceCAjDII7HcQ4EMTCpyrCuUBjCYRgHVtqlAiB1YhiCnlsRkAAAOwAAAAAAAAAAAA==" />
+        <button mdbBtn outline="true" rounded="true" block="true"
+                class="info-background-color mt-1 waves-effect font-weight-bold z-depth-0" mdbWavesEffect
+                type="submit">Sign up</button>
+        </span>
+        &lt;!&ndash; Login &ndash;&gt;
+        <span class="mt-1">Already a member?
+          <a class="btn p-0 btn-link alert-link font-weight-bold" [routerLink]="['/login']">Sign in</a>
+        </span>
+
+        &lt;!&ndash; Social register &ndash;&gt;
+        <p class="mt-2">or sign up with:</p>
+
+        <a type="button" class="light-blue-text mx-2">
+          <mdb-icon icon="facebook"></mdb-icon>
+        </a>
+        <a type="button" class="light-blue-text mx-2">
+          <mdb-icon icon="twitter"></mdb-icon>
+        </a>
+        <a type="button" class="light-blue-text mx-2">
+          <mdb-icon icon="linkedin"></mdb-icon>
+        </a>
+        <a type="button" class="light-blue-text mx-2">
+          <mdb-icon icon="github"></mdb-icon>
+        </a>
+
+      </form>
+      &lt;!&ndash; Form &ndash;&gt;
+    </mdb-card-body>
+  </mdb-card>
+  &lt;!&ndash; Material form register &ndash;&gt;
+</div>
+-->
+
+<form #registerForm="ngForm" (ngSubmit)="onSubmit()" class="form-signup text-center">
+  <a [routerLink]="['/']" class="navbar-brand mb-3">
+       <span>
+       <fa-icon class="logo-laptop" size="2x" [icon]="faLaptop"></fa-icon>
+       <!--<fa-icon class="logo-handshake" size="3x" [icon]="faHandsHelping"></fa-icon>-->
+      </span>
+  </a>
+
+  <h1 class="h3 mb-3 font-weight-normal">Create new account</h1>
+
+  <div class="form-row">
+    <div class="col">
+      <label for="firstName" class="sr-only">First name</label>
+      <input id="firstName" #firstName="ngModel" class="form-control" placeholder="First name"
+             type="text" [(ngModel)]="user.firstName" name="firstName" required/>
+    </div>
+
+    <div class="col">
+      <label for="lastName" class="sr-only">Last name</label>
+      <input id="lastName" #lastName="ngModel" class="form-control" placeholder="Last name"
+             type="text" [(ngModel)]="user.lastName" name="lastName" required />
+    </div>
+  </div>
+
+  <label for="username" class="sr-only">User Name</label>
+  <input id="username" #username="ngModel" class="form-control" placeholder="User Name"
+         type="text" [(ngModel)]="user.userName" name="username" required />
+
+  <label for="password" class="sr-only">Password</label>
+  <input id="password" type="password" #password="ngModel" class="form-control"
+         placeholder="Password (At least 8 characters)" [(ngModel)]="user.password" name="password" required/>
+
+  <label for="email" class="sr-only">Email</label>
+  <input id="email" type="email" [(ngModel)]="user.email" name="email" placeholder="Email"
+         required class="form-control">
+
+  <label for="mobile" class="sr-only">Phone number</label>
+  <input id="mobile" type="text" #mobile="ngModel" [(ngModel)]="user.mobile" name="mobile"
+         placeholder="Phone number (Optional)" class="form-control">
+
+  <div class="checkbox mb-3">
+    <label>
+      <input type="checkbox" value="remember-me"> I Agree to <a class="btn p-0 btn-link alert-link font-weight-bold">Terms & Conditions</a>
+    </label>
+  </div>
+  <img *ngIf="loading" src="data:image/gif;base64,R0lGODlhEAAQAPIAAP///wAAAMLCwkJCQgAAAGJiYoKCgpKSkiH/C05FVFNDQVBFMi4wAwEAAAAh/hpDcmVhdGVkIHdpdGggYWpheGxvYWQuaW5mbwAh+QQJCgAAACwAAAAAEAAQAAADMwi63P4wyklrE2MIOggZnAdOmGYJRbExwroUmcG2LmDEwnHQLVsYOd2mBzkYDAdKa+dIAAAh+QQJCgAAACwAAAAAEAAQAAADNAi63P5OjCEgG4QMu7DmikRxQlFUYDEZIGBMRVsaqHwctXXf7WEYB4Ag1xjihkMZsiUkKhIAIfkECQoAAAAsAAAAABAAEAAAAzYIujIjK8pByJDMlFYvBoVjHA70GU7xSUJhmKtwHPAKzLO9HMaoKwJZ7Rf8AYPDDzKpZBqfvwQAIfkECQoAAAAsAAAAABAAEAAAAzMIumIlK8oyhpHsnFZfhYumCYUhDAQxRIdhHBGqRoKw0R8DYlJd8z0fMDgsGo/IpHI5TAAAIfkECQoAAAAsAAAAABAAEAAAAzIIunInK0rnZBTwGPNMgQwmdsNgXGJUlIWEuR5oWUIpz8pAEAMe6TwfwyYsGo/IpFKSAAAh+QQJCgAAACwAAAAAEAAQAAADMwi6IMKQORfjdOe82p4wGccc4CEuQradylesojEMBgsUc2G7sDX3lQGBMLAJibufbSlKAAAh+QQJCgAAACwAAAAAEAAQAAADMgi63P7wCRHZnFVdmgHu2nFwlWCI3WGc3TSWhUFGxTAUkGCbtgENBMJAEJsxgMLWzpEAACH5BAkKAAAALAAAAAAQABAAAAMyCLrc/jDKSatlQtScKdceCAjDII7HcQ4EMTCpyrCuUBjCYRgHVtqlAiB1YhiCnlsRkAAAOwAAAAAAAAAAAA==" />
+  <button class="btn btn-lg btn-primary btn-block" type="submit">Sign up</button>
+
+  <span class="mt-1">Already a member?
+          <a class="btn p-0 btn-link alert-link font-weight-bold" [routerLink]="['/login']">Sign in</a>
+  </span>
+</form>

@@ -1,0 +1,50 @@
+.app-bottom-toolbar {
+  background-color: #17a2b8 !important;
+}
+
+hr {
+  background-color: #17a2b8!important;
+}
+
+.text-right {
+  position: absolute;
+  right: 0;
+}
+
+footer.page-footer a {
+  color: #fff;
+}
+
+footer.page-footer {
+  bottom: 0;
+  color: #fff;
+}
+
+footer.page-footer .footer-copyright {
+  overflow: hidden;
+  background-color: rgba(0,0,0,.2);
+  color: rgba(255,255,255,.6);
+}
+
+a {
+  cursor: pointer;
+  text-decoration: none;
+  color: #007bff;
+  -webkit-transition: all .2s ease-in-out;
+  -o-transition: all .2s ease-in-out;
+  transition: all .2s ease-in-out;
+}
+
+.border {
+  border: 1px solid #dee2e6!important;
+}
+
+.rounded {
+  border-radius: .25rem!important;
+}
+
+@media (max-width: 768px) {
+  .simple-footer {
+    display: none;
+  }
+}
