@@ -2,6 +2,8 @@ language: java
 jdk: oraclejdk8
 dist: trusty
 
+before_install:
+  - rm ~/.m2/settings.xml
 # Skipping installation phase
 install: true
 
@@ -9,7 +11,6 @@ branches:
  only:
   - master
   - /^.*RELEASE$/ # enable building of release tags
-
 
 cache:
  directories:
@@ -30,3 +31,5 @@ deploy:
    on:
     repo: akshay-misra-backend-products/framework-core
     tags: true
+
+script: HEROKU_API_KEY="$HEROKU_API_KEY" mvn clean verify -Pheroku
