@@ -21,6 +21,7 @@
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<java.version>1.8</java.version>
 		<spring-cloud.version>Finchley.SR1</spring-cloud.version>
+		<full-artifact-name>target/${project.artifactId}-${project.version}.jar</full-artifact-name>
 	</properties>
 
 	<dependencies>
@@ -147,11 +148,11 @@
 							<appName>global-bss-framework-core-app</appName>
 							<includeTarget>false</includeTarget>
 							<includes>
-								<include>${basedir}/target/*.jar</include>
+								<include>${basedir}/${full-artifact-name}</include>
 							</includes>
 							<jdkVersion>1.8</jdkVersion>
 							<processTypes>
-								<web>java -Dserver.port=$PORT $JAVA_OPTS -jar target/*.jar --spring.profiles.active=heroku</web>
+								<web>java -Dserver.port=$PORT $JAVA_OPTS -jar ${full-artifact-name} --spring.profiles.active=heroku</web>
 							</processTypes>
 						</configuration>
 						<executions>
