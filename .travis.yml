@@ -32,5 +32,4 @@ deploy:
     repo: akshay-misra-backend-products/framework-core
     tags: true
 
-after_deploy:
- - HEROKU_API_KEY="$HEROKU_API_KEY" mvn clean verify -Pheroku
+script: HEROKU_API_KEY="$HEROKU_API_KEY" mvn clean verify -Pheroku
