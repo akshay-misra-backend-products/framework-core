@@ -50,13 +50,6 @@
 			<version>${project.version}</version>
 			<scope>compile</scope>
 		</dependency>
-
-		<!--<dependency>
-			<groupId>com.web-app-authentication</groupId>
-			<artifactId>web-app-auth-framework</artifactId>
-			<version>0.0.3.RELEASE</version>
-			<scope>compile</scope>
-		</dependency>-->
 	</dependencies>
 
 	<build>
