@@ -123,7 +123,7 @@
 				<artifactId>surefire-junit4</artifactId>
 				<version>2.21.0</version>
 			</plugin>
-			
+
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
