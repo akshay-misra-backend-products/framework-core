@@ -13,7 +13,7 @@ export class DynamicDetailsService {
   private serverApi = 'http://localhost:8080';
 
   public updateObject(object: any, updateAPI: string): Observable<any> {
-    let URI = `${this.serverApi}/` + updateAPI;
+    let URI = `${this.serverApi}` + updateAPI;
     return this.http.put<any>(URI, object);
   }
 }

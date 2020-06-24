@@ -13,7 +13,7 @@ export class DynamicFormService {
   private serverApi = 'http://localhost:8080';
 
   public createObject(object: any, createAPI: string): Observable<any> {
-    let URI = `${this.serverApi}/` + createAPI;
+    let URI = `${this.serverApi}` + createAPI;
     return this.http.post<any>(URI, object);
   }
 }

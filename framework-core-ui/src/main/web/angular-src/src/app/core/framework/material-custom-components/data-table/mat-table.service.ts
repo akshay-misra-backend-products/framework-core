@@ -17,7 +17,7 @@ export class MatTableService {
   private serverApi = 'http://localhost:8080';
 
   public loadObjects(loadAPI: string): Observable<any[]> {
-    let URI = `${this.serverApi}/` + loadAPI;
+    let URI = `${this.serverApi}` + loadAPI;
     return this.http.get<any[]>(URI, httpOptions);
   }
 }
