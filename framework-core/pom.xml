@@ -64,7 +64,7 @@
 			<optional>true</optional>
 		</dependency>
 
-		<!--<dependency>
+		<dependency>
 			<groupId>com.framework.core</groupId>
 			<artifactId>framework-core-annotations</artifactId>
 			<version>${project.version}</version>
@@ -111,7 +111,7 @@
 			<artifactId>framework-core-ui</artifactId>
 			<version>${project.version}</version>
 			<scope>runtime</scope>
-		</dependency>-->
+		</dependency>
 	</dependencies>
 
 	<build>
@@ -134,20 +134,6 @@
 					</execution>
 				</executions>
 			</plugin>
-			<!--<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-war-plugin</artifactId>
-				<configuration>
-					<packagingExcludes>WEB-INF/lib/tomcat-*.jar</packagingExcludes>
-					<warName>global-bss-framework-core-app</warName>
-					&lt;!&ndash;<archive>
-						<manifest>
-							<addClasspath>true</addClasspath>
-							<mainClass>com.bss.Application</mainClass>
-						</manifest>
-					</archive>&ndash;&gt;
-				</configuration>
-			</plugin>-->
 			<plugin>
 				<groupId>org.apache.maven.surefire</groupId>
 				<artifactId>surefire-junit4</artifactId>
@@ -158,18 +144,6 @@
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
 			</plugin>
-
-			<!--<plugin>
-				<groupId>org.springframework.boot</groupId>
-				<artifactId>spring-boot-maven-plugin</artifactId>
-				<executions>
-					<execution>
-						<goals>
-							<goal>build-info</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>-->
 		</plugins>
 	</build>
 
