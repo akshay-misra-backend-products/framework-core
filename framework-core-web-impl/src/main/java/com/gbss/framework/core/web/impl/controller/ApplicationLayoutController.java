@@ -100,13 +100,22 @@ public class ApplicationLayoutController {
     public DynamicObject createDynamicObject(@PathVariable("objectTypeId") String objectTypeId,
                                              @Valid @RequestBody String object) {
         return attributeSchemaService.createDynamicObject(object);
-          // Algo for saving core objects
-          //Note: All new object type with is system = false, add mandatory field, db collection name, in create form.
+    }
+
+    @PutMapping(value="/{objectTypeId}/update")
+    public DynamicObject updateDynamicObject(@Valid @RequestBody String object) {
+        return attributeSchemaService.updateDynamicObject(object);
     }
 
     @GetMapping("/{objectTypeId}/load/all")
     public List<DynamicObject> getDynamicObject(@PathVariable("objectTypeId") String objectTypeId) {
         return attributeSchemaService.getDynamicObjects(objectTypeId);
+    }
+
+    @GetMapping(value="/{objectTypeId}/load/by/parent/{parentId}")
+    public List<DynamicObject> getNavigationTabByParentId(@PathVariable("objectTypeId") String objectTypeId,
+                                                          @PathVariable("parentId") String parentId) {
+        return attributeSchemaService.getDynamicObjectsByParentId(objectTypeId, parentId);
     }
 
 }

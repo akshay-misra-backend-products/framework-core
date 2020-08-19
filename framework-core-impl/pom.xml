@@ -76,13 +76,6 @@
 		</dependency>
 
 		<dependency>
-			<groupId>com.web-app-authentication</groupId>
-			<artifactId>web-app-auth-framework</artifactId>
-			<version>0.0.4.RELEASE</version>
-			<scope>compile</scope>
-		</dependency>
-
-		<dependency>
 			<groupId>com.framework.core</groupId>
 			<artifactId>framework-core-api</artifactId>
 			<version>${project.version}</version>

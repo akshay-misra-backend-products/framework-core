@@ -63,5 +63,9 @@ public interface AttributeSchemaService {
 
     DynamicObject createDynamicObject(String json);
 
+    DynamicObject updateDynamicObject(String json);
+
     List<DynamicObject> getDynamicObjects(String objectTypeId);
+
+    List<DynamicObject> getDynamicObjectsByParentId(String objectTypeId, String parentId);
 }

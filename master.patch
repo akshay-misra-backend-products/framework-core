@@ -1,0 +1,1249 @@
+diff --git a/framework-core-api/pom.xml b/framework-core-api/pom.xml
+index 306ee8c..2386a12 100644
+--- a/framework-core-api/pom.xml
++++ b/framework-core-api/pom.xml
+@@ -57,14 +57,6 @@
+ 			<version>${project.version}</version>
+ 			<scope>compile</scope>
+ 		</dependency>
+-
+-		<dependency>
+-			<groupId>com.web-app-authentication</groupId>
+-			<artifactId>web-app-auth-framework</artifactId>
+-			<version>0.0.4.RELEASE</version>
+-			<scope>compile</scope>
+-		</dependency>
+-
+ 	</dependencies>
+ 
+ 	<build>
+diff --git a/framework-core-api/src/main/java/com/gbss/framework/core/api/service/api/AttributeSchemaService.java b/framework-core-api/src/main/java/com/gbss/framework/core/api/service/api/AttributeSchemaService.java
+index c45dca1..8057389 100644
+--- a/framework-core-api/src/main/java/com/gbss/framework/core/api/service/api/AttributeSchemaService.java
++++ b/framework-core-api/src/main/java/com/gbss/framework/core/api/service/api/AttributeSchemaService.java
+@@ -63,5 +63,7 @@ public interface AttributeSchemaService {
+ 
+     DynamicObject createDynamicObject(String json);
+ 
++    DynamicObject updateDynamicObject(String json);
++
+     List<DynamicObject> getDynamicObjects(String objectTypeId);
+ }
+diff --git a/framework-core-impl/pom.xml b/framework-core-impl/pom.xml
+index 67ab46d..d07fa93 100644
+--- a/framework-core-impl/pom.xml
++++ b/framework-core-impl/pom.xml
+@@ -75,13 +75,6 @@
+ 			<version>20200518</version>
+ 		</dependency>
+ 
+-		<dependency>
+-			<groupId>com.web-app-authentication</groupId>
+-			<artifactId>web-app-auth-framework</artifactId>
+-			<version>0.0.4.RELEASE</version>
+-			<scope>compile</scope>
+-		</dependency>
+-
+ 		<dependency>
+ 			<groupId>com.framework.core</groupId>
+ 			<artifactId>framework-core-api</artifactId>
+diff --git a/framework-core-impl/src/main/java/com/gbss/framework/core/impl/json/builder/impl/JsonToDynamicObjectBuilderImpl.java b/framework-core-impl/src/main/java/com/gbss/framework/core/impl/json/builder/impl/JsonToDynamicObjectBuilderImpl.java
+index dff7950..4be44b1 100644
+--- a/framework-core-impl/src/main/java/com/gbss/framework/core/impl/json/builder/impl/JsonToDynamicObjectBuilderImpl.java
++++ b/framework-core-impl/src/main/java/com/gbss/framework/core/impl/json/builder/impl/JsonToDynamicObjectBuilderImpl.java
+@@ -5,6 +5,7 @@ import com.gbss.framework.core.impl.meta.data.MetadataHelper;
+ import com.gbss.framework.core.api.service.api.AttributeSchemaService;
+ import com.gbss.framework.core.model.constants.AttributeType;
+ import com.gbss.framework.core.model.entities.Attribute;
++import com.gbss.framework.core.model.entities.Base;
+ import com.gbss.framework.core.model.entities.DynamicObject;
+ import org.json.JSONArray;
+ import org.json.JSONObject;
+@@ -13,6 +14,8 @@ import org.springframework.beans.factory.annotation.Autowired;
+ import org.springframework.stereotype.Service;
+ 
+ import java.lang.reflect.Field;
++import java.text.DateFormat;
++import java.text.ParseException;
+ import java.util.*;
+ 
+ @Service
+@@ -28,12 +31,32 @@ public class JsonToDynamicObjectBuilderImpl implements JsonToDynamicObjectBuilde
+     public DynamicObject build(String json) {
+         System.out.println("*****  &&&&&&  %%%%%  $$$$$   #######  createObject, json: " + json);
+         JSONObject jsonObject = new JSONObject(json);
+-        System.out.println("*****  &&&&&&  %%%%%  $$$$$   #######  createObject, json keys: " + jsonObject.keySet());
+         DynamicObject dynamicObject = new DynamicObject();
+-        jsonObject.keySet().stream().forEach(key -> {
++        jsonObject.keySet().stream()
++                .filter(key -> !"createdAt".equals(key) && !"lastModifiedAt".equals(key))
++                .forEach(key -> {
++            System.out.println("*****  &&&&&&  %%%%%  $$$$$   ####### build, key: " + key);
+             Field field =  metadataHelper.getField(dynamicObject.getClass(), key);
++            if (field == null) {
++                field =  metadataHelper.getField(dynamicObject.getClass().getSuperclass(), key);
++            }
++            System.out.println("*****  &&&&&&  %%%%%  $$$$$   ####### build, field: " + field);
+             if (field != null) {
+-                metadataHelper.setValue(dynamicObject, DynamicObject.class, field, jsonObject.get(key));
++                Object value = null;
++                if (jsonObject.get(key) != null) {
++                    if (Date.class.equals(field.getType())) {
++                        try {
++                            value = DateFormat.getInstance().parse(jsonObject.getString(key));
++                        } catch (ParseException e) {
++                            System.out.println("*****  &&&&&&  %%%%%  $$$$$   ####### build, ParseException: " + e);
++                        }
++                    } else if (Long.class.equals(field.getType())) {
++                        value = jsonObject.getLong(key);
++                    } else {
++                        value = jsonObject.get(key);
++                    }
++                    metadataHelper.setValue(dynamicObject, Base.class, field, value);
++                }
+             } else {
+                 dynamicObject.getExtendedParameters().putAll(getValueToPersist(key, jsonObject));
+             }
+diff --git a/framework-core-impl/src/main/java/com/gbss/framework/core/impl/service/impl/AttributeSchemaServiceImpl.java b/framework-core-impl/src/main/java/com/gbss/framework/core/impl/service/impl/AttributeSchemaServiceImpl.java
+index 48502b2..0e32277 100644
+--- a/framework-core-impl/src/main/java/com/gbss/framework/core/impl/service/impl/AttributeSchemaServiceImpl.java
++++ b/framework-core-impl/src/main/java/com/gbss/framework/core/impl/service/impl/AttributeSchemaServiceImpl.java
+@@ -255,6 +255,23 @@ public class AttributeSchemaServiceImpl extends ApplicationAuditServiceImpl impl
+         return dynamicObject;
+     }
+ 
++    @Override
++    public DynamicObject updateDynamicObject(String json) {
++        DynamicObject dynamicObject = jsonToDynamicObjectBuilder.build(json);
++        System.out.println("******* updateDynamicObject, dynamicObject: " + dynamicObject);
++        ObjectType objectType = objectTypeRepository.findById(dynamicObject.getObjectTypeId()).get();
++        if (!StringUtils.isEmpty(objectType.getCollectionName())) {
++            if (!mongoTemplate.getCollectionNames().contains(objectType.getCollectionName())) {
++                mongoTemplate.createCollection(objectType.getCollectionName());
++            }
++            mongoTemplate.save(dynamicObject, objectType.getCollectionName());
++        } else {
++            dynamicObjectRepository.save(dynamicObject);
++        }
++
++        return dynamicObject;
++    }
++
+     @Override
+     public List<DynamicObject> getDynamicObjects(String objectTypeId) {
+         List<DynamicObject> objects = new ArrayList<>();
+diff --git a/framework-core-impl/src/main/java/com/gbss/framework/core/impl/utils/EntityBuilderImpl.java b/framework-core-impl/src/main/java/com/gbss/framework/core/impl/utils/EntityBuilderImpl.java
+index 90afac0..f406f1e 100644
+--- a/framework-core-impl/src/main/java/com/gbss/framework/core/impl/utils/EntityBuilderImpl.java
++++ b/framework-core-impl/src/main/java/com/gbss/framework/core/impl/utils/EntityBuilderImpl.java
+@@ -4,10 +4,13 @@ import com.gbss.framework.core.impl.factory.ObjectTypeRepositoryMapperFactory;
+ import com.gbss.framework.core.impl.repositories.ObjectTypeRepository;
+ import com.gbss.framework.core.api.utils.EntityBuilder;
+ import com.gbss.framework.core.model.entities.Base;
++import com.gbss.framework.core.model.entities.DynamicObject;
+ import com.gbss.framework.core.model.entities.ObjectType;
+ import org.springframework.beans.factory.annotation.Autowired;
++import org.springframework.data.mongodb.core.MongoTemplate;
+ import org.springframework.data.mongodb.repository.MongoRepository;
+ import org.springframework.stereotype.Service;
++import org.springframework.util.StringUtils;
+ 
+ import javax.ejb.ObjectNotFoundException;
+ import javax.validation.constraints.NotNull;
+@@ -22,25 +25,41 @@ public class EntityBuilderImpl implements EntityBuilder {
+     @Autowired
+     ObjectTypeRepositoryMapperFactory objectTypeRepositoryFactory;
+ 
++    @Autowired
++    MongoTemplate mongoTemplate;
++
+     @Override
+     public Base getObjectById(@NotNull String objectTypeId, @NotNull String objectId) throws ObjectNotFoundException {
+-        Base base = null;
++        /*Base base = null;
+         MongoRepository repository = objectTypeRepositoryFactory.getBean(objectTypeId);
+-        Optional<Base> op = repository.findById(objectId);
+-
+-        if (op.isPresent()) {
+-            base = op.get();
++        if (repository == null) {
++            ObjectType objectType = objectTypeRepository.findById(objectTypeId).get();
++            if (!StringUtils.isEmpty(objectType.getCollectionName())) {
++                if (mongoTemplate.getCollectionNames().contains(objectType.getCollectionName())) {
++                    DynamicObject dynamicObject = mongoTemplate.findById(objectId, DynamicObject.class,
++                            objectType.getCollectionName());
++                    return dynamicObject;
++                }
++            }
+         } else {
++            Optional<Base> op = repository.findById(objectId);
++            if (op.isPresent()) {
++                base = op.get();
++            }
++        }
++
++        if (base == null) {
+             throw new ObjectNotFoundException("Object with objectTypeId: " + objectTypeId
+                     + " and objectId: " + objectId + " not found.");
+         }
+ 
+-        System.out.println("********** EntityBuilderImpl, base: " + base);
++        System.out.println("********** EntityBuilderImpl, base: " + base);*/
+ 
+-        return base;
++        return getObjectByChildOrCurrentOT(objectTypeId, objectId);
+     }
+ 
+     @Override
++    @Deprecated
+     public Base getObjectByChildOT(@NotNull String childObjectTypeId, @NotNull String objectId) throws ObjectNotFoundException {
+         Optional<Base> parentOP = null;
+         Base parent = null;
+@@ -72,18 +91,53 @@ public class EntityBuilderImpl implements EntityBuilder {
+         Base base = null;
+         MongoRepository repository = objectTypeRepositoryFactory.getBean(objectTypeId);
+         System.out.println("********** $$$$$$$ EntityBuilderImpl, repository: " + repository);
+-        Optional<Base> op = repository.findById(objectId);
+-
+-        if (op.isPresent()) {
+-            base = op.get();
+-        } else {
++        if (repository == null) {
+             ObjectType objectType = objectTypeRepository.findById(objectTypeId).get();
+-            if (objectType.getParentId() != null) {
+-                ObjectType parentOT = objectTypeRepository.findById(objectType.getParentId()).get();
+-                MongoRepository parentRepo = objectTypeRepositoryFactory.getBean(parentOT.getId());
+-                Optional<Base> parent = parentRepo.findById(objectId);
+-                if (parent.isPresent()) {
+-                    base = parent.get();
++            System.out.println("********** $$$$$$$ EntityBuilderImpl, objectType: " + objectType);
++            System.out.println("********** $$$$$$$ EntityBuilderImpl, getCollectionName: " +
++                    objectType.getCollectionName());
++            System.out.println("********** $$$$$$$ EntityBuilderImpl, collection exists? " +
++                    mongoTemplate.getCollectionNames().contains(objectType.getCollectionName()));
++            if (!StringUtils.isEmpty(objectType.getCollectionName())) {
++                if (mongoTemplate.getCollectionNames().contains(objectType.getCollectionName())) {
++                    DynamicObject dynamicObject = mongoTemplate.findById(objectId, DynamicObject.class,
++                            objectType.getCollectionName());
++                    System.out.println("********** $$$$$$$ EntityBuilderImpl, dynamicObject: " + dynamicObject);
++                    if (dynamicObject == null) {
++                        ObjectType parentOT = objectTypeRepository.findById(objectType.getParentId()).get();
++                        if (!StringUtils.isEmpty(parentOT.getCollectionName())) {
++                            if (mongoTemplate.getCollectionNames().contains(parentOT.getCollectionName())) {
++                                DynamicObject object = mongoTemplate.findById(objectId, DynamicObject.class,
++                                        parentOT.getCollectionName());
++                                return object;
++                            }
++                        }
++                    }
++                    return dynamicObject;
++                } else {
++                    ObjectType parentOT = objectTypeRepository.findById(objectType.getParentId()).get();
++                    if (!StringUtils.isEmpty(parentOT.getCollectionName())) {
++                        if (mongoTemplate.getCollectionNames().contains(parentOT.getCollectionName())) {
++                            DynamicObject dynamicObject = mongoTemplate.findById(objectId, DynamicObject.class,
++                                    parentOT.getCollectionName());
++                            return dynamicObject;
++                        }
++                    }
++                }
++            }
++        } else {
++            Optional<Base> op = repository.findById(objectId);
++            if (op.isPresent()) {
++                base = op.get();
++            } else {
++                ObjectType objectType = objectTypeRepository.findById(objectTypeId).get();
++                if (objectType.getParentId() != null) {
++                    ObjectType parentOT = objectTypeRepository.findById(objectType.getParentId()).get();
++                    MongoRepository parentRepo = objectTypeRepositoryFactory.getBean(parentOT.getId());
++                    Optional<Base> parent = parentRepo.findById(objectId);
++                    if (parent.isPresent()) {
++                        base = parent.get();
++                    }
+                 }
+             }
+         }
+diff --git a/framework-core-model/src/main/java/com/gbss/framework/core/model/constants/AttributeType.java b/framework-core-model/src/main/java/com/gbss/framework/core/model/constants/AttributeType.java
+index 5817e33..6a6e5e2 100644
+--- a/framework-core-model/src/main/java/com/gbss/framework/core/model/constants/AttributeType.java
++++ b/framework-core-model/src/main/java/com/gbss/framework/core/model/constants/AttributeType.java
+@@ -15,7 +15,8 @@ public enum AttributeType {
+     PASSWORD(10),
+     COLOR(11),
+     REFERENCE_ID(12),
+-    BOOLEAN(13);
++    BOOLEAN(13),
++    KEY_VALUE(14);
+ 
+     public int value;
+     AttributeType(int value) {
+diff --git a/framework-core-model/src/main/java/com/gbss/framework/core/model/constants/SystemConstants.java b/framework-core-model/src/main/java/com/gbss/framework/core/model/constants/SystemConstants.java
+index a83ec98..7a9e996 100644
+--- a/framework-core-model/src/main/java/com/gbss/framework/core/model/constants/SystemConstants.java
++++ b/framework-core-model/src/main/java/com/gbss/framework/core/model/constants/SystemConstants.java
+@@ -13,7 +13,7 @@ public class SystemConstants {
+         String ATTRIBUTE_GROUP = "5ea8117bfd96fbebc61418f1";
+         String ATTRIBUTE_TYPE = "5ea83e1dfd96fbebc61418f2";
+         String REFERENCE_TO_OBJECT_TYPE = "5ea86df0c8ae3bed4679f5cc";
+-        String USAE_AS_FILTER = "5ea84103fd96fbebc61418f3";
++        String USE_AS_FILTER = "5ea84103fd96fbebc61418f3";
+         String FOR_CATALOG = "5ea84422fd96fbebc61418f4";
+         String IS_SYSTEM = "5ea84509fd96fbebc61418f5";
+         String READONLY = "5ea84655fd96fbebc61418f6";
+@@ -45,6 +45,9 @@ public class SystemConstants {
+         String REFERENCE_TO_OBJECT_TYPES = "5eaa98932e2efbf64a9f4a5a";
+         String IS_CONTAINER = "5eca9489c4b81f159cf43f59";
+ 
++        /* Dynamic Object */
++        String DYNAMIC_PARAMETERS = "5f11ec17fcbf48118eb7daad";
++
+     }
+ 
+     public static interface ObjectTypes {
+diff --git a/framework-core-model/src/main/java/com/gbss/framework/core/model/entities/Attribute.java b/framework-core-model/src/main/java/com/gbss/framework/core/model/entities/Attribute.java
+index fd79da1..211bf9d 100644
+--- a/framework-core-model/src/main/java/com/gbss/framework/core/model/entities/Attribute.java
++++ b/framework-core-model/src/main/java/com/gbss/framework/core/model/entities/Attribute.java
+@@ -40,8 +40,8 @@ public class Attribute extends Base {
+             trueId  = SystemConstants.TrueFalseList.TRUE_ID,
+             falseId = SystemConstants.TrueFalseList.FALSE_ID
+     )
+-    @JsonProperty(SystemConstants.Attributes.USAE_AS_FILTER)
+-    @AttributeId(SystemConstants.Attributes.USAE_AS_FILTER)
++    @JsonProperty(SystemConstants.Attributes.USE_AS_FILTER)
++    @AttributeId(SystemConstants.Attributes.USE_AS_FILTER)
+     private boolean useAsFilter;
+ 
+     @NotNull
+diff --git a/framework-core-model/src/main/java/com/gbss/framework/core/model/entities/Base.java b/framework-core-model/src/main/java/com/gbss/framework/core/model/entities/Base.java
+index 913fede..8c2109f 100644
+--- a/framework-core-model/src/main/java/com/gbss/framework/core/model/entities/Base.java
++++ b/framework-core-model/src/main/java/com/gbss/framework/core/model/entities/Base.java
+@@ -153,6 +153,10 @@ public class Base {
+         return lastModifiedAt;
+     }
+ 
++    public void setLastModifiedAt(Date lastModifiedAt) {
++        this.lastModifiedAt = lastModifiedAt;
++    }
++
+     public int getOrder() {
+         return order;
+     }
+@@ -169,7 +173,19 @@ public class Base {
+         this.objectTypeId = objectTypeId;
+     }
+ 
++    @Override
+     public String toString() {
+-        return getClass().getName()+"[ id: "+id+", name: "+name+", description: "+description+", version: "+ version+ " ]";
++        return "Base{" +
++                "id='" + id + '\'' +
++                ", version=" + version +
++                ", objectTypeId='" + objectTypeId + '\'' +
++                ", parentId='" + parentId + '\'' +
++                ", name='" + name + '\'' +
++                ", publicName='" + publicName + '\'' +
++                ", description='" + description + '\'' +
++                ", order=" + order +
++                ", createdAt=" + createdAt +
++                ", lastModifiedAt=" + lastModifiedAt +
++                '}';
+     }
+ }
+diff --git a/framework-core-model/src/main/java/com/gbss/framework/core/model/entities/DynamicObject.java b/framework-core-model/src/main/java/com/gbss/framework/core/model/entities/DynamicObject.java
+index abce638..bc25cfa 100644
+--- a/framework-core-model/src/main/java/com/gbss/framework/core/model/entities/DynamicObject.java
++++ b/framework-core-model/src/main/java/com/gbss/framework/core/model/entities/DynamicObject.java
+@@ -1,5 +1,7 @@
+ package com.gbss.framework.core.model.entities;
+ 
++import com.gbss.framework.core.meta.annotations.AttributeId;
++import com.gbss.framework.core.model.constants.SystemConstants;
+ import org.springframework.data.mongodb.core.mapping.Document;
+ 
+ import java.util.HashMap;
+@@ -8,6 +10,7 @@ import java.util.Map;
+ @Document(collection="dynamicObjects")
+ public class DynamicObject extends Base {
+ 
++    @AttributeId(SystemConstants.Attributes.DYNAMIC_PARAMETERS)
+     private Map<String, Object> extendedParameters = new HashMap<>();
+ 
+     public Map<String, Object> getExtendedParameters() {
+@@ -20,8 +23,8 @@ public class DynamicObject extends Base {
+ 
+     @Override
+     public String toString() {
+-        return "DynamicObject{" +
++        return super.toString() + ", DynamicObject [" +
+                 "extendedParameters=" + extendedParameters +
+-                '}';
++                ']';
+     }
+ }
+diff --git a/framework-core-ui/src/main/web/angular-src/src/app/app.module.ts b/framework-core-ui/src/main/web/angular-src/src/app/app.module.ts
+index 882ed4f..0ae3454 100644
+--- a/framework-core-ui/src/main/web/angular-src/src/app/app.module.ts
++++ b/framework-core-ui/src/main/web/angular-src/src/app/app.module.ts
+@@ -32,8 +32,9 @@ import { CompositeTableModule } from './core/framework/material-custom-component
+ import { CompositeFormModule } from './core/framework/material-custom-components/composite/composite-form/composite-form.module';
+ import { CompositeDetailsModule } from './core/framework/material-custom-components/composite/composite-details/composite-details.module';
+ import { CompositePageModule } from './core/framework/material-custom-components/composite/composite-page/composite-page.module';
+-import {HomeModule} from "./core/framework/home/home.module";
+-import {MatReferenceFieldModule} from "./core/framework/material-custom-components/mat-reference-field/mat-reference-field.module";
++import { HomeModule } from "./core/framework/home/home.module";
++import { MatReferenceFieldModule } from "./core/framework/material-custom-components/mat-reference-field/mat-reference-field.module";
++import { JwtInterceptor } from "./core/framework/interceptors/jwt.interceptor";
+ 
+ 
+ export function tokenGetter() {
+@@ -77,7 +78,7 @@ export function tokenGetter() {
+     JwtModule.forRoot({
+       config: {
+         tokenGetter: tokenGetter,
+-        whitelistedDomains: ['localhost:8080'],
++        whitelistedDomains: [''],
+         skipWhenExpired: true
+       }
+     })
+@@ -88,7 +89,8 @@ export function tokenGetter() {
+     [ AuthGuard,
+       AlertService,
+       UserService,
+-      { provide: HTTP_INTERCEPTORS, useClass: ErrorInterceptor, multi: true }
++      { provide: HTTP_INTERCEPTORS, useClass: ErrorInterceptor, multi: true },
++      { provide: HTTP_INTERCEPTORS, useClass: JwtInterceptor, multi: true },
+       ],
+ 
+   bootstrap: [AppComponent]
+diff --git a/framework-core-ui/src/main/web/angular-src/src/app/core/framework/interceptors/jwt.interceptor.ts b/framework-core-ui/src/main/web/angular-src/src/app/core/framework/interceptors/jwt.interceptor.ts
+new file mode 100644
+index 0000000..648957e
+--- /dev/null
++++ b/framework-core-ui/src/main/web/angular-src/src/app/core/framework/interceptors/jwt.interceptor.ts
+@@ -0,0 +1,22 @@
++import { Injectable } from '@angular/core';
++import { HttpRequest, HttpHandler, HttpEvent, HttpInterceptor } from '@angular/common/http';
++import { Observable } from 'rxjs';
++
++
++@Injectable()
++export class JwtInterceptor implements HttpInterceptor {
++  constructor() { }
++
++  intercept(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
++    const token = localStorage.getItem('AuthToken');
++    if (token) {
++      request = request.clone({
++        setHeaders: {
++          Authorization: `Bearer ${token}`
++        }
++      });
++    }
++
++    return next.handle(request);
++  }
++}
+diff --git a/framework-core-ui/src/main/web/angular-src/src/app/core/framework/material-custom-components/composite/composite-details/composite-details.service.ts b/framework-core-ui/src/main/web/angular-src/src/app/core/framework/material-custom-components/composite/composite-details/composite-details.service.ts
+index 2b294a6..235f5eb 100644
+--- a/framework-core-ui/src/main/web/angular-src/src/app/core/framework/material-custom-components/composite/composite-details/composite-details.service.ts
++++ b/framework-core-ui/src/main/web/angular-src/src/app/core/framework/material-custom-components/composite/composite-details/composite-details.service.ts
+@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
+ import {HttpClient, HttpHeaders} from '@angular/common/http';
+ import {Router} from '@angular/router';
+ import {Observable} from 'rxjs';
++import {GatewayService} from "../../../services/constants/gateway.service";
+ 
+ const httpOptions = {
+   headers: new HttpHeaders({ 'Content-Type': 'application/json' })
+@@ -12,12 +13,12 @@ const httpOptions = {
+ })
+ export class CompositeDetailsService {
+ 
+-  constructor(private http: HttpClient, private router: Router) { }
++  constructor(private http: HttpClient, private router: Router,
++              private gatewayService :GatewayService) { }
+ 
+-  private serverApi = 'http://localhost:8080';
+ 
+   public loadObjectDetails(loadAPI: string): Observable<any> {
+-    let URI = `${this.serverApi}` + loadAPI;
++    let URI = `${this.gatewayService.FRAMEWORK_SERVICE_URL}` + loadAPI;
+     return this.http.get<any[]>(URI, httpOptions);
+   }
+ }
+diff --git a/framework-core-ui/src/main/web/angular-src/src/app/core/framework/material-custom-components/composite/composite-form/composite-form.service.ts b/framework-core-ui/src/main/web/angular-src/src/app/core/framework/material-custom-components/composite/composite-form/composite-form.service.ts
+index fdbb588..2d9688f 100644
+--- a/framework-core-ui/src/main/web/angular-src/src/app/core/framework/material-custom-components/composite/composite-form/composite-form.service.ts
++++ b/framework-core-ui/src/main/web/angular-src/src/app/core/framework/material-custom-components/composite/composite-form/composite-form.service.ts
+@@ -3,6 +3,7 @@ import {HttpClient, HttpHeaders} from '@angular/common/http';
+ import {Router} from '@angular/router';
+ import {Observable} from 'rxjs';
+ import {DynamicFormConfig} from './composite-form.component';
++import {GatewayService} from "../../../services/constants/gateway.service";
+ 
+ const httpOptions = {
+   headers: new HttpHeaders({ 'Content-Type': 'application/json' })
+@@ -13,12 +14,12 @@ const httpOptions = {
+ })
+ export class CompositeFormService {
+ 
+-  constructor(private http: HttpClient, private router: Router) { }
++  constructor(private http: HttpClient, private router: Router,
++              private gatewayService :GatewayService) { }
+ 
+-  private serverApi = 'http://localhost:8080';
+ 
+   public loadFormConfig(loadAPI: string): Observable<DynamicFormConfig> {
+-    let URI = `${this.serverApi}` + loadAPI;
++    let URI = `${this.gatewayService.FRAMEWORK_SERVICE_URL}` + loadAPI;
+     return this.http.get<DynamicFormConfig>(URI, httpOptions);
+   }
+ }
+diff --git a/framework-core-ui/src/main/web/angular-src/src/app/core/framework/material-custom-components/composite/composite-page/composite-page.service.ts b/framework-core-ui/src/main/web/angular-src/src/app/core/framework/material-custom-components/composite/composite-page/composite-page.service.ts
+index f9b1ee8..f672caf 100644
+--- a/framework-core-ui/src/main/web/angular-src/src/app/core/framework/material-custom-components/composite/composite-page/composite-page.service.ts
++++ b/framework-core-ui/src/main/web/angular-src/src/app/core/framework/material-custom-components/composite/composite-page/composite-page.service.ts
+@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
+ import {HttpClient, HttpHeaders} from '@angular/common/http';
+ import {Router} from '@angular/router';
+ import {Observable} from 'rxjs';
++import {GatewayService} from "../../../services/constants/gateway.service";
+ 
+ const httpOptions = {
+   headers: new HttpHeaders({ 'Content-Type': 'application/json' })
+@@ -12,12 +13,11 @@ const httpOptions = {
+ })
+ export class CompositePageService {
+ 
+-  constructor(private http: HttpClient, private router: Router) { }
+-
+-  private serverApi = 'http://localhost:8080';
++  constructor(private http: HttpClient, private router: Router,
++              private gatewayService :GatewayService) { }
+ 
+   public loadPageDetails(loadAPI: string): Observable<any> {
+-    let URI = `${this.serverApi}` + loadAPI;
++    let URI = `${this.gatewayService.FRAMEWORK_SERVICE_URL}` + loadAPI;
+     return this.http.get<any>(URI, httpOptions);
+   }
+ }
+diff --git a/framework-core-ui/src/main/web/angular-src/src/app/core/framework/material-custom-components/composite/composite-table/composite-table.service.ts b/framework-core-ui/src/main/web/angular-src/src/app/core/framework/material-custom-components/composite/composite-table/composite-table.service.ts
+index 2f3f904..1b0debb 100644
+--- a/framework-core-ui/src/main/web/angular-src/src/app/core/framework/material-custom-components/composite/composite-table/composite-table.service.ts
++++ b/framework-core-ui/src/main/web/angular-src/src/app/core/framework/material-custom-components/composite/composite-table/composite-table.service.ts
+@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
+ import {HttpClient, HttpHeaders} from '@angular/common/http';
+ import {Router} from '@angular/router';
+ import {Observable} from 'rxjs';
++import {GatewayService} from "../../../services/constants/gateway.service";
+ 
+ const httpOptions = {
+   headers: new HttpHeaders({ 'Content-Type': 'application/json' })
+@@ -12,12 +13,11 @@ const httpOptions = {
+ })
+ export class CompositeTableService {
+ 
+-  constructor(private http: HttpClient, private router: Router) { }
+-
+-  private serverApi = 'http://localhost:8080';
++  constructor(private http: HttpClient, private router: Router,
++              private gatewayService :GatewayService) { }
+ 
+   public loadTabDetails(loadAPI: string): Observable<any> {
+-    let URI = `${this.serverApi}` + loadAPI;
++    let URI = `${this.gatewayService.FRAMEWORK_SERVICE_URL}` + loadAPI;
+     return this.http.get<any>(URI, httpOptions);
+   }
+ }
+diff --git a/framework-core-ui/src/main/web/angular-src/src/app/core/framework/material-custom-components/data-table/mat-table.service.ts b/framework-core-ui/src/main/web/angular-src/src/app/core/framework/material-custom-components/data-table/mat-table.service.ts
+index 40b0541..bdbbd43 100644
+--- a/framework-core-ui/src/main/web/angular-src/src/app/core/framework/material-custom-components/data-table/mat-table.service.ts
++++ b/framework-core-ui/src/main/web/angular-src/src/app/core/framework/material-custom-components/data-table/mat-table.service.ts
+@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
+ import {HttpClient, HttpHeaders} from '@angular/common/http';
+ import {Router} from '@angular/router';
+ import {Observable} from 'rxjs';
++import {GatewayService} from "../../services/constants/gateway.service";
+ 
+ const httpOptions = {
+   headers: new HttpHeaders({ 'Content-Type': 'application/json' })
+@@ -12,12 +13,12 @@ const httpOptions = {
+ })
+ export class MatTableService {
+ 
+-  constructor(private http: HttpClient, private router: Router) { }
++  constructor(private http: HttpClient, private router: Router,
++              private gatewayService :GatewayService) { }
+ 
+-  private serverApi = 'http://localhost:8080';
+ 
+   public loadObjects(loadAPI: string): Observable<any[]> {
+-    let URI = `${this.serverApi}` + loadAPI;
++    let URI = `${this.gatewayService.FRAMEWORK_SERVICE_URL}` + loadAPI;
+     return this.http.get<any[]>(URI, httpOptions);
+   }
+ }
+diff --git a/framework-core-ui/src/main/web/angular-src/src/app/core/framework/material-custom-components/dynamic-details/dynamic-details.service.ts b/framework-core-ui/src/main/web/angular-src/src/app/core/framework/material-custom-components/dynamic-details/dynamic-details.service.ts
+index 58d6cf8..b7c1e62 100644
+--- a/framework-core-ui/src/main/web/angular-src/src/app/core/framework/material-custom-components/dynamic-details/dynamic-details.service.ts
++++ b/framework-core-ui/src/main/web/angular-src/src/app/core/framework/material-custom-components/dynamic-details/dynamic-details.service.ts
+@@ -2,18 +2,18 @@ import { Injectable } from '@angular/core';
+ import {HttpClient} from '@angular/common/http';
+ import {Router} from '@angular/router';
+ import {Observable} from 'rxjs';
++import {GatewayService} from "../../services/constants/gateway.service";
+ 
+ @Injectable({
+   providedIn: 'root'
+ })
+ export class DynamicDetailsService {
+ 
+-  constructor(private http: HttpClient, private router: Router) { }
+-
+-  private serverApi = 'http://localhost:8080';
++  constructor(private http: HttpClient, private router: Router,
++              private gatewayService :GatewayService) { }
+ 
+   public updateObject(object: any, updateAPI: string): Observable<any> {
+-    let URI = `${this.serverApi}` + updateAPI;
++    let URI = `${this.gatewayService.FRAMEWORK_SERVICE_URL}` + updateAPI;
+     return this.http.put<any>(URI, object);
+   }
+ }
+diff --git a/framework-core-ui/src/main/web/angular-src/src/app/core/framework/material-custom-components/dynamic-details/fields/reference/reference.service.ts b/framework-core-ui/src/main/web/angular-src/src/app/core/framework/material-custom-components/dynamic-details/fields/reference/reference.service.ts
+index e6c6e79..23c2a91 100644
+--- a/framework-core-ui/src/main/web/angular-src/src/app/core/framework/material-custom-components/dynamic-details/fields/reference/reference.service.ts
++++ b/framework-core-ui/src/main/web/angular-src/src/app/core/framework/material-custom-components/dynamic-details/fields/reference/reference.service.ts
+@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
+ import {HttpClient, HttpHeaders} from '@angular/common/http';
+ import {Router} from '@angular/router';
+ import {Observable} from 'rxjs';
++import {GatewayService} from "../../../../services/constants/gateway.service";
+ 
+ const httpOptions = {
+   headers: new HttpHeaders({ 'Content-Type': 'application/json' })
+@@ -11,12 +12,11 @@ const httpOptions = {
+ })
+ export class ReferenceService {
+ 
+-  constructor(private http: HttpClient, private router: Router) { }
+-
+-  private serverApi = 'http://localhost:8080';
++  constructor(private http: HttpClient, private router: Router,
++              private gatewayService :GatewayService) { }
+ 
+   public loadObjects(loadAPI: string): Observable<any[]> {
+-    let URI = `${this.serverApi}` + loadAPI;
++    let URI = `${this.gatewayService.FRAMEWORK_SERVICE_URL}` + loadAPI;
+     return this.http.get<any[]>(URI, httpOptions);
+   }
+ }
+diff --git a/framework-core-ui/src/main/web/angular-src/src/app/core/framework/material-custom-components/dynamic-form/dynamic-form.service.ts b/framework-core-ui/src/main/web/angular-src/src/app/core/framework/material-custom-components/dynamic-form/dynamic-form.service.ts
+index f8f91a6..1a31d6b 100644
+--- a/framework-core-ui/src/main/web/angular-src/src/app/core/framework/material-custom-components/dynamic-form/dynamic-form.service.ts
++++ b/framework-core-ui/src/main/web/angular-src/src/app/core/framework/material-custom-components/dynamic-form/dynamic-form.service.ts
+@@ -2,18 +2,18 @@ import { Injectable } from '@angular/core';
+ import {HttpClient} from '@angular/common/http';
+ import {Router} from '@angular/router';
+ import {Observable} from 'rxjs';
++import {GatewayService} from "../../services/constants/gateway.service";
+ 
+ @Injectable({
+   providedIn: 'root'
+ })
+ export class DynamicFormService {
+ 
+-  constructor(private http: HttpClient, private router: Router) { }
+-
+-  private serverApi = 'http://localhost:8080';
++  constructor(private http: HttpClient, private router: Router,
++              private gatewayService :GatewayService) { }
+ 
+   public createObject(object: any, createAPI: string): Observable<any> {
+-    let URI = `${this.serverApi}` + createAPI;
++    let URI = `${this.gatewayService.FRAMEWORK_SERVICE_URL}` + createAPI;
+     return this.http.post<any>(URI, object);
+   }
+ }
+diff --git a/framework-core-ui/src/main/web/angular-src/src/app/core/framework/material-custom-components/dynamic-form/fields/reference/reference.service.ts b/framework-core-ui/src/main/web/angular-src/src/app/core/framework/material-custom-components/dynamic-form/fields/reference/reference.service.ts
+index e6c6e79..23c2a91 100644
+--- a/framework-core-ui/src/main/web/angular-src/src/app/core/framework/material-custom-components/dynamic-form/fields/reference/reference.service.ts
++++ b/framework-core-ui/src/main/web/angular-src/src/app/core/framework/material-custom-components/dynamic-form/fields/reference/reference.service.ts
+@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
+ import {HttpClient, HttpHeaders} from '@angular/common/http';
+ import {Router} from '@angular/router';
+ import {Observable} from 'rxjs';
++import {GatewayService} from "../../../../services/constants/gateway.service";
+ 
+ const httpOptions = {
+   headers: new HttpHeaders({ 'Content-Type': 'application/json' })
+@@ -11,12 +12,11 @@ const httpOptions = {
+ })
+ export class ReferenceService {
+ 
+-  constructor(private http: HttpClient, private router: Router) { }
+-
+-  private serverApi = 'http://localhost:8080';
++  constructor(private http: HttpClient, private router: Router,
++              private gatewayService :GatewayService) { }
+ 
+   public loadObjects(loadAPI: string): Observable<any[]> {
+-    let URI = `${this.serverApi}` + loadAPI;
++    let URI = `${this.gatewayService.FRAMEWORK_SERVICE_URL}` + loadAPI;
+     return this.http.get<any[]>(URI, httpOptions);
+   }
+ }
+diff --git a/framework-core-ui/src/main/web/angular-src/src/app/core/framework/material-custom-components/dynamic-table/dynamic-table.service.ts b/framework-core-ui/src/main/web/angular-src/src/app/core/framework/material-custom-components/dynamic-table/dynamic-table.service.ts
+index a8bc33a..93a14f8 100644
+--- a/framework-core-ui/src/main/web/angular-src/src/app/core/framework/material-custom-components/dynamic-table/dynamic-table.service.ts
++++ b/framework-core-ui/src/main/web/angular-src/src/app/core/framework/material-custom-components/dynamic-table/dynamic-table.service.ts
+@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
+ import {HttpClient, HttpHeaders} from '@angular/common/http';
+ import {Router} from '@angular/router';
+ import {Observable} from 'rxjs';
++import {GatewayService} from "../../services/constants/gateway.service";
+ 
+ const httpOptions = {
+   headers: new HttpHeaders({ 'Content-Type': 'application/json' })
+@@ -12,12 +13,11 @@ const httpOptions = {
+ })
+ export class DynamicTableService {
+ 
+-  constructor(private http: HttpClient, private router: Router) { }
+-
+-  private serverApi = 'http://localhost:8080';
++  constructor(private http: HttpClient, private router: Router,
++              private gatewayService :GatewayService) { }
+ 
+   public loadObjects(loadAPI: string): Observable<any> {
+-    let URI = `${this.serverApi}` + loadAPI;
++    let URI = `${this.gatewayService.FRAMEWORK_SERVICE_URL}` + loadAPI;
+     return this.http.get<any[]>(URI, httpOptions);
+   }
+ }
+diff --git a/framework-core-ui/src/main/web/angular-src/src/app/core/framework/material-custom-components/mat-reference-field/mat-reference-field.service.ts b/framework-core-ui/src/main/web/angular-src/src/app/core/framework/material-custom-components/mat-reference-field/mat-reference-field.service.ts
+index fbc5746..2639f84 100644
+--- a/framework-core-ui/src/main/web/angular-src/src/app/core/framework/material-custom-components/mat-reference-field/mat-reference-field.service.ts
++++ b/framework-core-ui/src/main/web/angular-src/src/app/core/framework/material-custom-components/mat-reference-field/mat-reference-field.service.ts
+@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
+ import {HttpClient, HttpHeaders} from '@angular/common/http';
+ import {Router} from '@angular/router';
+ import {Observable} from 'rxjs';
++import {GatewayService} from "../../services/constants/gateway.service";
+ 
+ const httpOptions = {
+   headers: new HttpHeaders({ 'Content-Type': 'application/json' })
+@@ -12,12 +13,11 @@ const httpOptions = {
+ })
+ export class MatReferenceFieldService {
+ 
+-  constructor(private http: HttpClient, private router: Router) { }
+-
+-  private serverApi = 'http://localhost:8080';
++  constructor(private http: HttpClient, private router: Router,
++              private gatewayService :GatewayService) { }
+ 
+   public loadObjects(loadAPI: string): Observable<any[]> {
+-    let URI = `${this.serverApi}` + loadAPI;
++    let URI = `${this.gatewayService.FRAMEWORK_SERVICE_URL}` + loadAPI;
+     return this.http.get<any[]>(URI, httpOptions);
+   }
+ }
+diff --git a/framework-core-ui/src/main/web/angular-src/src/app/core/framework/material-custom-components/multi-type-dynamic-table/multi-type-dynamic-table.component.ts b/framework-core-ui/src/main/web/angular-src/src/app/core/framework/material-custom-components/multi-type-dynamic-table/multi-type-dynamic-table.component.ts
+index 0175734..4bf0ebe 100644
+--- a/framework-core-ui/src/main/web/angular-src/src/app/core/framework/material-custom-components/multi-type-dynamic-table/multi-type-dynamic-table.component.ts
++++ b/framework-core-ui/src/main/web/angular-src/src/app/core/framework/material-custom-components/multi-type-dynamic-table/multi-type-dynamic-table.component.ts
+@@ -56,7 +56,7 @@ export class MultiTypeDynamicTableComponent implements OnInit {
+       'fieldName': 'Load Object Type',
+       'multiple': false,
+       'refIdAttr': true,
+-      'loadAPI': '/application/api/5ea86babc8ae3bed0b307a4d/load/by/parent/-100'
++      'loadAPI': '/application/api/5ea86babc8ae3bed0b307a4d/load/all'
+     }
+   }
+ 
+diff --git a/framework-core-ui/src/main/web/angular-src/src/app/core/framework/material-custom-components/multi-type-dynamic-table/multi-type-dynamic-table.service.ts b/framework-core-ui/src/main/web/angular-src/src/app/core/framework/material-custom-components/multi-type-dynamic-table/multi-type-dynamic-table.service.ts
+index 7112692..82672cf 100644
+--- a/framework-core-ui/src/main/web/angular-src/src/app/core/framework/material-custom-components/multi-type-dynamic-table/multi-type-dynamic-table.service.ts
++++ b/framework-core-ui/src/main/web/angular-src/src/app/core/framework/material-custom-components/multi-type-dynamic-table/multi-type-dynamic-table.service.ts
+@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
+ import {HttpClient, HttpHeaders} from "@angular/common/http";
+ import {Router} from "@angular/router";
+ import {Observable} from "rxjs";
++import {GatewayService} from "../../services/constants/gateway.service";
+ 
+ const httpOptions = {
+   headers: new HttpHeaders({ 'Content-Type': 'application/json' })
+@@ -12,13 +13,12 @@ const httpOptions = {
+ })
+ export class MultiTypeDynamicTableService {
+ 
+-  constructor(private http: HttpClient, private router: Router) {
++  constructor(private http: HttpClient, private router: Router,
++              private gatewayService :GatewayService) {
+   }
+ 
+-  private serverApi = 'http://localhost:8080';
+-
+   public loadObjects(loadAPI: string): Observable<any> {
+-    let URI = `${this.serverApi}` + loadAPI;
++    let URI = `${this.gatewayService.FRAMEWORK_SERVICE_URL}` + loadAPI;
+     return this.http.get<any[]>(URI, httpOptions);
+   }
+ }
+diff --git a/framework-core-ui/src/main/web/angular-src/src/app/core/framework/material-custom-components/navigation-service/navigation.service.ts b/framework-core-ui/src/main/web/angular-src/src/app/core/framework/material-custom-components/navigation-service/navigation.service.ts
+index 72fc7d0..1fc1657 100644
+--- a/framework-core-ui/src/main/web/angular-src/src/app/core/framework/material-custom-components/navigation-service/navigation.service.ts
++++ b/framework-core-ui/src/main/web/angular-src/src/app/core/framework/material-custom-components/navigation-service/navigation.service.ts
+@@ -3,6 +3,8 @@ import { Observable, Subject } from 'rxjs';
+ import {HttpClient, HttpHeaders} from '@angular/common/http';
+ import { MenuItem } from './menu-item';
+ import {MenuItemConfig} from './menu-item-config';
++import {Router} from "@angular/router";
++import {GatewayService} from "../../services/constants/gateway.service";
+ 
+ const httpOptions = {
+   headers: new HttpHeaders({ 'Content-Type': 'application/json' })
+@@ -11,15 +13,14 @@ const httpOptions = {
+ @Injectable()
+ export class NavigationService {
+ 
+-  private serverApi = 'http://localhost:8080';
+-
+   private tabs: MenuItem[];
+ 
+   public westSideNavToggleSubject = new Subject<boolean>();
+ 
+   public eastSideNavToggleSubject = new Subject<boolean>();
+ 
+-  constructor(private http: HttpClient) { }
++  constructor(private http: HttpClient,
++              private gatewayService :GatewayService) { }
+ 
+   public toggleWestNavbar(toggle: boolean) {
+     return this.westSideNavToggleSubject.next(toggle);
+@@ -38,7 +39,7 @@ export class NavigationService {
+   }
+ 
+   public loadNavigationMenuConfig(): Observable<MenuItemConfig> {
+-    const URI = `${this.serverApi}` + '/application/api/load/navigation/menu/config';
++    const URI = `${this.gatewayService.FRAMEWORK_SERVICE_URL}` + '/application/api/load/navigation/menu/config';
+     return this.http.get<MenuItemConfig>(URI, httpOptions);
+   }
+ 
+diff --git a/framework-core-ui/src/main/web/angular-src/src/app/core/framework/services/constants/gateway.service.spec.ts b/framework-core-ui/src/main/web/angular-src/src/app/core/framework/services/constants/gateway.service.spec.ts
+new file mode 100644
+index 0000000..ce041cd
+--- /dev/null
++++ b/framework-core-ui/src/main/web/angular-src/src/app/core/framework/services/constants/gateway.service.spec.ts
+@@ -0,0 +1,12 @@
++import { TestBed } from '@angular/core/testing';
++
++import { GatewayService } from './gateway.service';
++
++describe('GatewayService', () => {
++  beforeEach(() => TestBed.configureTestingModule({}));
++
++  it('should be created', () => {
++    const service: GatewayService = TestBed.get(GatewayService);
++    expect(service).toBeTruthy();
++  });
++});
+diff --git a/framework-core-ui/src/main/web/angular-src/src/app/core/framework/services/constants/gateway.service.ts b/framework-core-ui/src/main/web/angular-src/src/app/core/framework/services/constants/gateway.service.ts
+new file mode 100644
+index 0000000..045c868
+--- /dev/null
++++ b/framework-core-ui/src/main/web/angular-src/src/app/core/framework/services/constants/gateway.service.ts
+@@ -0,0 +1,16 @@
++import { Injectable } from '@angular/core';
++
++@Injectable({
++  providedIn: 'root'
++})
++export class GatewayService {
++
++  public GATEWAY_URL: string = 'http://localhost:8765/';
++
++  public FRAMEWORK_SERVICE_URL = this.GATEWAY_URL + 'gbss-framework-core-service';
++
++  public WEB_APP_AUTH_SERVICE_URL = this.GATEWAY_URL + 'gbss-web-app-auth-service';
++
++
++  constructor() { }
++}
+diff --git a/framework-core-ui/src/main/web/angular-src/src/app/core/framework/services/user.service.ts b/framework-core-ui/src/main/web/angular-src/src/app/core/framework/services/user.service.ts
+index 3ba482e..41458e1 100644
+--- a/framework-core-ui/src/main/web/angular-src/src/app/core/framework/services/user.service.ts
++++ b/framework-core-ui/src/main/web/angular-src/src/app/core/framework/services/user.service.ts
+@@ -5,6 +5,7 @@ import { Router } from '@angular/router';
+ 
+ import { User } from '../models/user';
+ import {Observable, Subject} from "rxjs/index";
++import {GatewayService} from "./constants/gateway.service";
+ 
+ const TOKEN_KEY = 'AuthToken';
+ 
+@@ -14,17 +15,18 @@ const TOKEN_KEY = 'AuthToken';
+ export class UserService {
+   private authenticatedSubject = new Subject<any>();
+   private routeAuthSubject = new Subject<boolean>();
+-  constructor(private http: HttpClient, private router: Router) { }
+-  private authServer = 'http://localhost:8080';
++
++  constructor(private http: HttpClient, private router: Router,
++              private gatewayService :GatewayService) { }
+ 
+ 
+   register(user: User) {
+-    return this.http.post(`${this.authServer}/users/register`, user);
++    return this.http.post(`${this.gatewayService.WEB_APP_AUTH_SERVICE_URL}/users/register`, user);
+   }
+ 
+   login(username: string, password: string) {
+     const credentials = {username: username, password: password};
+-    return this.http.post<any>(`${this.authServer}/token/generate-token`, credentials)
++    return this.http.post<any>(`${this.gatewayService.WEB_APP_AUTH_SERVICE_URL}/token/generate-token`, credentials)
+       .pipe(map(user => {
+         // login successful if there's a jwt token in the response
+         if (user && user.token) {
+@@ -37,7 +39,7 @@ export class UserService {
+   }
+ 
+   getCurrentUser(): Observable<User> {
+-    return this.http.get(`${this.authServer}/users/current`);
++    return this.http.get(`${this.gatewayService.WEB_APP_AUTH_SERVICE_URL}/users/current`);
+   }
+ 
+   logout() {
+diff --git a/framework-core-web-api/pom.xml b/framework-core-web-api/pom.xml
+index 547ab45..1f46f43 100644
+--- a/framework-core-web-api/pom.xml
++++ b/framework-core-web-api/pom.xml
+@@ -44,13 +44,6 @@
+ 			<version>${project.version}</version>
+ 			<scope>compile</scope>
+ 		</dependency>
+-
+-		<dependency>
+-			<groupId>com.web-app-authentication</groupId>
+-			<artifactId>web-app-auth-framework</artifactId>
+-			<version>0.0.4.RELEASE</version>
+-			<scope>compile</scope>
+-		</dependency>
+ 	</dependencies>
+ 
+ 	<build>
+diff --git a/framework-core-web-impl/pom.xml b/framework-core-web-impl/pom.xml
+index 3169a00..409bddc 100644
+--- a/framework-core-web-impl/pom.xml
++++ b/framework-core-web-impl/pom.xml
+@@ -53,9 +53,9 @@
+ 		</dependency>
+ 
+ 		<dependency>
+-			<groupId>com.web-app-authentication</groupId>
+-			<artifactId>web-app-auth-framework</artifactId>
+-			<version>0.0.4.RELEASE</version>
++			<groupId>com.framework.core</groupId>
++			<artifactId>framework-core-model</artifactId>
++			<version>${project.version}</version>
+ 			<scope>compile</scope>
+ 		</dependency>
+ 	</dependencies>
+diff --git a/framework-core-web-impl/src/main/java/com/gbss/framework/core/web/impl/composers/BreadCrumbComposer.java b/framework-core-web-impl/src/main/java/com/gbss/framework/core/web/impl/composers/BreadCrumbComposer.java
+index 0e721e8..b770597 100644
+--- a/framework-core-web-impl/src/main/java/com/gbss/framework/core/web/impl/composers/BreadCrumbComposer.java
++++ b/framework-core-web-impl/src/main/java/com/gbss/framework/core/web/impl/composers/BreadCrumbComposer.java
+@@ -63,12 +63,12 @@ public class BreadCrumbComposer implements LayoutComposer<CompositeBreadCrumbCon
+                 SystemConstants.ObjectTypes.NAVIGATION_TAB.equals(objectTypeId)) {
+             //only Home breadcrumb available
+             breadCrumbs.add(breadCrumbConverter.getHome());
+-            Base base = (Base) repository.findById(objectId).get();
++            Base base = entityBuilder.getObjectById(objectTypeId, objectId);
+             breadCrumbs.add(breadCrumbConverter.getDummy(base));
+         } else if (Layout.DETAILS.equals(layout)) {
+             //Read tabId from OT and create breadcrumb for it, along with Home.
+             //Also consider opening specific sub tab, in case of composite tables.
+-            Base base = (Base) repository.findById(objectId).get();
++            Base base = entityBuilder.getObjectById(objectTypeId, objectId);
+             if (base.getParentId() == null) {
+                 breadCrumbs.add(breadCrumbConverter.getHome());
+                 if (objectType.getTabId() != null) {
+diff --git a/framework-core-web-impl/src/main/java/com/gbss/framework/core/web/impl/composers/DynamicFormComposer.java b/framework-core-web-impl/src/main/java/com/gbss/framework/core/web/impl/composers/DynamicFormComposer.java
+index b12d061..1e458bd 100644
+--- a/framework-core-web-impl/src/main/java/com/gbss/framework/core/web/impl/composers/DynamicFormComposer.java
++++ b/framework-core-web-impl/src/main/java/com/gbss/framework/core/web/impl/composers/DynamicFormComposer.java
+@@ -261,6 +261,7 @@ public class DynamicFormComposer<T extends DynamicFormConfig> implements Compose
+         ListFieldConfig.Options color = new ListFieldConfig.Options(11, "Color");
+         ListFieldConfig.Options refId = new ListFieldConfig.Options(12, "Reference Id");
+         ListFieldConfig.Options booleanList = new ListFieldConfig.Options(13, "Yes/No List");
++        ListFieldConfig.Options keyValue = new ListFieldConfig.Options(14, "Key Value");
+         options.add(text);
+         options.add(number);
+         options.add(reference);
+@@ -275,6 +276,7 @@ public class DynamicFormComposer<T extends DynamicFormConfig> implements Compose
+         options.add(color);
+         options.add(refId);
+         options.add(booleanList);
++        options.add(keyValue);
+ 
+         return options;
+     }
+@@ -344,7 +346,7 @@ public class DynamicFormComposer<T extends DynamicFormConfig> implements Compose
+             fieldConfig = new ReferenceFieldConfig();
+             ((ReferenceFieldConfig) fieldConfig).setRefIdAttr(true);
+              if (parentId != null) {
+-                Base parent = entityBuilder.getObjectByChildOT(objectType.getId(), parentId);
++                Base parent = entityBuilder.getObjectByChildOrCurrentOT(objectType.getId(), parentId);
+                 fieldConfig.setValue(parent);
+                 fieldConfig.setReadonly(true);
+             } else if (objectType.isSameTypeChildren()) {
+diff --git a/framework-core-web-impl/src/main/java/com/gbss/framework/core/web/impl/composers/ObjectDetailsComposer.java b/framework-core-web-impl/src/main/java/com/gbss/framework/core/web/impl/composers/ObjectDetailsComposer.java
+index 67a587a..ca507c8 100644
+--- a/framework-core-web-impl/src/main/java/com/gbss/framework/core/web/impl/composers/ObjectDetailsComposer.java
++++ b/framework-core-web-impl/src/main/java/com/gbss/framework/core/web/impl/composers/ObjectDetailsComposer.java
+@@ -1,5 +1,7 @@
+ package com.gbss.framework.core.web.impl.composers;
+ 
++import com.gbss.framework.core.api.service.api.AttributeSchemaService;
++import com.gbss.framework.core.api.utils.EntityBuilder;
+ import com.gbss.framework.core.impl.factory.ObjectTypeRepositoryMapperFactory;
+ import com.gbss.framework.core.impl.meta.data.MetadataHelper;
+ import com.gbss.framework.core.impl.repositories.AttributeRepository;
+@@ -10,7 +12,6 @@ import com.gbss.framework.core.meta.annotations.GroupName;
+ import com.gbss.framework.core.meta.annotations.Hidden;
+ import com.gbss.framework.core.meta.annotations.Mandatory;
+ import com.gbss.framework.core.meta.annotations.ReadOnly;
+-import com.gbss.framework.core.meta.annotations.RefIdAttr;
+ import com.gbss.framework.core.meta.annotations.UIName;
+ import com.gbss.framework.core.meta.annotations.base.Description;
+ import com.gbss.framework.core.meta.annotations.base.Name;
+@@ -51,6 +52,7 @@ import org.springframework.data.mongodb.repository.MongoRepository;
+ import org.springframework.stereotype.Service;
+ import org.springframework.util.StringUtils;
+ 
++import javax.ejb.ObjectNotFoundException;
+ import java.lang.reflect.Field;
+ import java.util.List;
+ import java.util.ArrayList;
+@@ -70,6 +72,9 @@ public class ObjectDetailsComposer<T extends ObjectLayoutWrapper> implements Com
+     @Autowired
+     ObjectTypeRepository objectTypeRepository;
+ 
++    @Autowired
++    AttributeSchemaService attributeSchemaService;
++
+     @Autowired
+     AttributeRepository attributeRepository;
+ 
+@@ -82,14 +87,17 @@ public class ObjectDetailsComposer<T extends ObjectLayoutWrapper> implements Com
+     @Autowired
+     DynamicTableComposer dynamicTableComposer;
+ 
++
++    @Autowired
++    EntityBuilder entityBuilder;
++
+     @Override
+-    public T compose(String objectTypeId, String objectId) {
++    public T compose(String objectTypeId, String objectId) throws ObjectNotFoundException {
+         ObjectLayoutWrapper objectLayoutWrapper = new ObjectLayoutWrapper();
+         ObjectDetailsConfig detail = new ObjectDetailsConfig();
+         objectLayoutWrapper.setDetail(detail);
+ 
+-        MongoRepository repository = objectTypeRepositoryFactory.getBean(objectTypeId);
+-        Base base = (Base) repository.findById(objectId).get();
++        Base base = entityBuilder.getObjectById(objectTypeId, objectId);
+         System.out.println("********** ObjectDetailsComposer, repository base fields: "+ base);
+         detail.setId(objectId);
+         detail.setObjectName(base.getPublicName() == null ? base.getName() : base.getPublicName());
+@@ -140,6 +148,8 @@ public class ObjectDetailsComposer<T extends ObjectLayoutWrapper> implements Com
+     }
+ 
+     private List<GroupConfig> getExtendedGroupConfigs(Set<Field> fields, Base base) {
++        System.out.println("********** ########## ObjectDetailsComposer, getExtendedGroupConfigs, fields: "+ fields +
++                ", base: " + base);
+         List<GroupConfig> groupConfigs = new ArrayList<>();
+         Map<String, List<FieldConfig>> groupToFieldConfig = new HashMap<>();
+ 
+@@ -147,16 +157,23 @@ public class ObjectDetailsComposer<T extends ObjectLayoutWrapper> implements Com
+             AttributeId attributeIdAn = field.getAnnotation(AttributeId.class);
+             if (attributeIdAn != null) {
+                 String attributeId = attributeIdAn.value();
+-                Optional<Attribute> attributeOp = attributeRepository.findById(attributeId);
+-                if (attributeOp.isPresent()) {
+-                    Attribute attribute = attributeOp.get();
+-                    String groupName = attribute.getAttributeGroup().getPublicName();
+-                    if (groupToFieldConfig.containsKey(groupName)) {
+-                        groupToFieldConfig.get(groupName).add(getExtendedFieldConfig(field, attribute, base));
+-                    } else {
+-                        List<FieldConfig> fieldConfigs1 = new ArrayList<>();
+-                        fieldConfigs1.add(getExtendedFieldConfig(field, attribute, base));
+-                        groupToFieldConfig.put(groupName, fieldConfigs1);
++                if (SystemConstants.Attributes.DYNAMIC_PARAMETERS.equals(attributeId)) {
++                    groupToFieldConfig.putAll(getGroupToFieldConfigs(field, base));
++                } else {
++                    Optional<Attribute> attributeOp = attributeRepository.findById(attributeId);
++                    if (attributeOp.isPresent()) {
++                        Attribute attribute = attributeOp.get();
++                        String groupName = attribute.getAttributeGroup().getPublicName();
++                        System.out.println("********** ########## ObjectDetailsComposer, getExtendedGroupConfigs, " +
++                                "groupName: " + groupName);
++                        Object value = metadataHelper.getValue(base, base.getClass(), field);
++                        if (groupToFieldConfig.containsKey(groupName)) {
++                            groupToFieldConfig.get(groupName).add(getExtendedFieldConfig(attribute, value, base));
++                        } else {
++                            List<FieldConfig> fieldConfigs1 = new ArrayList<>();
++                            fieldConfigs1.add(getExtendedFieldConfig(attribute, value, base));
++                            groupToFieldConfig.put(groupName, fieldConfigs1);
++                        }
+                     }
+                 }
+             }
+@@ -172,15 +189,66 @@ public class ObjectDetailsComposer<T extends ObjectLayoutWrapper> implements Com
+         return groupConfigs;
+     }
+ 
+-    private FieldConfig getExtendedFieldConfig(Field field, Attribute attribute, Base base) {
+-        FieldConfig fieldConfig = getExtendedFieldConfigInstance(field, attribute);
+-        fieldConfig.setLabel(attribute.getPublicName());
+-        fieldConfig.setName(attribute.getId());
+-        fieldConfig.setMultiple(attribute.isMultiple());
+-        fieldConfig.setReadonly(attribute.isReadonly());
+-        fieldConfig.setRequired(attribute.isRequired());
++    private Map<String, List<FieldConfig>> getGroupToFieldConfigs(Field field, Base base) {
++        Map<String, List<FieldConfig>> groupToFieldConfig = new HashMap<>();
+         Object value = metadataHelper.getValue(base, base.getClass(), field);
+-        if (metadataHelper.hasAnnotation(field, RefIdAttr.class) && value != null) {
++        System.out.println("********** ########## ObjectDetailsComposer, getGroupToFieldConfigs, value: "+ value);
++        if (value != null) {
++            Map<String, Object> extendedParameters = (Map<String, Object>) value;
++            for (Map.Entry<String, Object> entry : extendedParameters.entrySet()) {
++                Optional<Attribute> attributeOp = attributeRepository.findById(entry.getKey());
++                if (attributeOp.isPresent()) {
++                    Attribute attribute = attributeOp.get();
++                    String groupName = attribute.getAttributeGroup().getPublicName();
++                    System.out.println("********** ########## ObjectDetailsComposer, getGroupToFieldConfigs, " +
++                            "groupName: " + groupName);
++                    if (groupToFieldConfig.containsKey(groupName)) {
++                        groupToFieldConfig.get(groupName).add(getExtendedFieldConfig(attribute, entry.getValue(), base));
++                    } else {
++                        List<FieldConfig> fieldConfigs1 = new ArrayList<>();
++                        fieldConfigs1.add(getExtendedFieldConfig(attribute, entry.getValue(), base));
++                        groupToFieldConfig.put(groupName, fieldConfigs1);
++                    }
++                }
++            }
++
++            ObjectType objectType = attributeSchemaService.getObjectTypeById(base.getObjectTypeId());
++            if (objectType.getAttributes() != null) {
++                for (Attribute attribute : objectType.getAttributes()) {
++                    if (extendedParameters.keySet().contains(attribute.getId())) {
++                        continue;
++                    }
++                    String groupName = attribute.getAttributeGroup().getPublicName();
++                    System.out.println("********** ########## ObjectDetailsComposer, getGroupToFieldConfigs, " +
++                            "groupName: " + groupName);
++                    if (groupToFieldConfig.containsKey(groupName)) {
++                        groupToFieldConfig.get(groupName).add(getExtendedFieldConfigInstance(attribute));
++                    } else {
++                        List<FieldConfig> fieldConfigs1 = new ArrayList<>();
++                        fieldConfigs1.add(getExtendedFieldConfigInstance(attribute));
++                        groupToFieldConfig.put(groupName, fieldConfigs1);
++                    }
++                }
++            }
++        }
++
++        System.out.println("********** ########## ObjectDetailsComposer, getGroupToFieldConfigs, groupToFieldConfig: "
++                + groupToFieldConfig);
++
++        return groupToFieldConfig;
++    }
++
++    private FieldConfig getExtendedFieldConfig(Attribute attribute, Object value, Base base) {
++        System.out.println("********** ########## ObjectDetailsComposer, getExtendedGroupConfigs, "
++                + "attribute: " + attribute
++                + ", value: " + value
++                + ", base: " + base);
++        FieldConfig fieldConfig = getExtendedFieldConfigInstance(attribute);
++        System.out.println("********** ########## ObjectDetailsComposer, getExtendedGroupConfigs, fieldConfig: "+
++                fieldConfig);
++
++        System.out.println("********** ########## ObjectDetailsComposer, getExtendedGroupConfigs, value: "+ value);
++        if (FieldType.REFERENCE_ID.value == attribute.getAttributeType() && value != null) {
+             if (attribute.getReferenceToObjectType() != null) {
+                 MongoRepository repository = objectTypeRepositoryFactory.
+                         getBean(attribute.getReferenceToObjectType());
+@@ -196,7 +264,7 @@ public class ObjectDetailsComposer<T extends ObjectLayoutWrapper> implements Com
+         return fieldConfig;
+     }
+ 
+-    private FieldConfig getExtendedFieldConfigInstance(Field field, Attribute attribute) {
++    private FieldConfig getExtendedFieldConfigInstance(Attribute attribute) {
+         FieldConfig fieldConfig;
+ 
+         if (FieldType.TEXT.value == attribute.getAttributeType()) {
+@@ -262,6 +330,12 @@ public class ObjectDetailsComposer<T extends ObjectLayoutWrapper> implements Com
+             fieldConfig = new TextBoxFieldConfig();
+         }
+ 
++        fieldConfig.setLabel(attribute.getPublicName());
++        fieldConfig.setName(attribute.getId());
++        fieldConfig.setMultiple(attribute.isMultiple());
++        fieldConfig.setReadonly(attribute.isReadonly());
++        fieldConfig.setRequired(attribute.isRequired());
++
+         return fieldConfig;
+     }
+ 
+@@ -281,6 +355,7 @@ public class ObjectDetailsComposer<T extends ObjectLayoutWrapper> implements Com
+         ListFieldConfig.Options color = new ListFieldConfig.Options(11, "Color");
+         ListFieldConfig.Options refId = new ListFieldConfig.Options(12, "Reference Id");
+         ListFieldConfig.Options booleanList = new ListFieldConfig.Options(13, "Yes/No List");
++        ListFieldConfig.Options keyValue = new ListFieldConfig.Options(14, "Key Value");
+         options.add(text);
+         options.add(number);
+         options.add(reference);
+@@ -295,6 +370,7 @@ public class ObjectDetailsComposer<T extends ObjectLayoutWrapper> implements Com
+         options.add(color);
+         options.add(refId);
+         options.add(booleanList);
++        options.add(keyValue);
+ 
+         return options;
+     }
+diff --git a/framework-core-web-impl/src/main/java/com/gbss/framework/core/web/impl/controller/ApplicationLayoutController.java b/framework-core-web-impl/src/main/java/com/gbss/framework/core/web/impl/controller/ApplicationLayoutController.java
+index bdfd09d..eed3ead 100644
+--- a/framework-core-web-impl/src/main/java/com/gbss/framework/core/web/impl/controller/ApplicationLayoutController.java
++++ b/framework-core-web-impl/src/main/java/com/gbss/framework/core/web/impl/controller/ApplicationLayoutController.java
+@@ -100,8 +100,11 @@ public class ApplicationLayoutController {
+     public DynamicObject createDynamicObject(@PathVariable("objectTypeId") String objectTypeId,
+                                              @Valid @RequestBody String object) {
+         return attributeSchemaService.createDynamicObject(object);
+-          // Algo for saving core objects
+-          //Note: All new object type with is system = false, add mandatory field, db collection name, in create form.
++    }
++
++    @PutMapping(value="/{objectTypeId}/update")
++    public DynamicObject updateDynamicObject(@Valid @RequestBody String object) {
++        return attributeSchemaService.updateDynamicObject(object);
+     }
+ 
+     @GetMapping("/{objectTypeId}/load/all")
+diff --git a/framework-core-web-impl/src/main/java/com/gbss/framework/core/web/impl/decorators/AbstractPageDecorator.java b/framework-core-web-impl/src/main/java/com/gbss/framework/core/web/impl/decorators/AbstractPageDecorator.java
+index 6b4c187..0829ccc 100644
+--- a/framework-core-web-impl/src/main/java/com/gbss/framework/core/web/impl/decorators/AbstractPageDecorator.java
++++ b/framework-core-web-impl/src/main/java/com/gbss/framework/core/web/impl/decorators/AbstractPageDecorator.java
+@@ -26,7 +26,7 @@ abstract class AbstractPageDecorator<T extends PageConfig> implements PageDecora
+     @Override
+     public T decorate(String objectTypeId, String id, Layout layout) throws ObjectNotFoundException {
+         PageConfig pageConfig = getPageModel();
+-        if (id != null) {
++        if (id != null && !Layout.FORM.equals(layout)) {
+             Base base = entityBuilder.getObjectByChildOrCurrentOT(objectTypeId, id);
+             pageConfig.setName(commonEntityUtils.getName(base));
+         }

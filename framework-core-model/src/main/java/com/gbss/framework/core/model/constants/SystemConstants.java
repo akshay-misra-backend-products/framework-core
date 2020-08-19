@@ -13,7 +13,7 @@ public class SystemConstants {
         String ATTRIBUTE_GROUP = "5ea8117bfd96fbebc61418f1";
         String ATTRIBUTE_TYPE = "5ea83e1dfd96fbebc61418f2";
         String REFERENCE_TO_OBJECT_TYPE = "5ea86df0c8ae3bed4679f5cc";
-        String USAE_AS_FILTER = "5ea84103fd96fbebc61418f3";
+        String USE_AS_FILTER = "5ea84103fd96fbebc61418f3";
         String FOR_CATALOG = "5ea84422fd96fbebc61418f4";
         String IS_SYSTEM = "5ea84509fd96fbebc61418f5";
         String READONLY = "5ea84655fd96fbebc61418f6";
@@ -44,6 +44,9 @@ public class SystemConstants {
         String ICON = "5eaa980a2e2efbf64a9f4a59";
         String REFERENCE_TO_OBJECT_TYPES = "5eaa98932e2efbf64a9f4a5a";
         String IS_CONTAINER = "5eca9489c4b81f159cf43f59";
+
+        /* Dynamic Object */
+        String DYNAMIC_PARAMETERS = "5f11ec17fcbf48118eb7daad";
 
     }
 

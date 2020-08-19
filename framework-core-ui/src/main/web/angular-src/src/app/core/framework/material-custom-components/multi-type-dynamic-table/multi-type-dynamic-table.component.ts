@@ -56,7 +56,7 @@ export class MultiTypeDynamicTableComponent implements OnInit {
       'fieldName': 'Load Object Type',
       'multiple': false,
       'refIdAttr': true,
-      'loadAPI': '/application/api/5ea86babc8ae3bed0b307a4d/load/by/parent/-100'
+      'loadAPI': '/application/api/5ea86babc8ae3bed0b307a4d/load/all'
     }
   }
 

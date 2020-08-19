@@ -40,8 +40,8 @@ public class Attribute extends Base {
             trueId  = SystemConstants.TrueFalseList.TRUE_ID,
             falseId = SystemConstants.TrueFalseList.FALSE_ID
     )
-    @JsonProperty(SystemConstants.Attributes.USAE_AS_FILTER)
-    @AttributeId(SystemConstants.Attributes.USAE_AS_FILTER)
+    @JsonProperty(SystemConstants.Attributes.USE_AS_FILTER)
+    @AttributeId(SystemConstants.Attributes.USE_AS_FILTER)
     private boolean useAsFilter;
 
     @NotNull

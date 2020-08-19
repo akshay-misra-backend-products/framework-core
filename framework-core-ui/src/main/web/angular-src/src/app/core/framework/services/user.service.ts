@@ -5,6 +5,7 @@ import { Router } from '@angular/router';
 
 import { User } from '../models/user';
 import {Observable, Subject} from "rxjs/index";
+import {GatewayService} from "./constants/gateway.service";
 
 const TOKEN_KEY = 'AuthToken';
 
@@ -14,17 +15,18 @@ const TOKEN_KEY = 'AuthToken';
 export class UserService {
   private authenticatedSubject = new Subject<any>();
   private routeAuthSubject = new Subject<boolean>();
-  constructor(private http: HttpClient, private router: Router) { }
-  private authServer = 'http://localhost:8080';
+
+  constructor(private http: HttpClient, private router: Router,
+              private gatewayService :GatewayService) { }
 
 
   register(user: User) {
-    return this.http.post(`${this.authServer}/users/register`, user);
+    return this.http.post(`${this.gatewayService.FRAMEWORK_SERVICE_URL}/users/register`, user);
   }
 
   login(username: string, password: string) {
     const credentials = {username: username, password: password};
-    return this.http.post<any>(`${this.authServer}/token/generate-token`, credentials)
+    return this.http.post<any>(`${this.gatewayService.FRAMEWORK_SERVICE_URL}/token/generate-token`, credentials)
       .pipe(map(user => {
         // login successful if there's a jwt token in the response
         if (user && user.token) {
@@ -37,7 +39,7 @@ export class UserService {
   }
 
   getCurrentUser(): Observable<User> {
-    return this.http.get(`${this.authServer}/users/current`);
+    return this.http.get(`${this.gatewayService.FRAMEWORK_SERVICE_URL}/users/current`);
   }
 
   logout() {

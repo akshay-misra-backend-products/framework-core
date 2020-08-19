@@ -63,12 +63,12 @@ public class BreadCrumbComposer implements LayoutComposer<CompositeBreadCrumbCon
                 SystemConstants.ObjectTypes.NAVIGATION_TAB.equals(objectTypeId)) {
             //only Home breadcrumb available
             breadCrumbs.add(breadCrumbConverter.getHome());
-            Base base = (Base) repository.findById(objectId).get();
+            Base base = entityBuilder.getObjectById(objectTypeId, objectId);
             breadCrumbs.add(breadCrumbConverter.getDummy(base));
         } else if (Layout.DETAILS.equals(layout)) {
             //Read tabId from OT and create breadcrumb for it, along with Home.
             //Also consider opening specific sub tab, in case of composite tables.
-            Base base = (Base) repository.findById(objectId).get();
+            Base base = entityBuilder.getObjectById(objectTypeId, objectId);
             if (base.getParentId() == null) {
                 breadCrumbs.add(breadCrumbConverter.getHome());
                 if (objectType.getTabId() != null) {
@@ -84,7 +84,12 @@ public class BreadCrumbComposer implements LayoutComposer<CompositeBreadCrumbCon
                 } else {
                     ObjectType parentOT = attributeSchemaService.getObjectTypeById(objectType.getParentId());
                     MongoRepository parentRepo = objectTypeRepositoryFactory.getBean(parentOT.getId());
-                    Base parent = (Base) parentRepo.findById(base.getParentId()).get();
+                    Base parent = null;
+                    if (parentRepo == null) {
+                        parent = entityBuilder.getObjectById(objectTypeId, base.getParentId());
+                    } else {
+                        parent = (Base) parentRepo.findById(base.getParentId()).get();
+                    }
                     breadCrumbs.add(breadCrumbConverter.getDetails(parent));
                 }
                 breadCrumbs.add(breadCrumbConverter.getDummy(base));

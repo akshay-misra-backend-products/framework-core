@@ -153,6 +153,10 @@ public class Base {
         return lastModifiedAt;
     }
 
+    public void setLastModifiedAt(Date lastModifiedAt) {
+        this.lastModifiedAt = lastModifiedAt;
+    }
+
     public int getOrder() {
         return order;
     }
@@ -169,7 +173,19 @@ public class Base {
         this.objectTypeId = objectTypeId;
     }
 
+    @Override
     public String toString() {
-        return getClass().getName()+"[ id: "+id+", name: "+name+", description: "+description+", version: "+ version+ " ]";
+        return "Base{" +
+                "id='" + id + '\'' +
+                ", version=" + version +
+                ", objectTypeId='" + objectTypeId + '\'' +
+                ", parentId='" + parentId + '\'' +
+                ", name='" + name + '\'' +
+                ", publicName='" + publicName + '\'' +
+                ", description='" + description + '\'' +
+                ", order=" + order +
+                ", createdAt=" + createdAt +
+                ", lastModifiedAt=" + lastModifiedAt +
+                '}';
     }
 }

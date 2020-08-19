@@ -261,6 +261,7 @@ public class DynamicFormComposer<T extends DynamicFormConfig> implements Compose
         ListFieldConfig.Options color = new ListFieldConfig.Options(11, "Color");
         ListFieldConfig.Options refId = new ListFieldConfig.Options(12, "Reference Id");
         ListFieldConfig.Options booleanList = new ListFieldConfig.Options(13, "Yes/No List");
+        ListFieldConfig.Options keyValue = new ListFieldConfig.Options(14, "Key Value");
         options.add(text);
         options.add(number);
         options.add(reference);
@@ -275,6 +276,7 @@ public class DynamicFormComposer<T extends DynamicFormConfig> implements Compose
         options.add(color);
         options.add(refId);
         options.add(booleanList);
+        options.add(keyValue);
 
         return options;
     }
@@ -344,7 +346,7 @@ public class DynamicFormComposer<T extends DynamicFormConfig> implements Compose
             fieldConfig = new ReferenceFieldConfig();
             ((ReferenceFieldConfig) fieldConfig).setRefIdAttr(true);
              if (parentId != null) {
-                Base parent = entityBuilder.getObjectByChildOT(objectType.getId(), parentId);
+                Base parent = entityBuilder.getObjectByChildOrCurrentOT(objectType.getId(), parentId);
                 fieldConfig.setValue(parent);
                 fieldConfig.setReadonly(true);
             } else if (objectType.isSameTypeChildren()) {

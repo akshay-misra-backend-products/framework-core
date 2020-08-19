@@ -4,10 +4,13 @@ import com.gbss.framework.core.impl.factory.ObjectTypeRepositoryMapperFactory;
 import com.gbss.framework.core.impl.repositories.ObjectTypeRepository;
 import com.gbss.framework.core.api.utils.EntityBuilder;
 import com.gbss.framework.core.model.entities.Base;
+import com.gbss.framework.core.model.entities.DynamicObject;
 import com.gbss.framework.core.model.entities.ObjectType;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import javax.ejb.ObjectNotFoundException;
 import javax.validation.constraints.NotNull;
@@ -22,25 +25,41 @@ public class EntityBuilderImpl implements EntityBuilder {
     @Autowired
     ObjectTypeRepositoryMapperFactory objectTypeRepositoryFactory;
 
+    @Autowired
+    MongoTemplate mongoTemplate;
+
     @Override
     public Base getObjectById(@NotNull String objectTypeId, @NotNull String objectId) throws ObjectNotFoundException {
-        Base base = null;
+        /*Base base = null;
         MongoRepository repository = objectTypeRepositoryFactory.getBean(objectTypeId);
-        Optional<Base> op = repository.findById(objectId);
-
-        if (op.isPresent()) {
-            base = op.get();
+        if (repository == null) {
+            ObjectType objectType = objectTypeRepository.findById(objectTypeId).get();
+            if (!StringUtils.isEmpty(objectType.getCollectionName())) {
+                if (mongoTemplate.getCollectionNames().contains(objectType.getCollectionName())) {
+                    DynamicObject dynamicObject = mongoTemplate.findById(objectId, DynamicObject.class,
+                            objectType.getCollectionName());
+                    return dynamicObject;
+                }
+            }
         } else {
+            Optional<Base> op = repository.findById(objectId);
+            if (op.isPresent()) {
+                base = op.get();
+            }
+        }
+
+        if (base == null) {
             throw new ObjectNotFoundException("Object with objectTypeId: " + objectTypeId
                     + " and objectId: " + objectId + " not found.");
         }
 
-        System.out.println("********** EntityBuilderImpl, base: " + base);
+        System.out.println("********** EntityBuilderImpl, base: " + base);*/
 
-        return base;
+        return getObjectByChildOrCurrentOT(objectTypeId, objectId);
     }
 
     @Override
+    @Deprecated
     public Base getObjectByChildOT(@NotNull String childObjectTypeId, @NotNull String objectId) throws ObjectNotFoundException {
         Optional<Base> parentOP = null;
         Base parent = null;
@@ -72,18 +91,53 @@ public class EntityBuilderImpl implements EntityBuilder {
         Base base = null;
         MongoRepository repository = objectTypeRepositoryFactory.getBean(objectTypeId);
         System.out.println("********** $$$$$$$ EntityBuilderImpl, repository: " + repository);
-        Optional<Base> op = repository.findById(objectId);
-
-        if (op.isPresent()) {
-            base = op.get();
-        } else {
+        if (repository == null) {
             ObjectType objectType = objectTypeRepository.findById(objectTypeId).get();
-            if (objectType.getParentId() != null) {
-                ObjectType parentOT = objectTypeRepository.findById(objectType.getParentId()).get();
-                MongoRepository parentRepo = objectTypeRepositoryFactory.getBean(parentOT.getId());
-                Optional<Base> parent = parentRepo.findById(objectId);
-                if (parent.isPresent()) {
-                    base = parent.get();
+            System.out.println("********** $$$$$$$ EntityBuilderImpl, objectType: " + objectType);
+            System.out.println("********** $$$$$$$ EntityBuilderImpl, getCollectionName: " +
+                    objectType.getCollectionName());
+            System.out.println("********** $$$$$$$ EntityBuilderImpl, collection exists? " +
+                    mongoTemplate.getCollectionNames().contains(objectType.getCollectionName()));
+            if (!StringUtils.isEmpty(objectType.getCollectionName())) {
+                if (mongoTemplate.getCollectionNames().contains(objectType.getCollectionName())) {
+                    DynamicObject dynamicObject = mongoTemplate.findById(objectId, DynamicObject.class,
+                            objectType.getCollectionName());
+                    System.out.println("********** $$$$$$$ EntityBuilderImpl, dynamicObject: " + dynamicObject);
+                    if (dynamicObject == null) {
+                        ObjectType parentOT = objectTypeRepository.findById(objectType.getParentId()).get();
+                        if (!StringUtils.isEmpty(parentOT.getCollectionName())) {
+                            if (mongoTemplate.getCollectionNames().contains(parentOT.getCollectionName())) {
+                                DynamicObject object = mongoTemplate.findById(objectId, DynamicObject.class,
+                                        parentOT.getCollectionName());
+                                return object;
+                            }
+                        }
+                    }
+                    return dynamicObject;
+                } else {
+                    ObjectType parentOT = objectTypeRepository.findById(objectType.getParentId()).get();
+                    if (!StringUtils.isEmpty(parentOT.getCollectionName())) {
+                        if (mongoTemplate.getCollectionNames().contains(parentOT.getCollectionName())) {
+                            DynamicObject dynamicObject = mongoTemplate.findById(objectId, DynamicObject.class,
+                                    parentOT.getCollectionName());
+                            return dynamicObject;
+                        }
+                    }
+                }
+            }
+        } else {
+            Optional<Base> op = repository.findById(objectId);
+            if (op.isPresent()) {
+                base = op.get();
+            } else {
+                ObjectType objectType = objectTypeRepository.findById(objectTypeId).get();
+                if (objectType.getParentId() != null) {
+                    ObjectType parentOT = objectTypeRepository.findById(objectType.getParentId()).get();
+                    MongoRepository parentRepo = objectTypeRepositoryFactory.getBean(parentOT.getId());
+                    Optional<Base> parent = parentRepo.findById(objectId);
+                    if (parent.isPresent()) {
+                        base = parent.get();
+                    }
                 }
             }
         }
