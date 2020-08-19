@@ -15,6 +15,8 @@ public class ObjectTypeRepositoryMapperFactory  implements BeanMapper<MongoRepos
 
     @Override
     public MongoRepository getBean(String objectTypeId) {
+        System.out.println("################ ObjectTypeRepositoryMapperFactory, objectTypeRepositoriesMapper: " +
+                objectTypeRepositoriesMapper);
         return objectTypeRepositoriesMapper.get(objectTypeId);
     }
 }
