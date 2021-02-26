@@ -32,8 +32,9 @@ import { CompositeTableModule } from './core/framework/material-custom-component
 import { CompositeFormModule } from './core/framework/material-custom-components/composite/composite-form/composite-form.module';
 import { CompositeDetailsModule } from './core/framework/material-custom-components/composite/composite-details/composite-details.module';
 import { CompositePageModule } from './core/framework/material-custom-components/composite/composite-page/composite-page.module';
-import {HomeModule} from "./core/framework/home/home.module";
-import {MatReferenceFieldModule} from "./core/framework/material-custom-components/mat-reference-field/mat-reference-field.module";
+import { HomeModule } from "./core/framework/home/home.module";
+import { MatReferenceFieldModule } from "./core/framework/material-custom-components/mat-reference-field/mat-reference-field.module";
+import { JwtInterceptor } from "./core/framework/interceptors/jwt.interceptor";
 
 
 export function tokenGetter() {
@@ -77,7 +78,7 @@ export function tokenGetter() {
     JwtModule.forRoot({
       config: {
         tokenGetter: tokenGetter,
-        whitelistedDomains: ['localhost:8080'],
+        whitelistedDomains: [''],
         skipWhenExpired: true
       }
     })
@@ -88,7 +89,8 @@ export function tokenGetter() {
     [ AuthGuard,
       AlertService,
       UserService,
-      { provide: HTTP_INTERCEPTORS, useClass: ErrorInterceptor, multi: true }
+      { provide: HTTP_INTERCEPTORS, useClass: ErrorInterceptor, multi: true },
+      { provide: HTTP_INTERCEPTORS, useClass: JwtInterceptor, multi: true },
       ],
 
   bootstrap: [AppComponent]

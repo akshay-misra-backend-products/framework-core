@@ -13,7 +13,7 @@ public class SystemConstants {
         String ATTRIBUTE_GROUP = "5ea8117bfd96fbebc61418f1";
         String ATTRIBUTE_TYPE = "5ea83e1dfd96fbebc61418f2";
         String REFERENCE_TO_OBJECT_TYPE = "5ea86df0c8ae3bed4679f5cc";
-        String USAE_AS_FILTER = "5ea84103fd96fbebc61418f3";
+        String USE_AS_FILTER = "5ea84103fd96fbebc61418f3";
         String FOR_CATALOG = "5ea84422fd96fbebc61418f4";
         String IS_SYSTEM = "5ea84509fd96fbebc61418f5";
         String READONLY = "5ea84655fd96fbebc61418f6";
@@ -45,15 +45,27 @@ public class SystemConstants {
         String REFERENCE_TO_OBJECT_TYPES = "5eaa98932e2efbf64a9f4a5a";
         String IS_CONTAINER = "5eca9489c4b81f159cf43f59";
 
+        /* Dynamic Object */
+        String DYNAMIC_PARAMETERS = "5f11ec17fcbf48118eb7daad";
+
+        /* Locale */
+        String CURRENCY = "5f4179bbb04d4e2b37d435cf";
+
+        /* Currency */
+        String SYMBOL = "5f417825b04d4e2b37d435cd";
+        String CODE = "5f417883b04d4e2b37d435ce";
+
     }
 
-    public static interface ObjectTypes {
+    public interface ObjectTypes {
         String OBJECT_TYPE = "5ea86babc8ae3bed0b307a4d";
         String ATTRIBUTE = "5e934d4567ed1fb0bcf0fca7";
         String ATTRIBUTE_GROUP = "5e934da667ed1fb0bcf0fca8";
         String ATTRIBUTE_VALUE = "5ea6c35f3fe39bd27a715a33";
         String NAVIGATION_TAB = "5eaaa5862e2efbf64a9f4a5b";
         String OBJECT_CHARACTERISTICS = "5eac03a15316dbfb9a365f3c";
+        String LOCALE = "5f41766eb04d4e2b37d435cb";
+        String CURRENCY = "5f4176d7b04d4e2b37d435cc";
     }
 
     public interface Objects {

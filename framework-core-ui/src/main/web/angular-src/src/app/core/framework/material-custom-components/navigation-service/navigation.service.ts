@@ -3,6 +3,8 @@ import { Observable, Subject } from 'rxjs';
 import {HttpClient, HttpHeaders} from '@angular/common/http';
 import { MenuItem } from './menu-item';
 import {MenuItemConfig} from './menu-item-config';
+import {Router} from "@angular/router";
+import {GatewayService} from "../../services/constants/gateway.service";
 
 const httpOptions = {
   headers: new HttpHeaders({ 'Content-Type': 'application/json' })
@@ -11,15 +13,14 @@ const httpOptions = {
 @Injectable()
 export class NavigationService {
 
-  private serverApi = 'http://localhost:8080';
-
   private tabs: MenuItem[];
 
   public westSideNavToggleSubject = new Subject<boolean>();
 
   public eastSideNavToggleSubject = new Subject<boolean>();
 
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient,
+              private gatewayService :GatewayService) { }
 
   public toggleWestNavbar(toggle: boolean) {
     return this.westSideNavToggleSubject.next(toggle);
@@ -38,7 +39,7 @@ export class NavigationService {
   }
 
   public loadNavigationMenuConfig(): Observable<MenuItemConfig> {
-    const URI = `${this.serverApi}` + '/application/api/load/navigation/menu/config';
+    const URI = `${this.gatewayService.FRAMEWORK_SERVICE_URL}` + '/application/api/load/navigation/menu/config';
     return this.http.get<MenuItemConfig>(URI, httpOptions);
   }
 

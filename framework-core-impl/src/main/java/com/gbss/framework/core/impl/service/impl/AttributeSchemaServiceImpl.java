@@ -16,6 +16,8 @@ import com.gbss.framework.core.model.entities.ObjectType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -256,11 +258,45 @@ public class AttributeSchemaServiceImpl extends ApplicationAuditServiceImpl impl
     }
 
     @Override
+    public DynamicObject updateDynamicObject(String json) {
+        DynamicObject dynamicObjectUI = jsonToDynamicObjectBuilder.build(json);
+        System.out.println("******* updateDynamicObject, dynamicObjectUI: " + dynamicObjectUI);
+        ObjectType objectType = objectTypeRepository.findById(dynamicObjectUI.getObjectTypeId()).get();
+        if (!StringUtils.isEmpty(objectType.getCollectionName())) {
+            if (!mongoTemplate.getCollectionNames().contains(objectType.getCollectionName())) {
+                mongoTemplate.createCollection(objectType.getCollectionName());
+            }
+            DynamicObject dynamicObjectDB = mongoTemplate.findById(dynamicObjectUI.getId(), DynamicObject.class,
+                    objectType.getCollectionName());
+            handleAudit(dynamicObjectDB, dynamicObjectUI);
+            mongoTemplate.save(dynamicObjectUI, objectType.getCollectionName());
+        } else {
+            Optional<DynamicObject> dynamicObjectDB = dynamicObjectRepository.findById(dynamicObjectUI.getId());
+            handleAudit(dynamicObjectDB.get(), dynamicObjectUI);
+            dynamicObjectRepository.save(dynamicObjectUI);
+        }
+
+        return dynamicObjectUI;
+    }
+
+    @Override
     public List<DynamicObject> getDynamicObjects(String objectTypeId) {
         List<DynamicObject> objects = new ArrayList<>();
         ObjectType objectType = objectTypeRepository.findById(objectTypeId).get();
         if (!StringUtils.isEmpty(objectType.getCollectionName())) {
             objects.addAll(mongoTemplate.findAll(DynamicObject.class, objectType.getCollectionName()));
+        }
+
+        return objects;
+    }
+
+    @Override
+    public List<DynamicObject> getDynamicObjectsByParentId(String objectTypeId, String parentId) {
+        List<DynamicObject> objects = new ArrayList<>();
+        ObjectType objectType = objectTypeRepository.findById(objectTypeId).get();
+        if (!StringUtils.isEmpty(objectType.getCollectionName())) {
+            objects.addAll(mongoTemplate.find(Query.query(Criteria.where("parentId").is(parentId)),
+                    DynamicObject.class, objectType.getCollectionName()));
         }
 
         return objects;

@@ -15,7 +15,8 @@ public enum AttributeType {
     PASSWORD(10),
     COLOR(11),
     REFERENCE_ID(12),
-    BOOLEAN(13);
+    BOOLEAN(13),
+    KEY_VALUE(14);
 
     public int value;
     AttributeType(int value) {

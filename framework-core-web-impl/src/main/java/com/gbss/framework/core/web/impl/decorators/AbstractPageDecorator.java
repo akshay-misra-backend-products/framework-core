@@ -26,7 +26,7 @@ abstract class AbstractPageDecorator<T extends PageConfig> implements PageDecora
     @Override
     public T decorate(String objectTypeId, String id, Layout layout) throws ObjectNotFoundException {
         PageConfig pageConfig = getPageModel();
-        if (id != null) {
+        if (id != null && !Layout.FORM.equals(layout)) {
             Base base = entityBuilder.getObjectByChildOrCurrentOT(objectTypeId, id);
             pageConfig.setName(commonEntityUtils.getName(base));
         }

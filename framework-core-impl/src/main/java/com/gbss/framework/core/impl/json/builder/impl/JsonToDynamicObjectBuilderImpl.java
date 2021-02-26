@@ -5,6 +5,7 @@ import com.gbss.framework.core.impl.meta.data.MetadataHelper;
 import com.gbss.framework.core.api.service.api.AttributeSchemaService;
 import com.gbss.framework.core.model.constants.AttributeType;
 import com.gbss.framework.core.model.entities.Attribute;
+import com.gbss.framework.core.model.entities.Base;
 import com.gbss.framework.core.model.entities.DynamicObject;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -13,6 +14,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.lang.reflect.Field;
+import java.text.DateFormat;
+import java.text.ParseException;
 import java.util.*;
 
 @Service
@@ -28,12 +31,32 @@ public class JsonToDynamicObjectBuilderImpl implements JsonToDynamicObjectBuilde
     public DynamicObject build(String json) {
         System.out.println("*****  &&&&&&  %%%%%  $$$$$   #######  createObject, json: " + json);
         JSONObject jsonObject = new JSONObject(json);
-        System.out.println("*****  &&&&&&  %%%%%  $$$$$   #######  createObject, json keys: " + jsonObject.keySet());
         DynamicObject dynamicObject = new DynamicObject();
-        jsonObject.keySet().stream().forEach(key -> {
+        jsonObject.keySet().stream()
+                .filter(key -> !"createdAt".equals(key) && !"lastModifiedAt".equals(key))
+                .forEach(key -> {
+            System.out.println("*****  &&&&&&  %%%%%  $$$$$   ####### build, key: " + key);
             Field field =  metadataHelper.getField(dynamicObject.getClass(), key);
+            if (field == null) {
+                field =  metadataHelper.getField(dynamicObject.getClass().getSuperclass(), key);
+            }
+            System.out.println("*****  &&&&&&  %%%%%  $$$$$   ####### build, field: " + field);
             if (field != null) {
-                metadataHelper.setValue(dynamicObject, DynamicObject.class, field, jsonObject.get(key));
+                Object value = null;
+                if (jsonObject.get(key) != null) {
+                    if (Date.class.equals(field.getType())) {
+                        try {
+                            value = DateFormat.getInstance().parse(jsonObject.getString(key));
+                        } catch (ParseException e) {
+                            System.out.println("*****  &&&&&&  %%%%%  $$$$$   ####### build, ParseException: " + e);
+                        }
+                    } else if (Long.class.equals(field.getType())) {
+                        value = jsonObject.getLong(key);
+                    } else {
+                        value = jsonObject.get(key);
+                    }
+                    metadataHelper.setValue(dynamicObject, Base.class, field, value);
+                }
             } else {
                 dynamicObject.getExtendedParameters().putAll(getValueToPersist(key, jsonObject));
             }
