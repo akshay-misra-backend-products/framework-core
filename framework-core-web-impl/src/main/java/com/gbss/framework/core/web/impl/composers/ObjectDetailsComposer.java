@@ -147,7 +147,7 @@ public class ObjectDetailsComposer<T extends ObjectLayoutWrapper> implements Com
         return compositeTableConfig;
     }
 
-    private List<GroupConfig> getExtendedGroupConfigs(Set<Field> fields, Base base) {
+    private List<GroupConfig> getExtendedGroupConfigs(Set<Field> fields, Base base) throws ObjectNotFoundException {
         System.out.println("********** ########## ObjectDetailsComposer, getExtendedGroupConfigs, fields: "+ fields +
                 ", base: " + base);
         List<GroupConfig> groupConfigs = new ArrayList<>();
@@ -189,7 +189,7 @@ public class ObjectDetailsComposer<T extends ObjectLayoutWrapper> implements Com
         return groupConfigs;
     }
 
-    private Map<String, List<FieldConfig>> getGroupToFieldConfigs(Field field, Base base) {
+    private Map<String, List<FieldConfig>> getGroupToFieldConfigs(Field field, Base base) throws ObjectNotFoundException {
         Map<String, List<FieldConfig>> groupToFieldConfig = new HashMap<>();
         Object value = metadataHelper.getValue(base, base.getClass(), field);
         System.out.println("********** ########## ObjectDetailsComposer, getGroupToFieldConfigs, value: "+ value);
@@ -238,7 +238,7 @@ public class ObjectDetailsComposer<T extends ObjectLayoutWrapper> implements Com
         return groupToFieldConfig;
     }
 
-    private FieldConfig getExtendedFieldConfig(Attribute attribute, Object value, Base base) {
+    private FieldConfig getExtendedFieldConfig(Attribute attribute, Object value, Base base) throws ObjectNotFoundException {
         System.out.println("********** ########## ObjectDetailsComposer, getExtendedGroupConfigs, "
                 + "attribute: " + attribute
                 + ", value: " + value
@@ -252,7 +252,12 @@ public class ObjectDetailsComposer<T extends ObjectLayoutWrapper> implements Com
             if (attribute.getReferenceToObjectType() != null) {
                 MongoRepository repository = objectTypeRepositoryFactory.
                         getBean(attribute.getReferenceToObjectType());
-                Base refIdValue = (Base) repository.findById(value).get();
+                Base refIdValue;
+                if (repository == null) {
+                    refIdValue = entityBuilder.getObjectById(attribute.getReferenceToObjectType(), value.toString());
+                } else {
+                    refIdValue = (Base) repository.findById(value).get();
+                }
                 fieldConfig.setValue(refIdValue);
             } else {
                 fieldConfig.setValue(value);
@@ -293,13 +298,10 @@ public class ObjectDetailsComposer<T extends ObjectLayoutWrapper> implements Com
                 options.addAll(getAttributeTypeOptions());
             } else {
                 List<AttributeValue> attributeValues = attributeValueRepository.findByParentId(attribute.getId());
-                attributeValues.stream()
-                        .map(attributeValue -> {
-                            ListFieldConfig.Options option = new ListFieldConfig.Options(attributeValue.getId(),
-                                    attributeValue.getPublicName());
-                            options.add(option);
-                            return null;
-                        });
+                options.addAll(attributeValues.stream()
+                        .map(attributeValue -> new ListFieldConfig.Options(attributeValue.getId(),
+                                attributeValue.getPublicName()))
+                        .collect(Collectors.toList()));
             }
             ((ListFieldConfig) fieldConfig).setOptions(options);
         } else if (FieldType.BOOLEAN.value == attribute.getAttributeType()) {
