@@ -63,6 +63,21 @@ public class BreadCrumbConverter implements Converter<BreadCrumbConfig, ObjectTy
                 .build();
     }
 
+    public BreadCrumbConfig getDetails(String parentObjectTypeId,
+                                       String parentId,
+                                       Base base) {
+        return breadCrumbBuilder.createBuilder()
+                .setName(commonEntityUtils.getName(base))
+                .setRoute(restRouteCalculationService.getObjectDetailsRoute(
+                        parentObjectTypeId,
+                        parentId,
+                        base.getObjectTypeId(),
+                        base.getId()))
+                .setIcon("")
+                .setDummy(false)
+                .build();
+    }
+
     public BreadCrumbConfig getDetails(Base base) {
         return breadCrumbBuilder.createBuilder()
                 .setName(commonEntityUtils.getName(base))

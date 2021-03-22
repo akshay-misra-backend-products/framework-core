@@ -4,5 +4,8 @@ import javax.ejb.ObjectNotFoundException;
 
 public interface Composer<T> {
 
-    T compose(String objectTypeId, String objectId) throws ObjectNotFoundException;
+    T compose(String parentObjectTypeId,
+              String parentId,
+              String objectTypeId,
+              String objectId) throws ObjectNotFoundException;
 }

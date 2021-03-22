@@ -16,9 +16,13 @@ public class DetailsPageDecorator extends AbstractPageDecorator<DetailsPageConfi
     ObjectDetailsComposer objectDetailsComposer;
 
     @Override
-    public DetailsPageConfig decorate(String objectTypeId, String id, Layout layout) throws ObjectNotFoundException {
-        DetailsPageConfig pageConfig = super.decorate(objectTypeId, id, layout);
-        pageConfig.setLayoutConfig(objectDetailsComposer.compose(objectTypeId, id));
+    public DetailsPageConfig decorate(String parentObjectTypeId,
+                                      String parentId,
+                                      String objectTypeId,
+                                      String objectId,
+                                      Layout layout) throws ObjectNotFoundException {
+        DetailsPageConfig pageConfig = super.decorate(parentObjectTypeId, parentId, objectTypeId, objectId, layout);
+        pageConfig.setLayoutConfig(objectDetailsComposer.compose(parentObjectTypeId, parentId, objectTypeId, objectId));
 
         return pageConfig;
     }

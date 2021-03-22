@@ -6,15 +6,7 @@ import com.gbss.framework.core.model.entities.AttributeGroup;
 import com.gbss.framework.core.model.entities.AttributeValue;
 import com.gbss.framework.core.model.entities.ObjectType;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.util.List;
@@ -106,13 +98,13 @@ public class AttributeSchemaController {
     }
 
     @PostMapping("/5e934d4567ed1fb0bcf0fca7/add")
-    public Attribute createAttribute(@Valid @RequestBody Attribute attribute) {
-        return attributeSchemaService.createAttribute(attribute);
+    public Attribute createAttribute(@Valid @RequestBody String json) {
+        return attributeSchemaService.createAttribute(json);
     }
 
     @PutMapping(value="/5e934d4567ed1fb0bcf0fca7/update")
-    public Attribute updateAttribute(@Valid @RequestBody Attribute attribute) {
-        return attributeSchemaService.updateAttribute(attribute);
+    public Attribute updateAttribute(@Valid @RequestBody String json) {
+        return attributeSchemaService.updateAttribute(json);
     }
 
     @DeleteMapping(value="/5e934d4567ed1fb0bcf0fca7/delete/{id}")
@@ -150,3 +142,6 @@ public class AttributeSchemaController {
         return attributeSchemaService.deleteAttributeValue(id);
     }
 }
+
+
+//http://localhost:8765/gbss-framework-core-service/application/api/5e934d4567ed1fb0bcf0fca7/update/all?attribute=parentId&value=603aad6fe1d7a507c3ba595c

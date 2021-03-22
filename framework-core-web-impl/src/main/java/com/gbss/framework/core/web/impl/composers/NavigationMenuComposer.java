@@ -21,7 +21,10 @@ public class NavigationMenuComposer implements Composer<CompositeMenuConfig> {
     NavigationItemConverter navigationItemConverter;
 
     @Override
-    public CompositeMenuConfig compose(String objectTypeId, String objectId) {
+    public CompositeMenuConfig compose(String parentObjectTypeId,
+                                       String parentId,
+                                       String objectTypeId,
+                                       String objectId) {
         CompositeMenuConfig config = new CompositeMenuConfig();
 
         List<NavigationTab> tabs =  applicationLayoutService.getNavigationTabByParentId(null);

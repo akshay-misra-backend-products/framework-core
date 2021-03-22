@@ -6,6 +6,10 @@ public class DynamicTableConfig {
 
     private String name;
 
+    private String objectTypeId;
+
+    private String parentId;
+
     private String loadAPI;
 
     private String createAPI;
@@ -24,6 +28,22 @@ public class DynamicTableConfig {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getObjectTypeId() {
+        return objectTypeId;
+    }
+
+    public void setObjectTypeId(String objectTypeId) {
+        this.objectTypeId = objectTypeId;
+    }
+
+    public String getParentId() {
+        return parentId;
+    }
+
+    public void setParentId(String parentId) {
+        this.parentId = parentId;
     }
 
     public String getLoadAPI() {

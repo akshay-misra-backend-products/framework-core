@@ -16,17 +16,17 @@ const routes: Routes = [
     canActivate: [AuthGuard]
   },
   { path: '', component: HomeComponent, canActivate: [AuthGuard]},
-  { path: 'application/navigation/:objectTypeId/:objectId',
+  { path: 'application/navigation/:parentObjectTypeId/:parentId/:objectTypeId/:objectId',
     component: CompositePageComponent,
     data : { operation : 'load_nav' },
     canActivate: [AuthGuard]
   },
-  { path: 'application/design/create/object/:objectTypeId/:objectId',
+  { path: 'application/create/object/:parentObjectTypeId/:parentId/:objectTypeId',
     component: CompositePageComponent,
     data : { operation : 'load_form' },
     canActivate: [AuthGuard]
   },
-  { path: 'application/api/load/details/:objectTypeId/:objectId',
+  { path: 'application/object/details/:parentObjectTypeId/:parentId/:objectTypeId/:objectId',
     component: CompositePageComponent,
     data : { operation : 'load_details' },
     canActivate: [AuthGuard]

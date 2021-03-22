@@ -18,7 +18,7 @@ export class CompositeDetailsService {
 
 
   public loadObjectDetails(loadAPI: string): Observable<any> {
-    let URI = `${this.gatewayService.FRAMEWORK_SERVICE_URL}` + loadAPI;
+    let URI = `${this.gatewayService.GATEWAY_URL}` + loadAPI;
     return this.http.get<any[]>(URI, httpOptions);
   }
 }

@@ -6,6 +6,7 @@ import com.gbss.framework.core.api.service.api.AttributeSchemaService;
 import com.gbss.framework.core.model.constants.AttributeType;
 import com.gbss.framework.core.model.entities.Attribute;
 import com.gbss.framework.core.model.entities.Base;
+import com.gbss.framework.core.model.entities.BaseLite;
 import com.gbss.framework.core.model.entities.DynamicObject;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -29,18 +30,21 @@ public class JsonToDynamicObjectBuilderImpl implements JsonToDynamicObjectBuilde
 
     @Override
     public DynamicObject build(String json) {
-        System.out.println("*****  &&&&&&  %%%%%  $$$$$   #######  createObject, json: " + json);
+        System.out.println("createObject, json: " + json);
         JSONObject jsonObject = new JSONObject(json);
         DynamicObject dynamicObject = new DynamicObject();
         jsonObject.keySet().stream()
                 .filter(key -> !"createdAt".equals(key) && !"lastModifiedAt".equals(key))
                 .forEach(key -> {
-            System.out.println("*****  &&&&&&  %%%%%  $$$$$   ####### build, key: " + key);
+            System.out.println("build, key: " + key);
             Field field =  metadataHelper.getField(dynamicObject.getClass(), key);
             if (field == null) {
-                field =  metadataHelper.getField(dynamicObject.getClass().getSuperclass(), key);
+                field =  metadataHelper.getField(Base.class, key);
             }
-            System.out.println("*****  &&&&&&  %%%%%  $$$$$   ####### build, field: " + field);
+            if (field == null) {
+                field =  metadataHelper.getField(BaseLite.class, key);
+            }
+            System.out.println("build, field: " + field);
             if (field != null) {
                 Object value = null;
                 if (jsonObject.get(key) != null) {
@@ -48,7 +52,7 @@ public class JsonToDynamicObjectBuilderImpl implements JsonToDynamicObjectBuilde
                         try {
                             value = DateFormat.getInstance().parse(jsonObject.getString(key));
                         } catch (ParseException e) {
-                            System.out.println("*****  &&&&&&  %%%%%  $$$$$   ####### build, ParseException: " + e);
+                            System.out.println("build, ParseException: " + e);
                         }
                     } else if (Long.class.equals(field.getType())) {
                         value = jsonObject.getLong(key);
@@ -62,8 +66,34 @@ public class JsonToDynamicObjectBuilderImpl implements JsonToDynamicObjectBuilde
             }
         });
 
-        System.out.println("*****  &&&&&&  %%%%%  $$$$$   ####### build, dynamicObject: " + dynamicObject);
+        System.out.println("build, dynamicObject: " + dynamicObject);
         return dynamicObject;
+    }
+
+    @Override
+    public Map<String, Object> getDynamicParameters(String json, Class clazz) {
+        System.out.println("*****  &&&&&&  %%%%%  $$$$$   #######  getDynamicParameters, json: " + json
+                +", class: " + clazz);
+        Map<String, Object> parameters = new HashMap<>();
+        JSONObject jsonObject = new JSONObject(json);
+        jsonObject.keySet().stream()
+                .filter(key -> !"createdAt".equals(key) && !"lastModifiedAt".equals(key))
+                .forEach(key -> {
+                    System.out.println("*****  &&&&&&  %%%%%  $$$$$   ####### getDynamicParameters, key: " + key);
+                    Field field = metadataHelper.getField(clazz, key);
+                    if (field == null) {
+                        field = metadataHelper.getField(clazz.getSuperclass(), key);
+                    }
+                    if (field == null && clazz.getSuperclass() != null) {
+                        field = metadataHelper.getField(clazz.getSuperclass().getSuperclass(), key);
+                    }
+                    System.out.println("*****  &&&&&&  %%%%%  $$$$$   ####### getDynamicParameters, field: " + field);
+                    if (field == null) {
+                        parameters.putAll(getValueToPersist(key, jsonObject));
+                    }
+                });
+        System.out.println("*****  &&&&&&  %%%%%  $$$$$   ####### getDynamicParameters, parameters: " + parameters);
+        return parameters;
     }
 
     public Map<String, Object> getValueToPersist(String attributeId, JSONObject jsonObject) {

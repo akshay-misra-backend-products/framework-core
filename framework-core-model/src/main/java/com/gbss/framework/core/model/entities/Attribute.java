@@ -1,5 +1,6 @@
 package com.gbss.framework.core.model.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.gbss.framework.core.meta.annotations.AttributeId;
 import com.gbss.framework.core.meta.annotations.BooleanAttr;
 import com.gbss.framework.core.meta.annotations.RefAttr;
@@ -10,6 +11,8 @@ import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import javax.validation.constraints.NotNull;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -34,24 +37,6 @@ public class Attribute extends Base {
     @JsonProperty(SystemConstants.Attributes.REFERENCE_TO_OBJECT_TYPE)
     @AttributeId(SystemConstants.Attributes.REFERENCE_TO_OBJECT_TYPE)
     private String referenceToObjectType;
-
-    @NotNull
-    @BooleanAttr(
-            trueId  = SystemConstants.TrueFalseList.TRUE_ID,
-            falseId = SystemConstants.TrueFalseList.FALSE_ID
-    )
-    @JsonProperty(SystemConstants.Attributes.USE_AS_FILTER)
-    @AttributeId(SystemConstants.Attributes.USE_AS_FILTER)
-    private boolean useAsFilter;
-
-    @NotNull
-    @BooleanAttr(
-            trueId  = SystemConstants.TrueFalseList.TRUE_ID,
-            falseId = SystemConstants.TrueFalseList.FALSE_ID
-    )
-    @JsonProperty(SystemConstants.Attributes.FOR_CATALOG)
-    @AttributeId(SystemConstants.Attributes.FOR_CATALOG)
-    private boolean catalog;
 
     @NotNull
     @BooleanAttr(
@@ -107,6 +92,9 @@ public class Attribute extends Base {
     @AttributeId(SystemConstants.Attributes.SHOW_IN_CREATE)
     private boolean showInCreate;
 
+    @AttributeId(SystemConstants.Attributes.DYNAMIC_PARAMETERS)
+    private Map<String, Object> moduleParameters = new HashMap<>();
+
     public AttributeGroup getAttributeGroup() {
         return attributeGroup;
     }
@@ -129,22 +117,6 @@ public class Attribute extends Base {
 
     public void setReferenceToObjectType(String referenceToObjectType) {
         this.referenceToObjectType = referenceToObjectType;
-    }
-
-    public boolean isUseAsFilter() {
-        return useAsFilter;
-    }
-
-    public void setUseAsFilter(boolean useAsFilter) {
-        this.useAsFilter = useAsFilter;
-    }
-
-    public boolean isCatalog() {
-        return catalog;
-    }
-
-    public void setCatalog(boolean catalog) {
-        this.catalog = catalog;
     }
 
     public boolean isSystem() {
@@ -193,6 +165,14 @@ public class Attribute extends Base {
 
     public void setShowInCreate(boolean showInCreate) {
         this.showInCreate = showInCreate;
+    }
+
+    public Map<String, Object> getModuleParameters() {
+        return moduleParameters;
+    }
+
+    public void setModuleParameters(Map<String, Object> moduleParameters) {
+        this.moduleParameters = moduleParameters;
     }
 
     @Override

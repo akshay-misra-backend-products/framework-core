@@ -1,5 +1,6 @@
 package com.gbss.framework.core.web.impl.spring.config;
 
+import com.gbss.framework.core.model.constants.SystemConstants;
 import com.gbss.framework.core.web.impl.repositories.TabRepository;
 import com.gbss.framework.core.impl.spring.config.RepositoryMapperConfig;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,7 +19,7 @@ public class RepositoryMapperWebConfig extends RepositoryMapperConfig {
     @Bean
     public Map<String, MongoRepository> objectTypeRepositoriesMapper() {
         Map<String, MongoRepository> config = super.objectTypeRepositoriesMapper();
-        config.put("5eaaa5862e2efbf64a9f4a5b", tabRepository);
+        //config.put(SystemConstants.ObjectTypes.NAVIGATION_TAB, tabRepository);
         System.out.println("&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&  config: " + config);
         return config;
     }

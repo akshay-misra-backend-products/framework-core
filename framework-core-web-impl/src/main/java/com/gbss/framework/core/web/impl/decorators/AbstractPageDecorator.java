@@ -24,13 +24,22 @@ abstract class AbstractPageDecorator<T extends PageConfig> implements PageDecora
     EntityBuilder entityBuilder;
 
     @Override
-    public T decorate(String objectTypeId, String id, Layout layout) throws ObjectNotFoundException {
+    public T decorate(String parentObjectTypeId,
+                      String parentId,
+                      String objectTypeId,
+                      String objectId,
+                      Layout layout) throws ObjectNotFoundException {
         PageConfig pageConfig = getPageModel();
-        if (id != null && !Layout.FORM.equals(layout)) {
-            Base base = entityBuilder.getObjectByChildOrCurrentOT(objectTypeId, id);
+        if (objectId != null && !Layout.FORM.equals(layout)) {
+            Base base = entityBuilder.getObjectById(objectTypeId, objectId);
             pageConfig.setName(commonEntityUtils.getName(base));
         }
-        CompositeBreadCrumbConfig breadCrumbConfig = breadCrumbComposer.compose(objectTypeId, id, layout);
+        CompositeBreadCrumbConfig breadCrumbConfig = breadCrumbComposer.compose(
+                parentObjectTypeId,
+                parentId,
+                objectTypeId,
+                objectId,
+                layout);
         pageConfig.setBreadCrumbConfig(breadCrumbConfig);
 
         return (T) pageConfig;

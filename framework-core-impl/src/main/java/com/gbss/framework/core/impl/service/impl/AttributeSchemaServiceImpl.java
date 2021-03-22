@@ -1,27 +1,24 @@
 package com.gbss.framework.core.impl.service.impl;
 
-import com.gbss.framework.core.impl.json.builder.impl.JsonToDynamicObjectBuilderImpl;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.gbss.framework.core.api.service.api.AttributeSchemaService;
+import com.gbss.framework.core.api.service.api.DynamicObjectsService;
+import com.gbss.framework.core.impl.factory.ObjectTypeRepositoryMapperFactory;
+import com.gbss.framework.core.impl.meta.data.MetadataHelper;
 import com.gbss.framework.core.impl.repositories.AttributeGroupRepository;
 import com.gbss.framework.core.impl.repositories.AttributeRepository;
 import com.gbss.framework.core.impl.repositories.AttributeValueRepository;
-import com.gbss.framework.core.impl.repositories.DynamicObjectRepository;
 import com.gbss.framework.core.impl.repositories.ObjectTypeRepository;
+import com.gbss.framework.core.impl.utils.CommonUtils;
 import com.gbss.framework.core.model.constants.SystemConstants;
-import com.gbss.framework.core.model.entities.Attribute;
-import com.gbss.framework.core.model.entities.AttributeGroup;
-import com.gbss.framework.core.model.entities.AttributeValue;
-import com.gbss.framework.core.model.entities.DynamicObject;
-import com.gbss.framework.core.model.entities.ObjectType;
+import com.gbss.framework.core.model.entities.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
-import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.query.Criteria;
-import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
 
-import java.util.ArrayList;
+import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Optional;
 
@@ -44,13 +41,16 @@ public class AttributeSchemaServiceImpl extends ApplicationAuditServiceImpl impl
     AttributeValueRepository attributeValueRepository;
 
     @Autowired
-    DynamicObjectRepository dynamicObjectRepository;
+    DynamicObjectsService dynamicObjectsService;
 
     @Autowired
-    JsonToDynamicObjectBuilderImpl jsonToDynamicObjectBuilder;
+    MetadataHelper metadataHelper;
 
     @Autowired
-    MongoTemplate mongoTemplate;
+    CommonUtils commonUtils;
+
+    @Autowired
+    ObjectTypeRepositoryMapperFactory objectTypeRepositoryFactory;
 
     @Override
     public List<ObjectType> getObjectTypes() {
@@ -72,7 +72,9 @@ public class AttributeSchemaServiceImpl extends ApplicationAuditServiceImpl impl
 
     @Override
     public ObjectType getObjectTypeById(String id) {
-        return objectTypeRepository.findById(id).get();
+        System.out.println("... ********** ########## getObjectTypeById, id: "+ id);
+        Optional<ObjectType> objectTypeOp = objectTypeRepository.findById(id);
+        return objectTypeOp.isPresent() ? objectTypeOp.get() : null;
     }
 
     @Override
@@ -80,11 +82,21 @@ public class AttributeSchemaServiceImpl extends ApplicationAuditServiceImpl impl
         System.out.println("... createObjectType, objectType: "+objectType);
         objectType.setObjectTypeId(SystemConstants.ObjectTypes.OBJECT_TYPE);
         ObjectType objectTypeFromDB = objectTypeRepository.save(objectType);
-        objectTypeFromDB.setLoadAPI("/application/api/"+objectTypeFromDB.getId()+"/load/all");
-        objectTypeFromDB.setLoadByIdAPI("/application/api/"+objectTypeFromDB.getId()+"/load/:id");
-        objectTypeFromDB.setAddAPI("/application/api/"+objectTypeFromDB.getId()+"/add");
-        objectTypeFromDB.setUpdateAPI("/application/api/"+objectTypeFromDB.getId()+"/update");
-        objectTypeFromDB.setDeleteAPI("/application/api/"+objectTypeFromDB.getId()+"/delete/:id");
+
+        objectTypeFromDB.setLoadAPI(commonUtils.constructApiUrl(objectType,
+                "/application/api/"+objectTypeFromDB.getId()+"/load/all"));
+        objectTypeFromDB.setLoadByIdAPI(commonUtils.constructApiUrl(objectType,
+                "/application/api/"+objectTypeFromDB.getId() + "/load/"));
+        objectTypeFromDB.setLoadDetailsByIdAPI(commonUtils.constructApiUrl(objectType,
+                "/application/api/load/details/" + objectTypeFromDB.getId()));
+        objectTypeFromDB.setLoadByParentIdAPI(commonUtils.constructApiUrl(objectType,
+                "/application/api/" + objectTypeFromDB.getId() + "/load/by/parent/"));
+        objectTypeFromDB.setAddAPI(commonUtils.constructApiUrl(objectType,
+                "/application/api/"+objectTypeFromDB.getId()+"/add"));
+        objectTypeFromDB.setUpdateAPI(commonUtils.constructApiUrl(objectType,
+                "/application/api/"+objectTypeFromDB.getId()+"/update"));
+        objectTypeFromDB.setDeleteAPI(commonUtils.constructApiUrl(objectType,
+                "/application/api/"+objectTypeFromDB.getId()+"/delete/:id"));
         return objectTypeRepository.save(objectTypeFromDB);
     }
 
@@ -93,13 +105,48 @@ public class AttributeSchemaServiceImpl extends ApplicationAuditServiceImpl impl
         System.out.println("... updateObjectType, objectType: "+objectType);
         Optional<ObjectType> objectTypeOp = objectTypeRepository.findById(objectType.getId());
         ObjectType objectTypeFromDB = objectTypeOp.get();
-        objectType.setLoadAPI("/application/api/"+objectTypeFromDB.getId()+"/load/all");
-        objectType.setLoadByIdAPI("/application/api/"+objectTypeFromDB.getId()+"/load/:id");
-        objectType.setAddAPI("/application/api/"+objectTypeFromDB.getId()+"/add");
-        objectType.setUpdateAPI("/application/api/"+objectTypeFromDB.getId()+"/update");
-        objectType.setDeleteAPI("/application/api/"+objectTypeFromDB.getId()+"/delete/:id");
-        handleAudit(objectTypeOp.get(), objectType);
+        objectType.setLoadAPI(commonUtils.constructApiUrl(objectType,
+                "/application/api/"+objectTypeFromDB.getId()+"/load/all"));
+        objectType.setLoadByIdAPI(commonUtils.constructApiUrl(objectType,
+                "/application/api/"+objectTypeFromDB.getId()+"/load/"));
+        objectType.setLoadDetailsByIdAPI(commonUtils.constructApiUrl(objectType,
+                "/application/api/load/details/"+objectTypeFromDB.getId()));
+        objectType.setLoadByParentIdAPI(commonUtils.constructApiUrl(objectType,
+                "/application/api/" + objectTypeFromDB.getId() + "/load/by/parent/"));
+        objectType.setAddAPI(commonUtils.constructApiUrl(objectType,
+                "/application/api/"+objectTypeFromDB.getId()+"/add"));
+        objectType.setUpdateAPI(commonUtils.constructApiUrl(objectType,
+                "/application/api/"+objectTypeFromDB.getId()+"/update"));
+        objectType.setDeleteAPI(commonUtils.constructApiUrl(objectType,
+                "/application/api/"+objectTypeFromDB.getId()+"/delete/:id"));
+        handleAudit(objectTypeFromDB, objectType);
         return objectTypeRepository.save(objectType);
+    }
+
+    @Override
+    public boolean updateAllObjectType() {
+        List<ObjectType> objectTypes = objectTypeRepository.findAll();
+        //objectTypes.stream().forEach(objectType -> updateObjectType(objectType));
+
+        //updating collection names for framework core object types
+        /*objectTypes.stream().forEach(objectType -> {
+            if (objectType.getCollectionName() == null) {
+                MongoRepository repository = objectTypeRepositoryFactory.getBean(objectType.getId());
+                if (repository != null) {
+                    Base base = (Base) repository.findAll().stream().findFirst().orElse(null);
+                    System.out.println("****** ###### Document:" + base.getClass().getAnnotation(Document.class));
+                    System.out.println("****** ###### Document.value" + base.getClass().getAnnotation(Document.class).collection());
+                    if (base.getClass().getAnnotation(Document.class) != null
+                    && base.getClass().getAnnotation(Document.class).collection() != null) {
+                        String collection = base.getClass().getAnnotation(Document.class).collection();
+                        objectType.setCollectionName(collection);
+                        objectTypeRepository.save(objectType);
+                    }
+                }
+            }
+        });*/
+
+        return true;
     }
 
     @Override
@@ -145,6 +192,20 @@ public class AttributeSchemaServiceImpl extends ApplicationAuditServiceImpl impl
     }
 
     @Override
+    public boolean updateAllAttributeGroup(String attribute, String value) {
+        System.out.println("updateAllAttributeGroup, attribute: " + attribute + ", value: " + value);
+        List<AttributeGroup> attributeGroups = attributeGroupRepository.findAll();
+        attributeGroups.stream().forEach(attr -> {
+                    Field field = metadataHelper.getField(attr.getClass(), attribute);
+                    metadataHelper.setValue(attr, attr.getClass(), field, value);
+                    attributeGroupRepository.save(attr);
+                }
+        );
+
+        return true;
+    }
+
+    @Override
     public boolean deleteAttributeGroup(String id) {
         System.out.println("... deleteAttributeGroup, id: "+id);
         Optional<AttributeGroup> attributeGroup = attributeGroupRepository.findById(id);
@@ -172,18 +233,55 @@ public class AttributeSchemaServiceImpl extends ApplicationAuditServiceImpl impl
     }
 
     @Override
-    public Attribute createAttribute(Attribute attribute) {
-        System.out.println("... createAttribute, attribute: "+attribute);
+    public Attribute createAttribute(String json) {
+        JsonMapper mapper = new JsonMapper();
+        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        Attribute attribute = null;
+        try {
+            attribute = mapper.readValue(json, Attribute.class);
+            attribute.getModuleParameters().putAll(dynamicObjectsService.getDynamicParameters(json, Attribute.class));
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+            System.out.println("Exception caught while creating Attribute: " + e);
+        }
+
+        System.out.println("... createAttribute, attribute: " + attribute);
         attribute.setObjectTypeId(SystemConstants.ObjectTypes.ATTRIBUTE);
         return attributeRepository.save(attribute);
     }
 
     @Override
-    public Attribute updateAttribute(Attribute attribute) {
-        System.out.println("... updateAttribute, attribute: "+attribute);
+    public Attribute updateAttribute(String json) {
+        System.out.println("... updateAttribute, json: " + json);
+        JsonMapper mapper = new JsonMapper();
+        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        Attribute attribute = null;
+        try {
+            attribute = mapper.readValue(json, Attribute.class);
+            attribute.getModuleParameters().putAll(dynamicObjectsService.getDynamicParameters(json, Attribute.class));
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+            System.out.println("Exception caught while updating Attribute: " + e);
+        }
+
+        System.out.println("... createAttribute, attribute: " + attribute);
         Optional<Attribute> attributeOp = attributeRepository.findById(attribute.getId());
         handleAudit(attributeOp.get(), attribute);
         return attributeRepository.save(attribute);
+    }
+
+    @Override
+    public boolean updateAllAttribute(String attribute, String value) {
+        System.out.println("updateAllAttribute, attribute: " + attribute + ", value: " + value);
+        List<Attribute> attributes = attributeRepository.findAllBySystemTrue();
+        attributes.stream().forEach(attr -> {
+                Field field = metadataHelper.getField(attr.getClass(), attribute);
+                metadataHelper.setValue(attr, attr.getClass(), field, value);
+                attributeRepository.save(attr);
+            }
+        );
+
+        return true;
     }
 
     @Override
@@ -239,66 +337,5 @@ public class AttributeSchemaServiceImpl extends ApplicationAuditServiceImpl impl
             return true;
         }
         return false;
-    }
-
-    @Override
-    public DynamicObject createDynamicObject(String json) {
-        DynamicObject dynamicObject = jsonToDynamicObjectBuilder.build(json);
-        ObjectType objectType = objectTypeRepository.findById(dynamicObject.getObjectTypeId()).get();
-        if (!StringUtils.isEmpty(objectType.getCollectionName())) {
-            if (!mongoTemplate.getCollectionNames().contains(objectType.getCollectionName())) {
-                mongoTemplate.createCollection(objectType.getCollectionName());
-            }
-            mongoTemplate.save(dynamicObject, objectType.getCollectionName());
-        } else {
-            dynamicObjectRepository.save(dynamicObject);
-        }
-
-        return dynamicObject;
-    }
-
-    @Override
-    public DynamicObject updateDynamicObject(String json) {
-        DynamicObject dynamicObjectUI = jsonToDynamicObjectBuilder.build(json);
-        System.out.println("******* updateDynamicObject, dynamicObjectUI: " + dynamicObjectUI);
-        ObjectType objectType = objectTypeRepository.findById(dynamicObjectUI.getObjectTypeId()).get();
-        if (!StringUtils.isEmpty(objectType.getCollectionName())) {
-            if (!mongoTemplate.getCollectionNames().contains(objectType.getCollectionName())) {
-                mongoTemplate.createCollection(objectType.getCollectionName());
-            }
-            DynamicObject dynamicObjectDB = mongoTemplate.findById(dynamicObjectUI.getId(), DynamicObject.class,
-                    objectType.getCollectionName());
-            handleAudit(dynamicObjectDB, dynamicObjectUI);
-            mongoTemplate.save(dynamicObjectUI, objectType.getCollectionName());
-        } else {
-            Optional<DynamicObject> dynamicObjectDB = dynamicObjectRepository.findById(dynamicObjectUI.getId());
-            handleAudit(dynamicObjectDB.get(), dynamicObjectUI);
-            dynamicObjectRepository.save(dynamicObjectUI);
-        }
-
-        return dynamicObjectUI;
-    }
-
-    @Override
-    public List<DynamicObject> getDynamicObjects(String objectTypeId) {
-        List<DynamicObject> objects = new ArrayList<>();
-        ObjectType objectType = objectTypeRepository.findById(objectTypeId).get();
-        if (!StringUtils.isEmpty(objectType.getCollectionName())) {
-            objects.addAll(mongoTemplate.findAll(DynamicObject.class, objectType.getCollectionName()));
-        }
-
-        return objects;
-    }
-
-    @Override
-    public List<DynamicObject> getDynamicObjectsByParentId(String objectTypeId, String parentId) {
-        List<DynamicObject> objects = new ArrayList<>();
-        ObjectType objectType = objectTypeRepository.findById(objectTypeId).get();
-        if (!StringUtils.isEmpty(objectType.getCollectionName())) {
-            objects.addAll(mongoTemplate.find(Query.query(Criteria.where("parentId").is(parentId)),
-                    DynamicObject.class, objectType.getCollectionName()));
-        }
-
-        return objects;
     }
 }

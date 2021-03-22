@@ -13,7 +13,7 @@ export class DynamicFormService {
               private gatewayService :GatewayService) { }
 
   public createObject(object: any, createAPI: string): Observable<any> {
-    let URI = `${this.gatewayService.FRAMEWORK_SERVICE_URL}` + createAPI;
+    let URI = `${this.gatewayService.GATEWAY_URL}` + createAPI;
     return this.http.post<any>(URI, object);
   }
 }

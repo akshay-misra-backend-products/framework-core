@@ -17,34 +17,15 @@ import java.util.Date;
  * Created by Akshay Misra on 15-06-2019.
  */
 @JsonIgnoreProperties(value = {"createdAt"}, allowGetters = true)
-public class Base {
-
-    @Id
-    @ObjectId
-    @Hidden
-    @GroupName(SystemConstants.StringLiterals.BASE_PARAMETERS)
-    private String id;
+public class Base extends BaseLite {
 
     @Version
     @VersionNumber
     @UIName("Version Number")
     @ReadOnly
+    @AttributeId(SystemConstants.Attributes.VERSION)
     @GroupName(SystemConstants.StringLiterals.BASE_PARAMETERS)
     private Long version;
-
-    @NotBlank
-    @UIName("Object Type")
-    @RefIdAttr
-    @ObjectTypeId
-    //@Hidden
-    @GroupName(SystemConstants.StringLiterals.BASE_PARAMETERS)
-    private String objectTypeId;
-
-    @ParentId
-    @UIName("Parent")
-    @Hidden
-    @GroupName(SystemConstants.StringLiterals.BASE_PARAMETERS)
-    private String parentId;
 
     @NotBlank
     @Size(max=100)
@@ -52,20 +33,14 @@ public class Base {
     @UIName("Name")
     @Indexed(name = "object_name_index")
     @Name
+    @AttributeId(SystemConstants.Attributes.NAME)
     @GroupName(SystemConstants.StringLiterals.BASE_PARAMETERS)
     private String name;
-
-    @Nullable
-    @UIName("Public Name")
-    @Size(max=100)
-    @Indexed(name = "object_public_name_index")
-    @PublicName
-    @GroupName(SystemConstants.StringLiterals.BASE_PARAMETERS)
-    private String publicName;
 
     @Size(max=1000)
     @UIName("Description")
     @Description
+    @AttributeId(SystemConstants.Attributes.DESCRIPTION)
     @GroupName(SystemConstants.StringLiterals.BASE_PARAMETERS)
     private String description;
 
@@ -74,6 +49,7 @@ public class Base {
     @UIName("Order Number")
     @OrderNumber
     @ReadOnly
+    @AttributeId(SystemConstants.Attributes.ORDER)
     @GroupName(SystemConstants.StringLiterals.BASE_PARAMETERS)
     private int order;
 
@@ -81,25 +57,19 @@ public class Base {
     @ReadOnly
     @Audit
     @UIName("Created At")
+    @AttributeId(SystemConstants.Attributes.CREATED_AT)
     @GroupName(SystemConstants.StringLiterals.AUDIT_INFORMATION)
-    @AttributeId("-70")
     private Date createdAt;
 
     @LastModifiedDate
     @Audit
     @ReadOnly
     @UIName("Last Modified At")
+    @AttributeId(SystemConstants.Attributes.LAST_MODIFIED_AT)
     @GroupName(SystemConstants.StringLiterals.AUDIT_INFORMATION)
-    @AttributeId("-71")
     private Date lastModifiedAt;
 
-    public String getId() {
-        return id;
-    }
 
-    public void setId(String id) {
-        this.id = id;
-    }
 
     public Long getVersion() {
         return version;
@@ -109,28 +79,12 @@ public class Base {
         this.version = version;
     }
 
-    public String getParentId() {
-        return parentId;
-    }
-
-    public void setParentId(String parentId) {
-        this.parentId = parentId;
-    }
-
     public String getName() {
         return name;
     }
 
     public void setName(String name) {
         this.name = name;
-    }
-
-    public String getPublicName() {
-        return publicName;
-    }
-
-    public void setPublicName(String publicName) {
-        this.publicName = publicName;
     }
 
     public String getDescription() {
@@ -165,27 +119,16 @@ public class Base {
         this.order = order;
     }
 
-    public String getObjectTypeId() {
-        return objectTypeId;
-    }
-
-    public void setObjectTypeId(String objectTypeId) {
-        this.objectTypeId = objectTypeId;
-    }
-
     @Override
     public String toString() {
-        return "Base{" +
-                "id='" + id + '\'' +
-                ", version=" + version +
-                ", objectTypeId='" + objectTypeId + '\'' +
-                ", parentId='" + parentId + '\'' +
-                ", name='" + name + '\'' +
-                ", publicName='" + publicName + '\'' +
-                ", description='" + description + '\'' +
-                ", order=" + order +
-                ", createdAt=" + createdAt +
-                ", lastModifiedAt=" + lastModifiedAt +
+        return "Base{"
+                + super.toString()
+                + ", version=" + version
+                + ", name= " + name
+                + ", description= " + description
+                + ", order=" + order
+                + ", createdAt=" + createdAt
+                + ", lastModifiedAt=" + lastModifiedAt +
                 '}';
     }
 }

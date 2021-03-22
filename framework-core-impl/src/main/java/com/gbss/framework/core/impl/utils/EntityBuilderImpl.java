@@ -1,16 +1,21 @@
 package com.gbss.framework.core.impl.utils;
 
+import com.gbss.framework.core.api.service.api.AttributeSchemaService;
+import com.gbss.framework.core.api.service.api.ModulesService;
 import com.gbss.framework.core.impl.factory.ObjectTypeRepositoryMapperFactory;
+import com.gbss.framework.core.impl.repositories.ModuleRepository;
 import com.gbss.framework.core.impl.repositories.ObjectTypeRepository;
 import com.gbss.framework.core.api.utils.EntityBuilder;
-import com.gbss.framework.core.model.entities.Base;
-import com.gbss.framework.core.model.entities.DynamicObject;
-import com.gbss.framework.core.model.entities.ObjectType;
+import com.gbss.framework.core.model.constants.SystemConstants;
+import com.gbss.framework.core.model.entities.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.repository.MongoRepository;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
+import org.springframework.web.reactive.function.client.WebClient;
 
 import javax.ejb.ObjectNotFoundException;
 import javax.validation.constraints.NotNull;
@@ -26,25 +31,79 @@ public class EntityBuilderImpl implements EntityBuilder {
     ObjectTypeRepositoryMapperFactory objectTypeRepositoryFactory;
 
     @Autowired
+    AttributeSchemaService attributeSchemaService;
+
+    @Autowired
+    ModuleRepository moduleRepository;
+
+    @Autowired
+    ModulesService modulesService;
+
+    @Autowired
     MongoTemplate mongoTemplate;
+
+    @Autowired
+    WebClient.Builder webClientBuilder;
+
+
+    @Override
+    public Base getLiteObjectById(String objectTypeId, String objectId) throws ObjectNotFoundException {
+        System.out.println("********** $$$$$$$ EntityBuilderImpl, getLiteObjectById, "
+                + "objectTypeId: " + objectTypeId
+                + ", objectId: " + objectId);
+
+        ObjectType objectType = attributeSchemaService.getObjectTypeById(objectTypeId);
+        if (!StringUtils.isEmpty(objectType.getCollectionName())) {
+            if (mongoTemplate.getCollectionNames().contains(objectType.getCollectionName())) {
+                BaseLite base = mongoTemplate.findById(objectId, BaseLite.class,
+                        objectType.getCollectionName());
+                System.out.println("********** $$$$$$$ EntityBuilderImpl, getLiteObjectById, base: " + base);
+            }
+        }
+
+
+        return null;
+    }
 
     @Override
     public Base getObjectById(@NotNull String objectTypeId, @NotNull String objectId) throws ObjectNotFoundException {
-        /*Base base = null;
-        MongoRepository repository = objectTypeRepositoryFactory.getBean(objectTypeId);
-        if (repository == null) {
-            ObjectType objectType = objectTypeRepository.findById(objectTypeId).get();
-            if (!StringUtils.isEmpty(objectType.getCollectionName())) {
+        System.out.println("********** $$$$$$$ EntityBuilderImpl, getObjectById, objectId: " + objectId);
+        ObjectType objectType = attributeSchemaService.getObjectTypeById(objectTypeId);
+        System.out.println("********** $$$$$$$ EntityBuilderImpl, objectType: " + objectType);
+        System.out.println("********** $$$$$$$ EntityBuilderImpl, getCollectionName: "
+                + objectType.getCollectionName());
+        Base base = null;
+
+        Module module = modulesService.getModuleByObjectType(objectType);
+        if (SystemConstants.Objects.FRAMEWORK_CORE_MODULE_ID.equals(module.getId())) {
+            MongoRepository repository = objectTypeRepositoryFactory.getBean(objectTypeId);
+            if (repository == null) {
                 if (mongoTemplate.getCollectionNames().contains(objectType.getCollectionName())) {
-                    DynamicObject dynamicObject = mongoTemplate.findById(objectId, DynamicObject.class,
-                            objectType.getCollectionName());
-                    return dynamicObject;
+                    base = mongoTemplate.findById(objectId, Base.class, objectType.getCollectionName());
+                }
+            } else {
+                Optional<Base> baseOp = repository.findById(objectId);
+                if (baseOp.isPresent()) {
+                    base = baseOp.get();
                 }
             }
         } else {
-            Optional<Base> op = repository.findById(objectId);
-            if (op.isPresent()) {
-                base = op.get();
+            try {
+                System.out.println("******** ####### getObjectById, load by id uri: " +
+                        "http:/" + objectType.getLoadByIdAPI() + objectId);
+                DynamicObject dynamicObject = webClientBuilder
+                        //.defaultCookie("cookieKey", "cookieValue")
+                        .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                        .build()
+                        .get()
+                        .uri("http:/" + objectType.getLoadByIdAPI() + objectId)
+                        .retrieve()
+                        .bodyToMono(DynamicObject.class)
+                        .block();
+                System.out.println("******** ####### getObjectById, dynamicObject: " + dynamicObject);
+                base = dynamicObject;
+            } catch (Exception e) {
+                System.out.println("******** ####### getObjectById exception, e: " + e);
             }
         }
 
@@ -53,9 +112,7 @@ public class EntityBuilderImpl implements EntityBuilder {
                     + " and objectId: " + objectId + " not found.");
         }
 
-        System.out.println("********** EntityBuilderImpl, base: " + base);*/
-
-        return getObjectByChildOrCurrentOT(objectTypeId, objectId);
+        return base;
     }
 
     @Override
@@ -87,7 +144,8 @@ public class EntityBuilderImpl implements EntityBuilder {
     @Override
     public Base getObjectByChildOrCurrentOT(@NotNull String objectTypeId,
                                             @NotNull String objectId) throws ObjectNotFoundException {
-        System.out.println("********** $$$$$$$ EntityBuilderImpl, objectTypeId: " + objectTypeId);
+        System.out.println("********** $$$$$$$ EntityBuilderImpl, objectTypeId: " + objectTypeId
+        + ", objectId: " + objectId);
         Base base = null;
         MongoRepository repository = objectTypeRepositoryFactory.getBean(objectTypeId);
         System.out.println("********** $$$$$$$ EntityBuilderImpl, repository: " + repository);
@@ -130,13 +188,19 @@ public class EntityBuilderImpl implements EntityBuilder {
             if (op.isPresent()) {
                 base = op.get();
             } else {
-                ObjectType objectType = objectTypeRepository.findById(objectTypeId).get();
+                ObjectType objectType = attributeSchemaService.getObjectTypeById(objectTypeId);
+                System.out.println("********** ############### EntityBuilderImpl, objectType: " + objectType);
                 if (objectType.getParentId() != null) {
-                    ObjectType parentOT = objectTypeRepository.findById(objectType.getParentId()).get();
-                    MongoRepository parentRepo = objectTypeRepositoryFactory.getBean(parentOT.getId());
-                    Optional<Base> parent = parentRepo.findById(objectId);
-                    if (parent.isPresent()) {
-                        base = parent.get();
+                    ObjectType parentOT = attributeSchemaService.getObjectTypeById(objectType.getParentId());
+                    if (parentOT == null) {
+                        base = moduleRepository.findById(objectId).get(); //objectType.getParentId()
+                    } else {
+                        System.out.println("********** ############### EntityBuilderImpl, parentOT: " + parentOT);
+                        MongoRepository parentRepo = objectTypeRepositoryFactory.getBean(parentOT.getId());
+                        Optional<Base> parent = parentRepo.findById(objectId);
+                        if (parent.isPresent()) {
+                            base = parent.get();
+                        }
                     }
                 }
             }

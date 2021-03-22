@@ -16,9 +16,13 @@ public class CreatePageDecorator extends AbstractPageDecorator<CreatePageConfig>
     DynamicFormComposer dynamicFormComposer;
 
     @Override
-    public CreatePageConfig decorate(String objectTypeId, String id, Layout layout) throws ObjectNotFoundException {
-        CreatePageConfig pageConfig = super.decorate(objectTypeId, id, layout);
-        pageConfig.setLayoutConfig(dynamicFormComposer.compose(objectTypeId, id));
+    public CreatePageConfig decorate(String parentObjectTypeId,
+                                     String parentId,
+                                     String objectTypeId,
+                                     String objectId,
+                                     Layout layout) throws ObjectNotFoundException {
+        CreatePageConfig pageConfig = super.decorate(parentObjectTypeId, parentId, objectTypeId, objectId, layout);
+        pageConfig.setLayoutConfig(dynamicFormComposer.compose(parentObjectTypeId, parentId, objectTypeId, objectId));
 
         return pageConfig;
     }

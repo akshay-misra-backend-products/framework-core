@@ -20,6 +20,7 @@ import org.springframework.stereotype.Service;
 import javax.ejb.ObjectNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class BreadCrumbComposer implements LayoutComposer<CompositeBreadCrumbConfig> {
@@ -40,14 +41,18 @@ public class BreadCrumbComposer implements LayoutComposer<CompositeBreadCrumbCon
     EntityBuilder entityBuilder;
 
     @Override  //TODO: for all cases both input will come except dynamic form case.
-    public CompositeBreadCrumbConfig compose(String objectTypeId, String objectId, Layout layout) throws ObjectNotFoundException {
+    public CompositeBreadCrumbConfig compose(String parentObjectTypeId,
+                                             String parentId,
+                                             String objectTypeId,
+                                             String objectId,
+                                             Layout layout) throws ObjectNotFoundException {
         ObjectType objectType = attributeSchemaService.getObjectTypeById(objectTypeId);
         MongoRepository repository = objectTypeRepositoryFactory.getBean(objectTypeId);
         CompositeBreadCrumbConfig config = new CompositeBreadCrumbConfig();
         List<BreadCrumbConfig> breadCrumbs = new ArrayList<>();
         if (Layout.FORM.equals(layout)) {
             //when form opened from list.
-            if  (objectId == null || SystemConstants.Objects.FAKE_OBJECT.equals(objectId)) {
+            if  (SystemConstants.Objects.PARENT_ID_FAKE.equals(parentId)) {
                 breadCrumbs.add(breadCrumbConverter.getHome());
                 if (objectType.getTabId() != null) {
                     NavigationTab navItem = applicationLayoutService.getTabById(objectType.getTabId());
@@ -56,7 +61,7 @@ public class BreadCrumbComposer implements LayoutComposer<CompositeBreadCrumbCon
             } else {
                 //when form opened from details.
                 breadCrumbs.add(breadCrumbConverter.getHome());
-                Base base = entityBuilder.getObjectByChildOrCurrentOT(objectTypeId, objectId);
+                Base base = entityBuilder.getObjectById(parentObjectTypeId, parentId);
                 breadCrumbs.add(breadCrumbConverter.getDetails(base));
             }
         } else if (Layout.TABLES.equals(layout) &&
@@ -69,7 +74,7 @@ public class BreadCrumbComposer implements LayoutComposer<CompositeBreadCrumbCon
             //Read tabId from OT and create breadcrumb for it, along with Home.
             //Also consider opening specific sub tab, in case of composite tables.
             Base base = entityBuilder.getObjectById(objectTypeId, objectId);
-            if (base.getParentId() == null) {
+            if (SystemConstants.Objects.PARENT_ID_FAKE.equals(parentId)) {
                 breadCrumbs.add(breadCrumbConverter.getHome());
                 if (objectType.getTabId() != null) {
                     NavigationTab navItem = applicationLayoutService.getTabById(objectType.getTabId());
@@ -78,20 +83,38 @@ public class BreadCrumbComposer implements LayoutComposer<CompositeBreadCrumbCon
                 breadCrumbs.add(breadCrumbConverter.getDummy(base));
             } else {
                 breadCrumbs.add(breadCrumbConverter.getHome());
-                if (objectType.getParentId() == null) {
+                Base parent = entityBuilder.getObjectById(parentObjectTypeId, parentId);
+                breadCrumbs.add(breadCrumbConverter.getDetails(parent));
+
+                /*if (objectType.getParentId() == null) {
                     Base parent = (Base) repository.findById(base.getParentId()).get();
-                    breadCrumbs.add(breadCrumbConverter.getDetails(parent));
+                    breadCrumbs.add(breadCrumbConverter.getDetails(parentObjectTypeId, parentId, ));
                 } else {
                     ObjectType parentOT = attributeSchemaService.getObjectTypeById(objectType.getParentId());
-                    MongoRepository parentRepo = objectTypeRepositoryFactory.getBean(parentOT.getId());
                     Base parent = null;
-                    if (parentRepo == null) {
-                        parent = entityBuilder.getObjectById(objectTypeId, base.getParentId());
+                    if (parentOT == null) {
+                        parent = entityBuilder.getObjectById(parentObjectTypeId, base.getParentId());
                     } else {
-                        parent = (Base) parentRepo.findById(base.getParentId()).get();
+                        MongoRepository parentRepo = objectTypeRepositoryFactory.getBean(parentOT.getId());
+                        if (parentRepo == null) {
+                            parent = entityBuilder.getObjectById(objectTypeId, base.getParentId());
+                        } else {
+                            Optional<Base> parentOp = parentRepo.findById(base.getParentId());
+                            if (parentOp.isPresent()) {
+                                parent = parentOp.get();
+                            }
+                        }
                     }
-                    breadCrumbs.add(breadCrumbConverter.getDetails(parent));
-                }
+
+                    if (parent != null) {
+                        breadCrumbs.add(breadCrumbConverter.getDetails(parent));
+                    } else {
+                        if (objectType.getTabId() != null) {
+                            NavigationTab navItem = applicationLayoutService.getTabById(objectType.getTabId());
+                            breadCrumbs.add(breadCrumbConverter.getNavItem(navItem));
+                        }
+                    }
+                }*/
                 breadCrumbs.add(breadCrumbConverter.getDummy(base));
             }
         }

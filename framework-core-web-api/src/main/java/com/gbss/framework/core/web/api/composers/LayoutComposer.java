@@ -7,5 +7,9 @@ import javax.ejb.ObjectNotFoundException;
 
 public interface LayoutComposer <T> {
 
-    T compose(String objectTypeId, String objectId, Layout layout) throws ObjectNotFoundException;
+    T compose(String parentObjectTypeId,
+              String parentId,
+              String objectTypeId,
+              String objectId,
+              Layout layout) throws ObjectNotFoundException;
 }

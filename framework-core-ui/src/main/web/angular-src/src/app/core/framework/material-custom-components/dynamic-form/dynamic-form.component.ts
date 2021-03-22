@@ -66,6 +66,7 @@ export class DynamicFormComponent implements OnChanges {
 
   onSubmit() {
     this.object = this.form.value;
+    console.log('------------createAPI: ' + this.details.createAPI);
 
     this.dynamicFormService.createObject(this.object, this.details.createAPI)
       .subscribe(object => {

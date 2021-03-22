@@ -1,5 +1,7 @@
 package com.gbss.framework.core.web.model;
 
+import java.util.Objects;
+
 public class FieldConfig {
 
     private int type;
@@ -70,5 +72,31 @@ public class FieldConfig {
 
     public void setMultiple(boolean multiple) {
         this.multiple = multiple;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof FieldConfig)) return false;
+        FieldConfig that = (FieldConfig) o;
+        return Objects.equals(getName(), that.getName());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getName());
+    }
+
+    @Override
+    public String toString() {
+        return "FieldConfig{" +
+                "type=" + type +
+                ", label='" + label + '\'' +
+                ", name='" + name + '\'' +
+                ", value=" + value +
+                ", required=" + required +
+                ", readonly=" + readonly +
+                ", multiple=" + multiple +
+                '}';
     }
 }

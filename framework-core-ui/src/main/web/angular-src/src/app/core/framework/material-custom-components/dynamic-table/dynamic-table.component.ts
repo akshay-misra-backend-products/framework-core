@@ -4,6 +4,7 @@ import {SelectionModel} from '@angular/cdk/collections';
 import {DynamicTableService} from './dynamic-table.service';
 import {DynamicTableConfig} from './dynamic-table-config';
 import {MatDialog} from "@angular/material/dialog";
+import {GatewayService} from "../../services/constants/gateway.service";
 
 @Component({
   selector: 'dynamic-table',
@@ -20,6 +21,8 @@ export class DynamicTableComponent implements OnInit {
   /*topToolbar: any[];
   inlineToolbar: any[];*/
   tableTitle: string;
+  objectTypeId: string;
+  parentId: string;
   createAPI: string;
   deleteAPI: string;
   detailsAPI: string;
@@ -36,12 +39,15 @@ export class DynamicTableComponent implements OnInit {
   private columns: any[];
 
   constructor(private dynamicTableService: DynamicTableService,
+              private gatewayService: GatewayService,
               public dialog: MatDialog) {}
 
   ngOnInit() {
     this.isLoadingResults = true;
     this.createButton = false;
     console.log('ngOnInit, loadAPI: ', this.dynamicTableConfig.loadAPI);
+    this.objectTypeId = this.dynamicTableConfig.objectTypeId;
+    this.parentId = this.dynamicTableConfig.parentId;
     this.init();
 
     if (this.dynamicTableConfig.loadAPI) {
@@ -62,7 +68,8 @@ export class DynamicTableComponent implements OnInit {
     if (this.createAPI) {
       this.createButton = true;
     }
-    this.deleteAPI = this.dynamicTableConfig.deleteAPI;
+    //TODO: remove url dependency from generic widgets, prepare url at backend.
+    this.deleteAPI = this.gatewayService.GATEWAY_URL + this.dynamicTableConfig.deleteAPI;
     this.detailsAPI = this.dynamicTableConfig.detailsAPI;
     this.createByObjectType = this.dynamicTableConfig.createByObjectType;
     this.data = Object.assign(this.data);

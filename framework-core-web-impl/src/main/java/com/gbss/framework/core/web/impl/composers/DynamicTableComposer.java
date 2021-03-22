@@ -1,17 +1,15 @@
 package com.gbss.framework.core.web.impl.composers;
 
+import com.gbss.framework.core.impl.utils.CommonUtils;
 import com.gbss.framework.core.meta.annotations.Hidden;
 import com.gbss.framework.core.meta.annotations.Mandatory;
 import com.gbss.framework.core.meta.annotations.ReadOnly;
 import com.gbss.framework.core.meta.annotations.UIName;
-import com.gbss.framework.core.meta.annotations.base.Description;
-import com.gbss.framework.core.meta.annotations.base.Name;
-import com.gbss.framework.core.meta.annotations.base.OrderNumber;
-import com.gbss.framework.core.meta.annotations.base.PublicName;
-import com.gbss.framework.core.meta.annotations.base.VersionNumber;
+import com.gbss.framework.core.meta.annotations.base.*;
 import com.gbss.framework.core.model.constants.SystemConstants;
 import com.gbss.framework.core.model.entities.ObjectType;
 import com.gbss.framework.core.web.api.composers.Composer;
+import com.gbss.framework.core.web.api.service.RestRouteCalculationService;
 import com.gbss.framework.core.web.model.DynamicTableConfig;
 import com.gbss.framework.core.web.model.FieldConfig;
 import com.gbss.framework.core.web.model.fields.DateFieldConfig;
@@ -40,21 +38,38 @@ public class DynamicTableComposer<T extends DynamicTableConfig> implements Compo
     @Autowired
     MetadataHelper metadataHelper;
 
+    @Autowired
+    CommonUtils commonUtils;
+
+    @Autowired
+    RestRouteCalculationService restRouteCalculationService;
+
     // TODO: read all rest apis from ObjectType. [rest path will be different for system OTs and non system OTs like (CoreObjects)]
     // TODO: for system OT: /application/api/objectTypeId/load....
     // TODO: for non system OT: /application/api/load/{objectTypeId}/{objectId}
     @Override
-    public T compose(String objectTypeId, String objectId) {
-        System.out.println("********** DynamicTableComposer, compose, objectId: " + objectId);
+    public T compose(String parentObjectTypeId,
+                     String parentId,
+                     String objectTypeId,
+                     String objectId) { //TODO: no use of objectId, remove if possible
+        System.out.println("********** DynamicTableComposer, compose, "
+                + "parentObjectTypeId: " + parentObjectTypeId
+                + ", parentId: " + parentId
+                + ", objectTypeId: " + objectTypeId
+                + ", objectId: " + objectId);
         ObjectType objectType = objectTypeRepository.findById(objectTypeId).get();
         System.out.println("********** DynamicTableComposer, compose, objectType: " + objectType);
         DynamicTableConfig dynamicTableConfig = new DynamicTableConfig();
         dynamicTableConfig.setName(objectType.getName());
+        dynamicTableConfig.setObjectTypeId(objectTypeId);
         String loadAPI = null;
-        if (objectId == null) {
-            loadAPI = "/application/api/" + objectType.getId() + "/load/all";
+        if (parentId == null
+                || SystemConstants.Objects.FAKE_OBJECT.equals(objectId)) {
+            loadAPI = objectType.getLoadAPI();
+            dynamicTableConfig.setParentId(SystemConstants.Objects.PARENT_ID_FAKE);
         } else {
-            loadAPI = "/application/api/" + objectType.getId() + "/load/by/parent/" + objectId;
+            loadAPI = objectType.getLoadByParentIdAPI() + parentId;
+            dynamicTableConfig.setParentId(parentId);
         }
         System.out.println("----- DynamicTableComposer, compose, loadAPI: " + loadAPI);
         dynamicTableConfig.setLoadAPI(loadAPI);
@@ -63,17 +78,28 @@ public class DynamicTableComposer<T extends DynamicTableConfig> implements Compo
                 SystemConstants.Objects.DYNAMIC_OBJECTS_NAVIGATION_ID.equals(objectType.getTabId())) {
             dynamicTableConfig.setCreateByObjectType(true);
         } else {
-            if (objectId == null) {
-                createAPI = "/application/design/create/object/" + objectType.getId() + "/"
-                        + SystemConstants.Objects.FAKE_OBJECT;
+            if (parentId == null) {
+                createAPI = restRouteCalculationService.getCreateObjectRoute(
+                        parentObjectTypeId == null
+                                ? SystemConstants.Objects.PARENT_OBJECT_TYPE_ID_FAKE : parentObjectTypeId,
+                        SystemConstants.Objects.PARENT_ID_FAKE, objectTypeId);
             } else {
-                createAPI = "/application/design/create/object/" + objectType.getId() + "/" + objectId;
+                createAPI = restRouteCalculationService.getCreateObjectRoute(
+                        parentObjectTypeId == null
+                                ? SystemConstants.Objects.PARENT_OBJECT_TYPE_ID_FAKE : parentObjectTypeId,
+                        parentId == null
+                        ? SystemConstants.Objects.PARENT_ID_FAKE : parentId, objectTypeId);
             }
         }
         dynamicTableConfig.setCreateAPI(createAPI);
-        String deleteAPI = "/application/api/" + objectType.getId() + "/delete/";
+        String deleteAPI = objectType.getDeleteAPI();
         dynamicTableConfig.setDeleteAPI(deleteAPI);
-        String detailsAPI = "/application/api/load/details/" + objectType.getId() + "/";
+        String detailsAPI = restRouteCalculationService.getObjectDetailsRoute(
+                parentObjectTypeId == null
+                        ? SystemConstants.Objects.PARENT_OBJECT_TYPE_ID_FAKE : parentObjectTypeId,
+                parentId == null
+                        ? SystemConstants.Objects.PARENT_ID_FAKE : parentId,
+                objectTypeId);
         dynamicTableConfig.setDetailsAPI(detailsAPI);
         List<DynamicTableConfig.Column> columns = getColumns();
         System.out.println("********** DynamicTableComposer, compose, columns: " + columns);

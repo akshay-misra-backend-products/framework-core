@@ -1,6 +1,8 @@
 package com.gbss.framework.core.impl.meta.data;
 
+import com.gbss.framework.core.meta.annotations.AttributeId;
 import com.gbss.framework.core.model.entities.Base;
+import com.gbss.framework.core.model.entities.BaseLite;
 import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
@@ -19,7 +21,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 @Service
-public class MetadataHelper<T extends Base> {
+public class MetadataHelper<T> {
     private static final Logger LOGGER = LoggerFactory.getLogger(MetadataHelper.class);
     
     private final Set<Field> baseFields = new HashSet<>();
@@ -64,11 +66,11 @@ public class MetadataHelper<T extends Base> {
     public Field getField(Class<T> clazz, final String fieldName) {
         System.out.println("***** getField, clazz: " + clazz + ", fieldName: " + fieldName);
         Set<Field> fields = getFields(clazz);
-        System.out.println("***** getField, fields: " + fields);
-        for (Field field : fields) {
-            System.out.println("***** getField, Field Name: " + field.getName());
-        }
-        Optional<Field> opt = fields.stream().filter(field -> field.getName().equals(fieldName)).findFirst();
+        Optional<Field> opt = fields.stream()
+                .filter(field -> field.getName().equals(fieldName)
+                        || (field.getAnnotation(AttributeId.class) != null
+                        && field.getAnnotation(AttributeId.class).value().equals(fieldName)))
+                .findFirst();
         return opt.isPresent() ? opt.get() : null;
     }
 
@@ -95,6 +97,9 @@ public class MetadataHelper<T extends Base> {
 
     public Set<Field> getBaseFields() {
         if (baseFields.isEmpty()) {
+            baseFields.addAll(getFields((Class<T>) BaseLite.class,
+                    ImmutableSet.of("id", "parentId", "objectTypeId", "name", "publicName",
+                            "description", "version", "lastModifiedAt", "createdAt", "order")));
             baseFields.addAll(getFields((Class<T>) Base.class,
                     ImmutableSet.of("id", "parentId", "objectTypeId", "name", "publicName",
                             "description", "version", "lastModifiedAt", "createdAt", "order")));
@@ -193,6 +198,12 @@ public class MetadataHelper<T extends Base> {
                 .collect(Collectors.toList());
 
         return filteredFields;
+    }
+
+    public boolean hasFieldWithAttributeId(Collection<Field> fields, String attributeId) {
+        return fields.stream()
+                .anyMatch(field ->  (field.getAnnotation(AttributeId.class) != null
+                        && field.getAnnotation(AttributeId.class).value().equals(attributeId)));
     }
 
     public <T> T newInstance(Class<T> clazz) {

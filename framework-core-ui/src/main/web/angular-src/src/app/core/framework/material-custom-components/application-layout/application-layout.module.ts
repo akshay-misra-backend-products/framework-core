@@ -13,6 +13,7 @@ import {NotificationPanelModule} from '../notification-panel/notification-panel.
 import {HeaderModule} from '../../header/header.module';
 import {BrowserModule} from '@angular/platform-browser';
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
+import {ConfigurationModule} from "../configuration/configuration.module";
 
 @NgModule({
   declarations: [
@@ -34,7 +35,8 @@ import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
     VerticalNavigationModule,
     NotifierModule,
     NotificationPanelModule,
-    HeaderModule
+    HeaderModule,
+    ConfigurationModule
   ],
   exports: [ApplicationLayoutComponent]
 })

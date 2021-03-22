@@ -1,7 +1,10 @@
 package com.gbss.framework.core.web.impl.converters;
 
+import com.gbss.framework.core.api.service.api.ModulesService;
+import com.gbss.framework.core.impl.utils.CommonUtils;
 import com.gbss.framework.core.web.api.converters.Converter;
 import com.gbss.framework.core.web.api.service.ApplicationLayoutService;
+import com.gbss.framework.core.web.api.service.RestRouteCalculationService;
 import com.gbss.framework.core.web.impl.builders.NavItemBuilder;
 import com.gbss.framework.core.web.model.NavItemConfig;
 import com.gbss.framework.core.web.model.NavigationTab;
@@ -19,24 +22,34 @@ public class NavigationItemConverter implements Converter<NavItemConfig, Navigat
     ApplicationLayoutService applicationLayoutService;
 
     @Autowired
+    ModulesService modulesService;
+
+    @Autowired
     CommonEntityUtils commonEntityUtils;
 
     @Autowired
     NavItemBuilder builder;
+
+    @Autowired
+    CommonUtils commonUtils;
+
+    @Autowired
+    RestRouteCalculationService restRouteCalculationService;
 
     @Override
     public NavItemConfig convert(NavigationTab input) {
         System.out.println("******* NavigationItemConverter, tab: " +  input);
         return this.builder.createBuilder()
                 .setId(input.getId())
+                .setDummy(input.isContainer())
+                //TODO: remove all angular routes from backend like "/application/navigation/*"
+                .setHref(this.restRouteCalculationService.getNavItemRoute(input))
                 .setObjectTypeId(input.getObjectTypeId())
                 .setParent(input.getParentId())
                 .setName(this.commonEntityUtils.getName(input))
                 .setIcon(input.getIcon())
                 .setItems(getChildItems(input))
-                .setDummy(input.isContainer())
                 .build();
-
     }
 
     @Override

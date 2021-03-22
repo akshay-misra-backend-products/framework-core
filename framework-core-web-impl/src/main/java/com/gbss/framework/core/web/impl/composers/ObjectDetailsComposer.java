@@ -7,6 +7,7 @@ import com.gbss.framework.core.impl.meta.data.MetadataHelper;
 import com.gbss.framework.core.impl.repositories.AttributeRepository;
 import com.gbss.framework.core.impl.repositories.AttributeValueRepository;
 import com.gbss.framework.core.impl.repositories.ObjectTypeRepository;
+import com.gbss.framework.core.impl.utils.CommonUtils;
 import com.gbss.framework.core.meta.annotations.AttributeId;
 import com.gbss.framework.core.meta.annotations.GroupName;
 import com.gbss.framework.core.meta.annotations.Hidden;
@@ -44,6 +45,7 @@ import com.gbss.framework.core.web.model.fields.PasswordFieldConfig;
 import com.gbss.framework.core.web.model.fields.ReferenceFieldConfig;
 import com.gbss.framework.core.web.model.fields.TextBoxFieldConfig;
 import com.gbss.framework.core.web.model.fields.TextareaFieldConfig;
+import com.google.common.collect.Lists;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.annotation.CreatedDate;
@@ -87,24 +89,29 @@ public class ObjectDetailsComposer<T extends ObjectLayoutWrapper> implements Com
     @Autowired
     DynamicTableComposer dynamicTableComposer;
 
-
     @Autowired
     EntityBuilder entityBuilder;
 
+    @Autowired
+    CommonUtils commonUtils;
+
     @Override
-    public T compose(String objectTypeId, String objectId) throws ObjectNotFoundException {
+    public T compose(String parentObjectTypeId,
+                     String parentId,
+                     String objectTypeId,
+                     String objectId) throws ObjectNotFoundException {
         ObjectLayoutWrapper objectLayoutWrapper = new ObjectLayoutWrapper();
         ObjectDetailsConfig detail = new ObjectDetailsConfig();
         objectLayoutWrapper.setDetail(detail);
 
+        ObjectType objectType = attributeSchemaService.getObjectTypeById(objectTypeId);
         Base base = entityBuilder.getObjectById(objectTypeId, objectId);
-        System.out.println("********** ObjectDetailsComposer, repository base fields: "+ base);
+        System.out.println("********** ObjectDetailsComposer, repository base fields: "+ base.getClass());
         detail.setId(objectId);
         detail.setObjectName(base.getPublicName() == null ? base.getName() : base.getPublicName());
-        detail.setUpdateAPI("/application/api/"+objectTypeId+"/update");
+        detail.setUpdateAPI(commonUtils.getFrameworkApi(objectType.getUpdateAPI()));
         detail.setEditable(true);
         objectLayoutWrapper.setObjectName(base.getPublicName() == null ? base.getName() : base.getPublicName());
-
         Set<Field> fields = metadataHelper.getFields(base.getClass());
         Set<Field> baseFields = metadataHelper.getBaseFields();
         List<GroupConfig> groupConfigs = getBaseGroupConfigs(baseFields, base);
@@ -112,33 +119,53 @@ public class ObjectDetailsComposer<T extends ObjectLayoutWrapper> implements Com
         groupConfigs.addAll(getExtendedGroupConfigs(fields, base));
         detail.setGroups(groupConfigs);
 
-        objectLayoutWrapper.setChildren(composeChildTableConfigs(objectTypeId, objectId));
+        objectLayoutWrapper.setChildren(composeChildTableConfigs(
+                parentObjectTypeId,
+                parentId,
+                objectType,
+                objectId));
 
         return (T) objectLayoutWrapper;
     }
 
-    private CompositeTableConfig composeChildTableConfigs(String objectTypeId, String objectId) {
-        System.out.println("********** ObjectDetailsComposer, composeChildTableConfigs, objectTypeId: "+ objectTypeId+", objectId: "+objectId);
+    private CompositeTableConfig composeChildTableConfigs(String parentObjectTypeId,
+                                                          String parentId,
+                                                          ObjectType objectType,
+                                                          String objectId) {
+        System.out.println("********** ObjectDetailsComposer, composeChildTableConfigs, objectType: "
+                + objectType +", objectId: " + objectId);
         CompositeTableConfig compositeTableConfig = new CompositeTableConfig();
         List<String> childObjectTypes = new ArrayList<>();
-        ObjectType currentOT = objectTypeRepository.findById(objectTypeId).get();
-        System.out.println("********** ObjectDetailsComposer, composeChildTableConfigs, currentOT: "+currentOT);
         List<DynamicTableConfig> tables = new ArrayList<>();
-        if (currentOT.isSameTypeChildren() && !SystemConstants.ObjectTypes.OBJECT_TYPE.equals(objectId)) {
-            System.out.println("********** ObjectDetailsComposer, composeChildTableConfigs, isSameTypeChildren ... ");
-            DynamicTableConfig dynamicTableConfig = dynamicTableComposer.compose(currentOT.getId(), objectId);
+        if (objectType.isSameTypeChildren() && !SystemConstants.ObjectTypes.OBJECT_TYPE.equals(objectId)) {
+            DynamicTableConfig dynamicTableConfig = dynamicTableComposer.compose(
+                    objectType.getId(),
+                    objectId,
+                    objectType.getId(),
+                    null);
             tables.add(dynamicTableConfig);
         }
 
-        List<ObjectType> childOTs = objectTypeRepository.findByParentId(objectTypeId);
-        System.out.println("********** ########## ObjectDetailsComposer, composeChildTableConfigs, childOTs: "+childOTs);
+        List<ObjectType> childOTs = objectTypeRepository.findByParentId(objectType.getId());
+        //childOTs.addAll(objectTypeRepository.findByParentId(objectId));
+        if (SystemConstants.ObjectTypes.MODULE.equals(objectType.getId())) {
+            List<String> schemaOts = Lists.newArrayList(
+                    SystemConstants.ObjectTypes.ATTRIBUTE_GROUP,
+                    SystemConstants.ObjectTypes.ATTRIBUTE,
+                    SystemConstants.ObjectTypes.OBJECT_TYPE,
+                    SystemConstants.ObjectTypes.MICROSERVICE
+                    );
+            childOTs.addAll(objectTypeRepository.findAllByIdIn(schemaOts));
+        }
         if (CollectionUtils.isNotEmpty(childOTs)) {
-            System.out.println("********** ########## ObjectDetailsComposer, composeChildTableConfigs, childOTs, isNotEmpty");
             childObjectTypes = childOTs.stream().map(ObjectType::getId).collect(Collectors.toList());
         }
-        System.out.println("********** ########## ObjectDetailsComposer, composeChildTableConfigs, childObjectTypes: "+childObjectTypes);
         for (String childOT : childObjectTypes) {
-            DynamicTableConfig dynamicTableConfig = dynamicTableComposer.compose(childOT, objectId);
+            DynamicTableConfig dynamicTableConfig = dynamicTableComposer.compose(
+                    objectType.getId(),
+                    objectId,
+                    childOT,
+                    null);
             tables.add(dynamicTableConfig);
         }
 
@@ -148,8 +175,7 @@ public class ObjectDetailsComposer<T extends ObjectLayoutWrapper> implements Com
     }
 
     private List<GroupConfig> getExtendedGroupConfigs(Set<Field> fields, Base base) throws ObjectNotFoundException {
-        System.out.println("********** ########## ObjectDetailsComposer, getExtendedGroupConfigs, fields: "+ fields +
-                ", base: " + base);
+        System.out.println("********** getExtendedGroupConfigs, fields: " + fields);
         List<GroupConfig> groupConfigs = new ArrayList<>();
         Map<String, List<FieldConfig>> groupToFieldConfig = new HashMap<>();
 
@@ -157,15 +183,23 @@ public class ObjectDetailsComposer<T extends ObjectLayoutWrapper> implements Com
             AttributeId attributeIdAn = field.getAnnotation(AttributeId.class);
             if (attributeIdAn != null) {
                 String attributeId = attributeIdAn.value();
+                System.out.println("********** getExtendedGroupConfigs, attributeId: " + attributeId);
                 if (SystemConstants.Attributes.DYNAMIC_PARAMETERS.equals(attributeId)) {
-                    groupToFieldConfig.putAll(getGroupToFieldConfigs(field, base));
+                    Map<String, List<FieldConfig>> groupToFieldConfig1 = getGroupToFieldConfigs(fields, field, base);
+                    groupToFieldConfig1.entrySet().stream()
+                            .forEach(entry -> {
+                                if (groupToFieldConfig.containsKey(entry.getKey())) {
+                                    groupToFieldConfig.get(entry.getKey()).addAll(entry.getValue());
+                                } else {
+                                    groupToFieldConfig.put(entry.getKey(), entry.getValue());
+                                }
+                            });
                 } else {
                     Optional<Attribute> attributeOp = attributeRepository.findById(attributeId);
                     if (attributeOp.isPresent()) {
                         Attribute attribute = attributeOp.get();
+                        System.out.println("********** getExtendedGroupConfigs, attribute: " + attribute);
                         String groupName = attribute.getAttributeGroup().getPublicName();
-                        System.out.println("********** ########## ObjectDetailsComposer, getExtendedGroupConfigs, " +
-                                "groupName: " + groupName);
                         Object value = metadataHelper.getValue(base, base.getClass(), field);
                         if (groupToFieldConfig.containsKey(groupName)) {
                             groupToFieldConfig.get(groupName).add(getExtendedFieldConfig(attribute, value, base));
@@ -186,13 +220,16 @@ public class ObjectDetailsComposer<T extends ObjectLayoutWrapper> implements Com
             groupConfigs.add(groupConfig);
         }
 
+        System.out.println("ObjectDetailsComposer, getExtendedGroupConfigs, groupConfigs: "
+                + groupConfigs);
         return groupConfigs;
     }
 
-    private Map<String, List<FieldConfig>> getGroupToFieldConfigs(Field field, Base base) throws ObjectNotFoundException {
+    private Map<String, List<FieldConfig>> getGroupToFieldConfigs(Set<Field> fields,
+                                                                  Field field,
+                                                                  Base base) throws ObjectNotFoundException {
         Map<String, List<FieldConfig>> groupToFieldConfig = new HashMap<>();
         Object value = metadataHelper.getValue(base, base.getClass(), field);
-        System.out.println("********** ########## ObjectDetailsComposer, getGroupToFieldConfigs, value: "+ value);
         if (value != null) {
             Map<String, Object> extendedParameters = (Map<String, Object>) value;
             for (Map.Entry<String, Object> entry : extendedParameters.entrySet()) {
@@ -200,8 +237,6 @@ public class ObjectDetailsComposer<T extends ObjectLayoutWrapper> implements Com
                 if (attributeOp.isPresent()) {
                     Attribute attribute = attributeOp.get();
                     String groupName = attribute.getAttributeGroup().getPublicName();
-                    System.out.println("********** ########## ObjectDetailsComposer, getGroupToFieldConfigs, " +
-                            "groupName: " + groupName);
                     if (groupToFieldConfig.containsKey(groupName)) {
                         groupToFieldConfig.get(groupName).add(getExtendedFieldConfig(attribute, entry.getValue(), base));
                     } else {
@@ -215,12 +250,11 @@ public class ObjectDetailsComposer<T extends ObjectLayoutWrapper> implements Com
             ObjectType objectType = attributeSchemaService.getObjectTypeById(base.getObjectTypeId());
             if (objectType.getAttributes() != null) {
                 for (Attribute attribute : objectType.getAttributes()) {
-                    if (extendedParameters.keySet().contains(attribute.getId())) {
+                    if (extendedParameters.keySet().contains(attribute.getId())
+                    || metadataHelper.hasFieldWithAttributeId(fields, attribute.getId())) {
                         continue;
                     }
                     String groupName = attribute.getAttributeGroup().getPublicName();
-                    System.out.println("********** ########## ObjectDetailsComposer, getGroupToFieldConfigs, " +
-                            "groupName: " + groupName);
                     if (groupToFieldConfig.containsKey(groupName)) {
                         groupToFieldConfig.get(groupName).add(getExtendedFieldConfigInstance(attribute));
                     } else {
@@ -232,33 +266,43 @@ public class ObjectDetailsComposer<T extends ObjectLayoutWrapper> implements Com
             }
         }
 
-        System.out.println("********** ########## ObjectDetailsComposer, getGroupToFieldConfigs, groupToFieldConfig: "
-                + groupToFieldConfig);
-
         return groupToFieldConfig;
     }
 
     private FieldConfig getExtendedFieldConfig(Attribute attribute, Object value, Base base) throws ObjectNotFoundException {
-        System.out.println("********** ########## ObjectDetailsComposer, getExtendedGroupConfigs, "
-                + "attribute: " + attribute
-                + ", value: " + value
-                + ", base: " + base);
         FieldConfig fieldConfig = getExtendedFieldConfigInstance(attribute);
-        System.out.println("********** ########## ObjectDetailsComposer, getExtendedGroupConfigs, fieldConfig: "+
-                fieldConfig);
-
-        System.out.println("********** ########## ObjectDetailsComposer, getExtendedGroupConfigs, value: "+ value);
+        System.out.println("********** ########## ObjectDetailsComposer, getExtendedFieldConfig, attribute: "+
+                attribute + ", value: " + value);
         if (FieldType.REFERENCE_ID.value == attribute.getAttributeType() && value != null) {
             if (attribute.getReferenceToObjectType() != null) {
                 MongoRepository repository = objectTypeRepositoryFactory.
                         getBean(attribute.getReferenceToObjectType());
                 Base refIdValue;
-                if (repository == null) {
-                    refIdValue = entityBuilder.getObjectById(attribute.getReferenceToObjectType(), value.toString());
+
+                if (attribute.isMultiple()) {
+                    List<Base> refIdValues = new ArrayList<>();
+                    List<String> values = (List) value;
+                    for (String value1 : values) {
+                        if (repository == null) {
+                            refIdValue = entityBuilder.getObjectById(attribute.getReferenceToObjectType(), value1.toString());
+                        } else {
+                            refIdValue = (Base) repository.findById(value1).get();
+                        }
+                        refIdValues.add(refIdValue);
+                    }
+                    System.out.println("********** ########## ObjectDetailsComposer, getExtendedFieldConfig, refIdValues: "+
+                            refIdValues);
+                    fieldConfig.setValue(refIdValues);
                 } else {
-                    refIdValue = (Base) repository.findById(value).get();
+                    if (repository == null) {
+                        refIdValue = entityBuilder.getObjectById(attribute.getReferenceToObjectType(), value.toString());
+                    } else {
+                        refIdValue = (Base) repository.findById(value).get();
+                    }
+                    System.out.println("********** ########## ObjectDetailsComposer, getExtendedFieldConfig, refIdValue: "+
+                            refIdValue);
+                    fieldConfig.setValue(refIdValue);
                 }
-                fieldConfig.setValue(refIdValue);
             } else {
                 fieldConfig.setValue(value);
             }
@@ -266,6 +310,8 @@ public class ObjectDetailsComposer<T extends ObjectLayoutWrapper> implements Com
             fieldConfig.setValue(value);
         }
 
+        System.out.println("********** ########## ObjectDetailsComposer, getExtendedFieldConfig, fieldConfig: "+
+                fieldConfig);
         return fieldConfig;
     }
 
@@ -278,16 +324,19 @@ public class ObjectDetailsComposer<T extends ObjectLayoutWrapper> implements Com
             fieldConfig = new NumberFieldConfig();
         } else if (FieldType.REFERENCE.value == attribute.getAttributeType()) {
             fieldConfig = new ReferenceFieldConfig();
-            String loadAPI = "/application/api/" + attribute.getReferenceToObjectType()+"/load/all";
+            String loadAPI = commonUtils.constructApiUrl(attribute.getReferenceToObjectType(),
+                    "/application/api/" + attribute.getReferenceToObjectType()+"/load/all");
             ((ReferenceFieldConfig) fieldConfig).setLoadAPI(loadAPI);
         } else if (FieldType.REFERENCE_ID.value == attribute.getAttributeType()) {
             fieldConfig = new ReferenceFieldConfig();
             String loadAPI = "";
             if (attribute.getReferenceToObjectType() == null &&
                     SystemConstants.Attributes.REFERENCE_TO_OBJECT_TYPE.equals(attribute.getId())) {
-                loadAPI = "/application/api/" + SystemConstants.ObjectTypes.OBJECT_TYPE +"/load/all";
+                loadAPI = commonUtils.constructApiUrl(SystemConstants.ObjectTypes.OBJECT_TYPE,
+                        "/application/api/" + SystemConstants.ObjectTypes.OBJECT_TYPE +"/load/all");
             } else {
-                loadAPI = "/application/api/" + attribute.getReferenceToObjectType() + "/load/all";
+                loadAPI = commonUtils.constructApiUrl(attribute.getReferenceToObjectType(),
+                        "/application/api/" + attribute.getReferenceToObjectType()+"/load/all");
             }
             ((ReferenceFieldConfig) fieldConfig).setLoadAPI(loadAPI);
             ((ReferenceFieldConfig) fieldConfig).setRefIdAttr(true);

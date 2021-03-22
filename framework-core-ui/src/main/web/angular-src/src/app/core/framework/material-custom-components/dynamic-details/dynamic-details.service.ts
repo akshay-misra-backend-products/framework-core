@@ -13,7 +13,7 @@ export class DynamicDetailsService {
               private gatewayService :GatewayService) { }
 
   public updateObject(object: any, updateAPI: string): Observable<any> {
-    let URI = `${this.gatewayService.FRAMEWORK_SERVICE_URL}` + updateAPI;
+    let URI = `${this.gatewayService.GATEWAY_URL}` + updateAPI;
     return this.http.put<any>(URI, object);
   }
 }

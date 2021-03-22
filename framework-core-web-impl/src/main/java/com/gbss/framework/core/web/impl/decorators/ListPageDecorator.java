@@ -17,9 +17,13 @@ public class ListPageDecorator extends AbstractPageDecorator<ListPageConfig> {
 
 
     @Override
-    public ListPageConfig decorate(String objectTypeId, String id, Layout layout) throws ObjectNotFoundException {
-        ListPageConfig pageConfig = super.decorate(objectTypeId, id, layout);
-        pageConfig.setLayoutConfig(dynamicTabComposer.compose(objectTypeId, id));
+    public ListPageConfig decorate(String parentObjectTypeId,
+                                   String parentId,
+                                   String objectTypeId,
+                                   String objectId,
+                                   Layout layout) throws ObjectNotFoundException {
+        ListPageConfig pageConfig = super.decorate(parentObjectTypeId, parentId, objectTypeId, objectId, layout);
+        pageConfig.setLayoutConfig(dynamicTabComposer.compose(parentObjectTypeId, parentId, objectTypeId, objectId));
 
         return pageConfig;
     }

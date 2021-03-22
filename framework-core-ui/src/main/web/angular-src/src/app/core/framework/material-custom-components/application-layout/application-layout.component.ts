@@ -2,6 +2,7 @@ import {Component, OnDestroy, OnInit, Renderer, ViewChild} from '@angular/core';
 import {Subscription} from 'rxjs';
 import {MatSidenav} from '@angular/material';
 import {NavigationService} from '../navigation-service/navigation.service';
+import {ConfigurationModule} from "../configuration/configuration.module";
 
 @Component({
   selector: 'application-layout',
@@ -25,7 +26,8 @@ export class ApplicationLayoutComponent implements OnInit, OnDestroy {
   @ViewChild('eastSidenav') public eastSidenav: MatSidenav;
 
   constructor(private renderer: Renderer,
-              private navigationService: NavigationService) {
+              private navigationService: NavigationService,
+              private configurationModule: ConfigurationModule) {
   }
 
   ngOnInit() {

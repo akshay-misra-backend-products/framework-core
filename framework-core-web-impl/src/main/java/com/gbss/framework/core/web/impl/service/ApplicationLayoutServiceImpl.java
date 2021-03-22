@@ -177,12 +177,16 @@ public class ApplicationLayoutServiceImpl extends ApplicationAuditServiceImpl im
     }
 
     @Override
-    public PageConfig getPageContentConfig(String objectTypeId, String id, Layout layout) throws ObjectNotFoundException {
-        return compositePageComposer.compose(objectTypeId, id, layout);
+    public PageConfig getPageContentConfig(String parentObjectTypeId,
+                                           String parentId,
+                                           String objectTypeId,
+                                           String objectId,
+                                           Layout layout) throws ObjectNotFoundException {
+        return compositePageComposer.compose(parentObjectTypeId, parentId, objectTypeId, objectId, layout);
     }
 
     @Override
     public CompositeMenuConfig loadMenuItemsConfig() {
-        return navigationMenuComposer.compose(null, null);
+        return navigationMenuComposer.compose(null, null, null, null);
     }
 }

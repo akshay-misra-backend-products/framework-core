@@ -6,6 +6,7 @@ import com.gbss.framework.core.web.model.constants.Layout;
 import com.gbss.framework.core.web.model.fields.CompositeMenuConfig;
 import com.gbss.framework.core.web.model.page.PageConfig;
 import com.gbss.framework.core.web.model.NavigationTab;
+import org.springframework.web.bind.annotation.PathVariable;
 
 import javax.ejb.ObjectNotFoundException;
 import java.util.List;
@@ -47,7 +48,11 @@ public interface ApplicationLayoutService {
 
     boolean deleteTabLayoutConfig(String id);
 
-    PageConfig getPageContentConfig(String objectTypeId, String id, Layout layout) throws ObjectNotFoundException;
+    PageConfig getPageContentConfig(String parentObjectTypeId,
+                                    String parentId,
+                                    String objectTypeId,
+                                    String objectId,
+                                    Layout layout) throws ObjectNotFoundException;
 
     CompositeMenuConfig loadMenuItemsConfig();
 }

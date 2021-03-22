@@ -28,7 +28,7 @@ export class SelectObjectTypePopupComponent implements OnInit {
 
   onOkClick(): void {
     console.log('@@@@@ onOkClick: ' + this.selectedObjectTypeId);
-    this.createLink = '/application/design/create/object/' + this.selectedObjectTypeId + '/5ed3d8c70c349b61e1d9631c';
+    this.createLink = '/application/create/object/' + this.selectedObjectTypeId + '/5ed3d8c70c349b61e1d9631c';
     this.router.navigate([this.createLink]);
     this.dialogRef.close();
   }

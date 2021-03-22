@@ -54,7 +54,8 @@ export class HeaderComponent implements OnInit {
 
   ngOnInit() {
     this.enterLocation = false;
-    this._router = this.router.events.pipe(filter(event => event instanceof NavigationEnd)).subscribe((event: NavigationEnd) => {
+    this._router = this.router.events.pipe(filter(event => event instanceof NavigationEnd)).
+    subscribe((event: NavigationEnd) => {
       if (window.outerWidth > 991) {
         window.document.children[0].scrollTop = 0;
       }else{

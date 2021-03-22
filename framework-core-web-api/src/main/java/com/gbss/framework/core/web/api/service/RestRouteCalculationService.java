@@ -1,4 +1,4 @@
-package com.gbss.framework.core.web.api.service.api;
+package com.gbss.framework.core.web.api.service;
 
 import com.gbss.framework.core.model.entities.Base;
 import com.gbss.framework.core.web.model.BreadCrumbConfig;
@@ -17,9 +17,23 @@ public interface RestRouteCalculationService {
 
     List<BreadCrumbConfig> getBreadcrumbs();
 
-    String getObjectLink(Base base);
+    String getCreateObjectRoute(String parentObjectTypeId,
+                                String parentId,
+                                String objectTypeId);
 
     String getObjectDetailsRoute(Base base);
+
+    String getObjectDetailsRoute(String parentObjectTypeId,
+                                 String parentId,
+                                 String objectTypeId,
+                                 String objectId);
+
+    String getObjectDetailsRoute(String parentObjectTypeId,
+                                 String parentId,
+                                 String objectTypeId);
+
+    String getObjectDetailsRoute(String objectTypeId,
+                                 String objectId);
 
     String getNavItemRoute(Base base);
 }

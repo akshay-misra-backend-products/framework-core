@@ -16,11 +16,7 @@ export class NavItemComponent implements OnInit {
 
   ngOnInit() {
     if (this.item) {
-      if (this.item.dummy) {
-        this.href = '#' + this.item.id;
-      } else {
-        this.href = '/application/navigation/' + this.item.objectTypeId + '/' + this.item.id;
-      }
+      this.href = this.item.href;
     }
   }
 }

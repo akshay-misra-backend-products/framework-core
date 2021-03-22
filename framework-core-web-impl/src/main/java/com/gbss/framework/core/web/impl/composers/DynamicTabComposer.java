@@ -1,6 +1,8 @@
 package com.gbss.framework.core.web.impl.composers;
 
+import com.gbss.framework.core.api.utils.EntityBuilder;
 import com.gbss.framework.core.impl.comparators.OrderNumberComparator;
+import com.gbss.framework.core.model.constants.SystemConstants;
 import com.gbss.framework.core.model.entities.ObjectType;
 import com.gbss.framework.core.web.api.composers.Composer;
 import com.gbss.framework.core.web.api.service.ApplicationLayoutService;
@@ -23,15 +25,25 @@ public class DynamicTabComposer<T extends CompositeTableConfig> implements Compo
     @Autowired
     DynamicTableComposer dynamicTableComposer;
 
+    @Autowired
+    EntityBuilder entityBuilder;
+
     @Override
-    public T compose(String objectTypeId, String tabId) {
+    public T compose(String parentObjectTypeId,
+                     String parentId,
+                     String objectTypeId,
+                     String objectId) {
         CompositeTableConfig config = new CompositeTableConfig();
-        NavigationTab tab = applicationLayoutService.getTabById(tabId);
+        NavigationTab tab = applicationLayoutService.getTabById(objectId);
         List<ObjectType> objectTypes = tab.getObjectTypes();
         Collections.sort(objectTypes, new OrderNumberComparator());
         List<DynamicTableConfig> tables = new ArrayList<>();
         for (ObjectType objectType : objectTypes) {
-            tables.add(dynamicTableComposer.compose(objectType.getId(), null));// TODO: check if compose method can take object instead of id.
+            tables.add(dynamicTableComposer.compose(
+                    tab.getModule() == null ? objectTypeId : tab.getModule().getObjectTypeId(),
+                    tab.getModule() == null ? objectId : tab.getModule().getId(),
+                    objectType.getId(),
+                    SystemConstants.Objects.FAKE_OBJECT));
         }
         config.setTables(tables);
         return (T) config;

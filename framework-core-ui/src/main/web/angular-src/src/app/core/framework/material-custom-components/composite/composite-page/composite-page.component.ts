@@ -17,6 +17,8 @@ export class CompositePageComponent implements OnInit {
 
   @ViewChild(DynamicComponentDirective) dynamicComponent: DynamicComponentDirective;
 
+  private parentObjectTypeId: string;
+  private parentId: string;
   private objectId: string;
   private objectTypeId: string;
   private loadAPI: string;
@@ -35,6 +37,14 @@ export class CompositePageComponent implements OnInit {
     });
 
     this.route.paramMap.subscribe((params) => {
+      if (params.has('parentObjectTypeId')) {
+        this.parentObjectTypeId = params.get('parentObjectTypeId');
+      }
+
+      if (params.has('parentId')) {
+        this.parentId = params.get('parentId');
+      }
+
       if (params.has('objectId')) {
         this.objectId = params.get('objectId');
       }
@@ -44,15 +54,30 @@ export class CompositePageComponent implements OnInit {
       }
 
       if ('load_nav' === this.operation) {
-        this.loadAPI = '/application/api/load/tab/config/' + this.objectTypeId + '/' + this.objectId;
+        this.loadAPI = '/application/api/load/tab/config/'
+          + this.parentObjectTypeId
+          + '/'
+          + this.parentId
+          + '/'
+          + this.objectTypeId
+          + '/'
+          + this.objectId;
       } else if ('load_details' === this.operation) {
-        this.loadAPI = '/application/api/load/details/' + this.objectTypeId + '/' + this.objectId;
+        this.loadAPI = '/application/api/load/details/'
+          + this.parentObjectTypeId
+          + '/'
+          + this.parentId
+          + '/'
+          + this.objectTypeId
+          + '/'
+          + this.objectId;
       } else if ('load_form' === this.operation) {
-        if (this.objectId) {
-          this.loadAPI = '/application/api/load/Form/config/' + this.objectTypeId + '/' + this.objectId;
-        } else {
-          this.loadAPI = '/application/api/load/Form/config/' + this.objectTypeId;
-        }
+        this.loadAPI = '/application/api/load/Form/config/'
+          + this.parentObjectTypeId
+          + '/'
+          + this.parentId
+          + '/'
+          + this.objectTypeId;
       }
 
       this.compositePageService.loadPageDetails(this.loadAPI).subscribe(

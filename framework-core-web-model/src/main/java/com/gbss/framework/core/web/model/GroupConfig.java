@@ -23,4 +23,12 @@ public class GroupConfig {
     public void setFields(List<FieldConfig> fields) {
         this.fields = fields;
     }
+
+    @Override
+    public String toString() {
+        return "GroupConfig{" +
+                "groupName='" + groupName + '\'' +
+                ", fields=" + fields +
+                '}';
+    }
 }

@@ -46,6 +46,12 @@ public class ObjectType extends Base {
     private String loadByIdAPI;
 
     @Hidden
+    private String loadDetailsByIdAPI;
+
+    @Hidden
+    private String loadByParentIdAPI;
+
+    @Hidden
     private String addAPI;
 
     @Hidden
@@ -110,6 +116,22 @@ public class ObjectType extends Base {
 
     public void setLoadByIdAPI(String loadByIdAPI) {
         this.loadByIdAPI = loadByIdAPI;
+    }
+
+    public String getLoadDetailsByIdAPI() {
+        return loadDetailsByIdAPI;
+    }
+
+    public void setLoadDetailsByIdAPI(String loadDetailsByIdAPI) {
+        this.loadDetailsByIdAPI = loadDetailsByIdAPI;
+    }
+
+    public String getLoadByParentIdAPI() {
+        return loadByParentIdAPI;
+    }
+
+    public void setLoadByParentIdAPI(String loadByParentIdAPI) {
+        this.loadByParentIdAPI = loadByParentIdAPI;
     }
 
     public String getAddAPI() {

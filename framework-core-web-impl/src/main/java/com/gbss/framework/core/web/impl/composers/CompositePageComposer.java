@@ -17,12 +17,16 @@ public class CompositePageComposer implements LayoutComposer<PageConfig> {
     PageLayoutDecoratorsFactory pageLayoutDecoratorsFactory;
 
     @Override
-    public PageConfig compose(String objectTypeId, String objectId, Layout layout) throws ObjectNotFoundException {
+    public PageConfig compose(String parentObjectTypeId,
+                              String parentId,
+                              String objectTypeId,
+                              String objectId,
+                              Layout layout) throws ObjectNotFoundException {
         if (SystemConstants.Objects.FAKE_OBJECT.equals(objectId)) {
             objectId = null;
         }
         return (PageConfig) pageLayoutDecoratorsFactory
                 .getPageDecoratorByLayout(layout)
-                .decorate(objectTypeId, objectId, layout);
+                .decorate(parentObjectTypeId, parentId, objectTypeId, objectId, layout);
     }
 }

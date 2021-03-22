@@ -3,9 +3,10 @@ package com.gbss.framework.core.api.service.api;
 import com.gbss.framework.core.model.entities.Attribute;
 import com.gbss.framework.core.model.entities.AttributeGroup;
 import com.gbss.framework.core.model.entities.AttributeValue;
-import com.gbss.framework.core.model.entities.DynamicObject;
 import com.gbss.framework.core.model.entities.ObjectType;
+import org.springframework.web.bind.annotation.RequestBody;
 
+import javax.validation.Valid;
 import java.util.List;
 
 /**
@@ -23,6 +24,8 @@ public interface AttributeSchemaService {
 
     ObjectType updateObjectType(ObjectType objectType);
 
+    boolean updateAllObjectType();
+
     boolean deleteObjectType(String id);
 
     List<AttributeGroup> getAttributeGroups();
@@ -35,17 +38,21 @@ public interface AttributeSchemaService {
 
     AttributeGroup updateAttributeGroup(AttributeGroup objectType);
 
+    boolean updateAllAttributeGroup(String attribute, String value);
+
     boolean deleteAttributeGroup(String id);
 
     List<Attribute> getAttributes();
 
-    Attribute createAttribute(Attribute objectType);
+    Attribute createAttribute(String json);
 
     Attribute getAttributeById(String id);
 
     List<Attribute> getAttributeByParentId(String parentId);
 
-    Attribute updateAttribute(Attribute objectType);
+    Attribute updateAttribute(String json);
+
+    boolean updateAllAttribute(String attribute, String value);
 
     boolean deleteAttribute(String id);
 
@@ -60,12 +67,4 @@ public interface AttributeSchemaService {
     AttributeValue updateAttributeValue(AttributeValue attributeValue);
 
     boolean deleteAttributeValue(String id);
-
-    DynamicObject createDynamicObject(String json);
-
-    DynamicObject updateDynamicObject(String json);
-
-    List<DynamicObject> getDynamicObjects(String objectTypeId);
-
-    List<DynamicObject> getDynamicObjectsByParentId(String objectTypeId, String parentId);
 }

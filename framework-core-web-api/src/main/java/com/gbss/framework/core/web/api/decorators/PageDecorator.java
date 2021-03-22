@@ -6,5 +6,9 @@ import javax.ejb.ObjectNotFoundException;
 
 public interface PageDecorator<T> {
 
-    T decorate(String objectTypeId, String id, Layout layout) throws ObjectNotFoundException;
+    T decorate(String parentObjectTypeId,
+               String parentId,
+               String objectTypeId,
+               String objectId,
+               Layout layout) throws ObjectNotFoundException;
 }

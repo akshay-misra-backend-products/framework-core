@@ -1,6 +1,7 @@
 package com.gbss.framework.core.web.impl.controller;
 
 import com.gbss.framework.core.api.service.api.AttributeSchemaService;
+import com.gbss.framework.core.api.service.api.DynamicObjectsService;
 import com.gbss.framework.core.model.entities.DynamicObject;
 import com.gbss.framework.core.web.api.service.ApplicationLayoutService;
 import com.gbss.framework.core.web.impl.composers.CompositePageComposer;
@@ -40,6 +41,9 @@ public class ApplicationLayoutController {
     @Autowired
     AttributeSchemaService attributeSchemaService;
 
+    @Autowired
+    DynamicObjectsService dynamicObjectsService;
+
     @GetMapping("/5eaaa5862e2efbf64a9f4a5b/load/all")
     public List<NavigationTab> getTabs() {
         return applicationLayoutService.getTabs();
@@ -71,24 +75,49 @@ public class ApplicationLayoutController {
     }
 
     //TODO: check how to handle exceptions in rest call.
-    @GetMapping(value="/load/details/{objectTypeId}/{objectId}")
-    public PageConfig loadObjectDetails(@PathVariable("objectTypeId") String objectTypeId,
+    @GetMapping(value="/load/details/{parentObjectTypeId}/{parentId}/{objectTypeId}/{objectId}")
+    public PageConfig loadObjectDetails(@PathVariable("parentObjectTypeId") String parentObjectTypeId,
+                                        @PathVariable("parentId") String parentId,
+                                        @PathVariable("objectTypeId") String objectTypeId,
                                         @PathVariable("objectId") String objectId) throws ObjectNotFoundException {
-        return applicationLayoutService.getPageContentConfig(objectTypeId, objectId, Layout.DETAILS);
+        return applicationLayoutService.getPageContentConfig(
+                parentObjectTypeId,
+                parentId,
+                objectTypeId,
+                objectId,
+                Layout.DETAILS);
     }
 
     //TODO: check how to handle exceptions in rest call.
-    @GetMapping(value="/load/Form/config/{objectTypeId}/{objectId}")
-    public PageConfig loadFormConfig(@PathVariable("objectTypeId") String objectTypeId,
-                                     @PathVariable("objectId") String objectId) throws ObjectNotFoundException {
-        return applicationLayoutService.getPageContentConfig(objectTypeId, objectId, Layout.FORM);
+    @GetMapping(value="/load/Form/config/{parentObjectTypeId}/{parentId}/{objectTypeId}")
+    public PageConfig loadFormConfig(@PathVariable("parentObjectTypeId") String parentObjectTypeId,
+                                     @PathVariable("parentId") String parentId,
+                                     @PathVariable("objectTypeId") String objectTypeId) throws ObjectNotFoundException {
+        return applicationLayoutService.getPageContentConfig(
+                parentObjectTypeId,
+                parentId,
+                objectTypeId,
+                null,
+                Layout.FORM);
     }
 
     //TODO: check how to handle exceptions in rest call.
-    @GetMapping(value="/load/tab/config/{objectTypeId}/{tabId}")
-    public PageConfig loadNavigationTabConfig(@PathVariable("objectTypeId") String objectTypeId,
-                                                        @PathVariable("tabId") String tabId) throws ObjectNotFoundException {
-        return applicationLayoutService.getPageContentConfig(objectTypeId, tabId, Layout.TABLES);
+    @GetMapping(value="/load/tab/config/{parentObjectTypeId}/{parentId}/{objectTypeId}/{tabId}")
+    public PageConfig loadNavigationTabConfig(@PathVariable("parentObjectTypeId") String parentObjectTypeId,
+                                              @PathVariable("parentId") String parentId,
+                                              @PathVariable("objectTypeId") String objectTypeId,
+                                              @PathVariable("tabId") String tabId) throws ObjectNotFoundException {
+        System.out.println("%%%%%%%%%%%%%loadNavigationTabConfig: "
+                + "parentObjectTypeId: " + parentObjectTypeId
+                + ", parentId: " + parentId
+                + ", objectTypeId: " + objectTypeId
+                + ", objectId: " + tabId);
+        return applicationLayoutService.getPageContentConfig(
+                parentObjectTypeId,
+                parentId,
+                objectTypeId,
+                tabId,
+                Layout.TABLES);
     }
 
     @GetMapping(value="/load/navigation/menu/config")
@@ -99,23 +128,23 @@ public class ApplicationLayoutController {
     @PostMapping("/{objectTypeId}/add")
     public DynamicObject createDynamicObject(@PathVariable("objectTypeId") String objectTypeId,
                                              @Valid @RequestBody String object) {
-        return attributeSchemaService.createDynamicObject(object);
+        return dynamicObjectsService.createDynamicObject(object);
     }
 
     @PutMapping(value="/{objectTypeId}/update")
     public DynamicObject updateDynamicObject(@Valid @RequestBody String object) {
-        return attributeSchemaService.updateDynamicObject(object);
+        return dynamicObjectsService.updateDynamicObject(object);
     }
 
     @GetMapping("/{objectTypeId}/load/all")
     public List<DynamicObject> getDynamicObject(@PathVariable("objectTypeId") String objectTypeId) {
-        return attributeSchemaService.getDynamicObjects(objectTypeId);
+        return dynamicObjectsService.getDynamicObjects(objectTypeId);
     }
 
     @GetMapping(value="/{objectTypeId}/load/by/parent/{parentId}")
-    public List<DynamicObject> getNavigationTabByParentId(@PathVariable("objectTypeId") String objectTypeId,
+    public List<DynamicObject> getDynamicObjectsByParentId(@PathVariable("objectTypeId") String objectTypeId,
                                                           @PathVariable("parentId") String parentId) {
-        return attributeSchemaService.getDynamicObjectsByParentId(objectTypeId, parentId);
+        return dynamicObjectsService.getDynamicObjectsByParentId(objectTypeId, parentId);
     }
 
 }

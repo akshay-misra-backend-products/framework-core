@@ -9,22 +9,29 @@ import java.util.List;
 @Service
 public class NavItemBuilder  implements Builder<NavItemConfig> {
 
-    String id;
+    private String id;
 
-    String objectTypeId;
+    private String href;
 
-    String parent;
+    private String objectTypeId;
 
-    String name;
+    private String parent;
 
-    String icon;
+    private String name;
 
-    List<NavItemConfig> items;
+    private String icon;
 
-    boolean dummy;
+    private List<NavItemConfig> items;
+
+    private boolean dummy;
 
     public NavItemBuilder setId(String id) {
         this.id = id;
+        return this;
+    }
+
+    public NavItemBuilder setHref(String href) {
+        this.href = href;
         return this;
     }
 
@@ -67,6 +74,7 @@ public class NavItemBuilder  implements Builder<NavItemConfig> {
     public NavItemConfig build() {
         NavItemConfig item = new NavItemConfig();
         item.setId(this.id);
+        item.setHref(this.href);
         item.setObjectTypeId(this.objectTypeId);
         item.setParent(this.parent);
         item.setName(this.name);

@@ -39,7 +39,8 @@ export class NavigationService {
   }
 
   public loadNavigationMenuConfig(): Observable<MenuItemConfig> {
-    const URI = `${this.gatewayService.FRAMEWORK_SERVICE_URL}` + '/application/api/load/navigation/menu/config';
+    //TODO: try to remove all urls from client side.
+    const URI = `${this.gatewayService.GATEWAY_URL}` + '/gbss-framework-core-service/application/api/load/navigation/menu/config';
     return this.http.get<MenuItemConfig>(URI, httpOptions);
   }
 

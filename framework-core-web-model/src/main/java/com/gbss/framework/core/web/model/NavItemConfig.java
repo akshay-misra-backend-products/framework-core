@@ -4,19 +4,21 @@ import java.util.List;
 
 public class NavItemConfig {
 
-    String id;
+    private String id;
 
-    String objectTypeId;
+    private String href;
 
-    String parent;
+    private String objectTypeId;
 
-    String name;
+    private String parent;
 
-    String icon;
+    private String name;
 
-    List<NavItemConfig> items;
+    private String icon;
 
-    boolean dummy;
+    private List<NavItemConfig> items;
+
+    private boolean dummy;
 
     public String getId() {
         return id;
@@ -24,6 +26,14 @@ public class NavItemConfig {
 
     public void setId(String id) {
         this.id = id;
+    }
+
+    public String getHref() {
+        return href;
+    }
+
+    public void setHref(String href) {
+        this.href = href;
     }
 
     public String getObjectTypeId() {

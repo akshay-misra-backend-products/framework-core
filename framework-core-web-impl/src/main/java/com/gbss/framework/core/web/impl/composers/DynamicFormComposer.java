@@ -1,5 +1,7 @@
 package com.gbss.framework.core.web.impl.composers;
 
+import com.gbss.framework.core.api.service.api.AttributeSchemaService;
+import com.gbss.framework.core.impl.utils.CommonUtils;
 import com.gbss.framework.core.meta.annotations.Audit;
 import com.gbss.framework.core.meta.annotations.GroupName;
 import com.gbss.framework.core.meta.annotations.Hidden;
@@ -14,10 +16,7 @@ import com.gbss.framework.core.meta.annotations.base.ParentId;
 import com.gbss.framework.core.meta.annotations.base.PublicName;
 import com.gbss.framework.core.meta.annotations.base.VersionNumber;
 import com.gbss.framework.core.model.constants.SystemConstants;
-import com.gbss.framework.core.model.entities.Attribute;
-import com.gbss.framework.core.model.entities.AttributeValue;
-import com.gbss.framework.core.model.entities.Base;
-import com.gbss.framework.core.model.entities.ObjectType;
+import com.gbss.framework.core.model.entities.*;
 import com.gbss.framework.core.web.api.composers.Composer;
 import com.gbss.framework.core.web.api.service.ApplicationLayoutService;
 import com.gbss.framework.core.web.model.fields.AttachmentFieldConfig;
@@ -68,6 +67,9 @@ public class DynamicFormComposer<T extends DynamicFormConfig> implements Compose
     ObjectTypeRepository objectTypeRepository;
 
     @Autowired
+    AttributeSchemaService attributeSchemaService;
+
+    @Autowired
     AttributeRepository attributeRepository;
 
     @Autowired
@@ -85,8 +87,14 @@ public class DynamicFormComposer<T extends DynamicFormConfig> implements Compose
     @Autowired
     EntityBuilder entityBuilder;
 
+    @Autowired
+    CommonUtils commonUtils;
+
     @Override
-    public T compose(String objectTypeId, String parentId) throws ObjectNotFoundException {
+    public T compose(String parentObjectTypeId,
+                     String parentId,
+                     String objectTypeId,
+                     String objectId) throws ObjectNotFoundException {
         if (SystemConstants.Objects.FAKE_OBJECT.equals(parentId)) {
             parentId = null;
         }
@@ -105,25 +113,38 @@ public class DynamicFormComposer<T extends DynamicFormConfig> implements Compose
         System.out.println("********** DynamicFormComposer,  fields size: "+ fields.size());
         Set<Field> baseFields = metadataHelper.getBaseFields();
         System.out.println("********** DynamicFormComposer,  baseFields size: "+ baseFields.size());
-        List<GroupConfig> groupConfigs = getBaseGroupConfigs(baseFields, objectType, parentId);
+        List<GroupConfig> groupConfigs = getBaseGroupConfigs(baseFields, objectType, parentObjectTypeId, parentId);
         fields.removeAll(baseFields);
         List<Attribute> extendedAttributes = objectType.getAttributes();
+        if (!SystemConstants.Objects.PARENT_ID_FAKE.equals(parentId)) {
+            Base parent = entityBuilder.getObjectById(parentObjectTypeId, parentId);
+            System.out.println("********** DynamicFormComposer, parent: "+ parent);
+            if (SystemConstants.ObjectTypes.MODULE.equals(parent.getObjectTypeId())) {
+                Module module = (Module) parent;
+                if (module.getAttributeExtension() != null
+                        && SystemConstants.ObjectTypes.ATTRIBUTE.equals(objectTypeId)) {
+                    extendedAttributes.addAll(module.getAttributeExtension());
+                }
+            }
+        }
         if (CollectionUtils.isNotEmpty(extendedAttributes)) {
             groupConfigs.addAll(getExtendedGroupConfigs(extendedAttributes));
         }
         formConfig.setGroups(groupConfigs);
 
-        String createAPI = "/application/api/"+objectTypeId+"/add";
+        String createAPI = commonUtils.getFrameworkApi(objectType.getAddAPI());
         formConfig.setCreateAPI(createAPI);
 
-        formConfig.setCancelLink(getCancelLink(objectType, parentId));
+        formConfig.setCancelLink(getCancelLink(parentObjectTypeId, parentId, objectType));
 
         return (T) formConfig;
     }
 
-    private String getCancelLink(ObjectType objectType, String objectId) throws ObjectNotFoundException {
+    private String getCancelLink(String parentObjectTypeId, String parentId, ObjectType objectType) throws ObjectNotFoundException {
+        System.out.println("******* %%%% getCancelLink, parentObjectTypeId:"
+                + parentObjectTypeId + ", parentId: " + parentId);
         String cancelLink = null;
-        if  (objectId == null || SystemConstants.Objects.FAKE_OBJECT.equals(objectId)) {
+        if  (parentId == null || SystemConstants.Objects.PARENT_ID_FAKE.equals(parentId)) {
             if (objectType.getTabId() != null) {
                 NavigationTab navItem = applicationLayoutService.getTabById(objectType.getTabId());
                 cancelLink = restRouteCalculationService.getNavItemRoute(navItem);
@@ -134,7 +155,7 @@ public class DynamicFormComposer<T extends DynamicFormConfig> implements Compose
             }
         } else {
             //when form opened from details.
-            Base base = entityBuilder.getObjectByChildOrCurrentOT(objectType.getId(), objectId);
+            Base base = entityBuilder.getObjectById(parentObjectTypeId, parentId);
             cancelLink = restRouteCalculationService.getObjectDetailsRoute(base);
         }
 
@@ -190,11 +211,13 @@ public class DynamicFormComposer<T extends DynamicFormConfig> implements Compose
             fieldConfig = new NumberFieldConfig();
         } else if (FieldType.REFERENCE.value == attribute.getAttributeType()) {
             fieldConfig = new ReferenceFieldConfig();
-            String loadAPI = "/application/api/" + attribute.getReferenceToObjectType()+"/load/all";
+            String loadAPI = commonUtils.constructApiUrl(attribute.getReferenceToObjectType(),
+                    "/application/api/" + attribute.getReferenceToObjectType()+"/load/all");
             ((ReferenceFieldConfig) fieldConfig).setLoadAPI(loadAPI);
         } else if (FieldType.REFERENCE_ID.value == attribute.getAttributeType()) {
             fieldConfig = new ReferenceFieldConfig();
-            String loadAPI = "/application/api/" + attribute.getReferenceToObjectType()+"/load/all";
+            String loadAPI = commonUtils.constructApiUrl(attribute.getReferenceToObjectType(),
+                    "/application/api/" + attribute.getReferenceToObjectType()+"/load/all");
             ((ReferenceFieldConfig) fieldConfig).setLoadAPI(loadAPI);
             ((ReferenceFieldConfig) fieldConfig).setRefIdAttr(true);
         } else if (FieldType.LIST.value == attribute.getAttributeType()) {
@@ -280,11 +303,12 @@ public class DynamicFormComposer<T extends DynamicFormConfig> implements Compose
 
     private List<GroupConfig> getBaseGroupConfigs(Set<Field> baseFields,
                                                   ObjectType objectType,
+                                                  String parentObjectTypeId,
                                                   String parentId) throws ObjectNotFoundException {
         List<Field> visibleBaseFields = metadataHelper.getFieldsWithoutAnnotations(baseFields,
                 Arrays.asList(Hidden.class, Audit.class, VersionNumber.class));
         if (objectType.isSameTypeChildren() || parentId != null) {
-            visibleBaseFields.addAll(metadataHelper.getFields(Base.class, ImmutableSet.of("parentId")));
+            visibleBaseFields.addAll(metadataHelper.getFields(BaseLite.class, ImmutableSet.of("parentId")));
         }
         List<GroupConfig> groupConfigs = new ArrayList<>();
         Map<String, List<FieldConfig>> groupToFieldConfig = new HashMap<>();
@@ -292,10 +316,11 @@ public class DynamicFormComposer<T extends DynamicFormConfig> implements Compose
             GroupName groupNameAn = field.getAnnotation(GroupName.class);
             if (groupNameAn != null && !StringUtils.isEmpty(groupNameAn.value())) {
                 if (groupToFieldConfig.containsKey(groupNameAn.value())) {
-                    groupToFieldConfig.get(groupNameAn.value()).add(getBaseFieldConfig(field, objectType, parentId));
+                    groupToFieldConfig.get(groupNameAn.value()).add(getBaseFieldConfig(field, objectType,
+                            parentObjectTypeId, parentId));
                 } else {
                     List<FieldConfig> fieldConfigs1 = new ArrayList<>();
-                    fieldConfigs1.add(getBaseFieldConfig(field, objectType, parentId));
+                    fieldConfigs1.add(getBaseFieldConfig(field, objectType, parentObjectTypeId, parentId));
                     groupToFieldConfig.put(groupNameAn.value(), fieldConfigs1);
                 }
             }
@@ -313,8 +338,9 @@ public class DynamicFormComposer<T extends DynamicFormConfig> implements Compose
         return groupConfigs;
     }
 
-    private FieldConfig getBaseFieldConfig(Field field, ObjectType objectType, String parentId) throws ObjectNotFoundException {
-        FieldConfig fieldConfig = getFieldConfigInstance(field, objectType, parentId);
+    private FieldConfig getBaseFieldConfig(Field field, ObjectType objectType, String parentObjectTypeId,
+                                           String parentId) throws ObjectNotFoundException {
+        FieldConfig fieldConfig = getFieldConfigInstance(field, objectType, parentObjectTypeId, parentId);
         UIName uiNameAn = field.getAnnotation(UIName.class);
         if (uiNameAn != null) {
             String name = uiNameAn.value();
@@ -328,7 +354,8 @@ public class DynamicFormComposer<T extends DynamicFormConfig> implements Compose
         return fieldConfig;
     }
 
-    private FieldConfig getFieldConfigInstance(Field field, ObjectType objectType, String parentId) throws ObjectNotFoundException {
+    private FieldConfig getFieldConfigInstance(Field field, ObjectType objectType, String parentObjectTypeId,
+                                               String parentId) throws ObjectNotFoundException {
         FieldConfig fieldConfig;
 
         if (metadataHelper.hasAnyAnnotation(field, Arrays.asList(VersionNumber.class, OrderNumber.class))) {
@@ -343,11 +370,16 @@ public class DynamicFormComposer<T extends DynamicFormConfig> implements Compose
             fieldConfig = new ReferenceFieldConfig();
             ((ReferenceFieldConfig) fieldConfig).setRefIdAttr(true);
              if (parentId != null) {
-                Base parent = entityBuilder.getObjectByChildOrCurrentOT(objectType.getId(), parentId);
-                fieldConfig.setValue(parent);
+                 if (!SystemConstants.Objects.PARENT_ID_FAKE.equals(parentId)) {
+                     Base parent = entityBuilder.getObjectById(parentObjectTypeId, parentId);
+                     fieldConfig.setValue(parent);
+                 }
                 fieldConfig.setReadonly(true);
-            } else if (objectType.isSameTypeChildren()) {
-                 String loadAPI = "/application/api/" + objectType.getId() + "/load/all";
+            }
+
+             if (objectType.isSameTypeChildren()) {
+                 String loadAPI = commonUtils.constructApiUrl(objectType,
+                         "/application/api/" + objectType.getId() + "/load/all");
                  ((ReferenceFieldConfig) fieldConfig).setLoadAPI(loadAPI);
              }
         } else if (metadataHelper.hasAnnotation(field, ObjectTypeId.class)) {

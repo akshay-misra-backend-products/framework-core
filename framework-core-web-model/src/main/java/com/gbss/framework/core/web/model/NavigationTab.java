@@ -5,6 +5,7 @@ import com.gbss.framework.core.meta.annotations.AttributeId;
 import com.gbss.framework.core.meta.annotations.RefAttr;
 import com.gbss.framework.core.model.constants.SystemConstants;
 import com.gbss.framework.core.model.entities.Base;
+import com.gbss.framework.core.model.entities.Module;
 import com.gbss.framework.core.model.entities.ObjectType;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -31,6 +32,12 @@ public class NavigationTab extends Base {
     @AttributeId(SystemConstants.Attributes.REFERENCE_TO_OBJECT_TYPES)
     private List<ObjectType> objectTypes;
 
+    @RefAttr
+    @DBRef(lazy = true)
+    @JsonProperty(SystemConstants.Attributes.MODULE)
+    @AttributeId(SystemConstants.Attributes.MODULE)
+    private Module module;
+
     public String getIcon() {
         return icon;
     }
@@ -55,7 +62,15 @@ public class NavigationTab extends Base {
         this.container = container;
     }
 
+    public Module getModule() {
+        return module;
+    }
+
+    public void setModule(Module module) {
+        this.module = module;
+    }
+
     public String toString() {
-        return getClass().getName()+"[ icon: "+this.icon+", objectTypeIds: "+this.objectTypes+"]";
+        return getClass().getName()+"[ icon: "+this.icon+", objectTypeIds: "+this.objectTypes+", module: "+ module +"]";
     }
 }
