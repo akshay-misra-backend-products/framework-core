@@ -1,6 +1,7 @@
 package com.gbss.framework.core.web.impl.composers;
 
 import com.gbss.framework.core.api.service.api.AttributeSchemaService;
+import com.gbss.framework.core.api.service.api.ModulesService;
 import com.gbss.framework.core.api.utils.EntityBuilder;
 import com.gbss.framework.core.impl.factory.ObjectTypeRepositoryMapperFactory;
 import com.gbss.framework.core.impl.meta.data.MetadataHelper;
@@ -21,10 +22,7 @@ import com.gbss.framework.core.meta.annotations.base.OrderNumber;
 import com.gbss.framework.core.meta.annotations.base.PublicName;
 import com.gbss.framework.core.meta.annotations.base.VersionNumber;
 import com.gbss.framework.core.model.constants.SystemConstants;
-import com.gbss.framework.core.model.entities.Attribute;
-import com.gbss.framework.core.model.entities.AttributeValue;
-import com.gbss.framework.core.model.entities.Base;
-import com.gbss.framework.core.model.entities.ObjectType;
+import com.gbss.framework.core.model.entities.*;
 import com.gbss.framework.core.web.api.composers.Composer;
 import com.gbss.framework.core.web.model.CompositeTableConfig;
 import com.gbss.framework.core.web.model.DynamicTableConfig;
@@ -95,12 +93,15 @@ public class ObjectDetailsComposer<T extends ObjectLayoutWrapper> implements Com
     @Autowired
     CommonUtils commonUtils;
 
+    @Autowired
+    ModulesService modulesService;
+
     @Override
     public T compose(String parentObjectTypeId,
                      String parentId,
                      String objectTypeId,
                      String objectId) throws ObjectNotFoundException {
-        ObjectLayoutWrapper objectLayoutWrapper = new ObjectLayoutWrapper();
+        ObjectLayoutWrapper objectLayoutWrapper = new ObjectLayoutWrapper(); 
         ObjectDetailsConfig detail = new ObjectDetailsConfig();
         objectLayoutWrapper.setDetail(detail);
 
@@ -116,7 +117,14 @@ public class ObjectDetailsComposer<T extends ObjectLayoutWrapper> implements Com
         Set<Field> baseFields = metadataHelper.getBaseFields();
         List<GroupConfig> groupConfigs = getBaseGroupConfigs(baseFields, base);
         fields.removeAll(baseFields);
-        groupConfigs.addAll(getExtendedGroupConfigs(fields, base));
+        Module module = modulesService.getModuleByObjectType(objectType);
+        if (module != null && SystemConstants.Objects.FRAMEWORK_CORE_MODULE_ID.equals(module.getId())) {
+            groupConfigs.addAll(getExtendedGroupConfigs(fields, base, false));
+        } else {
+            groupConfigs.addAll(getExtendedGroupConfigs(fields, base, true));
+        }
+        groupConfigs.addAll(getExtendedGroupConfigs(fields, base, false));
+
         detail.setGroups(groupConfigs);
 
         objectLayoutWrapper.setChildren(composeChildTableConfigs(
@@ -174,7 +182,8 @@ public class ObjectDetailsComposer<T extends ObjectLayoutWrapper> implements Com
         return compositeTableConfig;
     }
 
-    private List<GroupConfig> getExtendedGroupConfigs(Set<Field> fields, Base base) throws ObjectNotFoundException {
+    private List<GroupConfig> getExtendedGroupConfigs(Set<Field> fields, Base base, boolean useKey)
+            throws ObjectNotFoundException {
         System.out.println("********** getExtendedGroupConfigs, fields: " + fields);
         List<GroupConfig> groupConfigs = new ArrayList<>();
         Map<String, List<FieldConfig>> groupToFieldConfig = new HashMap<>();
@@ -185,7 +194,8 @@ public class ObjectDetailsComposer<T extends ObjectLayoutWrapper> implements Com
                 String attributeId = attributeIdAn.value();
                 System.out.println("********** getExtendedGroupConfigs, attributeId: " + attributeId);
                 if (SystemConstants.Attributes.DYNAMIC_PARAMETERS.equals(attributeId)) {
-                    Map<String, List<FieldConfig>> groupToFieldConfig1 = getGroupToFieldConfigs(fields, field, base);
+                    Map<String, List<FieldConfig>> groupToFieldConfig1 =
+                            getGroupToFieldConfigs(fields, field, base, useKey);
                     groupToFieldConfig1.entrySet().stream()
                             .forEach(entry -> {
                                 if (groupToFieldConfig.containsKey(entry.getKey())) {
@@ -202,10 +212,11 @@ public class ObjectDetailsComposer<T extends ObjectLayoutWrapper> implements Com
                         String groupName = attribute.getAttributeGroup().getPublicName();
                         Object value = metadataHelper.getValue(base, base.getClass(), field);
                         if (groupToFieldConfig.containsKey(groupName)) {
-                            groupToFieldConfig.get(groupName).add(getExtendedFieldConfig(attribute, value, base));
+                            groupToFieldConfig.get(groupName).add(
+                                    getExtendedFieldConfig(attribute, value, base, useKey));
                         } else {
                             List<FieldConfig> fieldConfigs1 = new ArrayList<>();
-                            fieldConfigs1.add(getExtendedFieldConfig(attribute, value, base));
+                            fieldConfigs1.add(getExtendedFieldConfig(attribute, value, base, useKey));
                             groupToFieldConfig.put(groupName, fieldConfigs1);
                         }
                     }
@@ -227,7 +238,8 @@ public class ObjectDetailsComposer<T extends ObjectLayoutWrapper> implements Com
 
     private Map<String, List<FieldConfig>> getGroupToFieldConfigs(Set<Field> fields,
                                                                   Field field,
-                                                                  Base base) throws ObjectNotFoundException {
+                                                                  Base base,
+                                                                  boolean useKey) throws ObjectNotFoundException {
         Map<String, List<FieldConfig>> groupToFieldConfig = new HashMap<>();
         Object value = metadataHelper.getValue(base, base.getClass(), field);
         if (value != null) {
@@ -238,10 +250,11 @@ public class ObjectDetailsComposer<T extends ObjectLayoutWrapper> implements Com
                     Attribute attribute = attributeOp.get();
                     String groupName = attribute.getAttributeGroup().getPublicName();
                     if (groupToFieldConfig.containsKey(groupName)) {
-                        groupToFieldConfig.get(groupName).add(getExtendedFieldConfig(attribute, entry.getValue(), base));
+                        groupToFieldConfig.get(groupName).add(
+                                getExtendedFieldConfig(attribute, entry.getValue(), base, useKey));
                     } else {
                         List<FieldConfig> fieldConfigs1 = new ArrayList<>();
-                        fieldConfigs1.add(getExtendedFieldConfig(attribute, entry.getValue(), base));
+                        fieldConfigs1.add(getExtendedFieldConfig(attribute, entry.getValue(), base, useKey));
                         groupToFieldConfig.put(groupName, fieldConfigs1);
                     }
                 }
@@ -256,10 +269,10 @@ public class ObjectDetailsComposer<T extends ObjectLayoutWrapper> implements Com
                     }
                     String groupName = attribute.getAttributeGroup().getPublicName();
                     if (groupToFieldConfig.containsKey(groupName)) {
-                        groupToFieldConfig.get(groupName).add(getExtendedFieldConfigInstance(attribute));
+                        groupToFieldConfig.get(groupName).add(getExtendedFieldConfigInstance(attribute, useKey));
                     } else {
                         List<FieldConfig> fieldConfigs1 = new ArrayList<>();
-                        fieldConfigs1.add(getExtendedFieldConfigInstance(attribute));
+                        fieldConfigs1.add(getExtendedFieldConfigInstance(attribute, useKey));
                         groupToFieldConfig.put(groupName, fieldConfigs1);
                     }
                 }
@@ -269,8 +282,9 @@ public class ObjectDetailsComposer<T extends ObjectLayoutWrapper> implements Com
         return groupToFieldConfig;
     }
 
-    private FieldConfig getExtendedFieldConfig(Attribute attribute, Object value, Base base) throws ObjectNotFoundException {
-        FieldConfig fieldConfig = getExtendedFieldConfigInstance(attribute);
+    private FieldConfig getExtendedFieldConfig(Attribute attribute, Object value, Base base, boolean useKey)
+            throws ObjectNotFoundException {
+        FieldConfig fieldConfig = getExtendedFieldConfigInstance(attribute, useKey);
         System.out.println("********** ########## ObjectDetailsComposer, getExtendedFieldConfig, attribute: "+
                 attribute + ", value: " + value);
         if (FieldType.REFERENCE_ID.value == attribute.getAttributeType() && value != null) {
@@ -284,7 +298,7 @@ public class ObjectDetailsComposer<T extends ObjectLayoutWrapper> implements Com
                     List<String> values = (List) value;
                     for (String value1 : values) {
                         if (repository == null) {
-                            refIdValue = entityBuilder.getObjectById(attribute.getReferenceToObjectType(), value1.toString());
+                            refIdValue = entityBuilder.getObjectById(attribute.getReferenceToObjectType(), value1);
                         } else {
                             refIdValue = (Base) repository.findById(value1).get();
                         }
@@ -315,7 +329,7 @@ public class ObjectDetailsComposer<T extends ObjectLayoutWrapper> implements Com
         return fieldConfig;
     }
 
-    private FieldConfig getExtendedFieldConfigInstance(Attribute attribute) {
+    private FieldConfig getExtendedFieldConfigInstance(Attribute attribute, boolean useKey) {
         FieldConfig fieldConfig;
 
         if (FieldType.TEXT.value == attribute.getAttributeType()) {

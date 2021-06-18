@@ -15,8 +15,8 @@ public class Application {
 
 	public static void main(String[] args) {
 		ConfigurableApplicationContext context = SpringApplication.run(Application.class, args);
-		AttributeSchemaServiceImpl schema =  context.getBean(AttributeSchemaServiceImpl.class);
-		/*schema.updateAllAttribute("parentId", "603aad6fe1d7a507c3ba595c");
+		/*AttributeSchemaServiceImpl schema =  context.getBean(AttributeSchemaServiceImpl.class);
+		schema.updateAllAttribute("parentId", "603aad6fe1d7a507c3ba595c");
 		schema.updateAllAttributeGroup("parentId", "603aad6fe1d7a507c3ba595c");
 		schema.updateAllObjectType();*/
 	}

@@ -1,6 +1,7 @@
 package com.gbss.framework.core.web.impl.composers;
 
 import com.gbss.framework.core.api.service.api.AttributeSchemaService;
+import com.gbss.framework.core.api.service.api.ModulesService;
 import com.gbss.framework.core.impl.utils.CommonUtils;
 import com.gbss.framework.core.meta.annotations.Audit;
 import com.gbss.framework.core.meta.annotations.GroupName;
@@ -90,6 +91,9 @@ public class DynamicFormComposer<T extends DynamicFormConfig> implements Compose
     @Autowired
     CommonUtils commonUtils;
 
+    @Autowired
+    ModulesService modulesService;
+
     @Override
     public T compose(String parentObjectTypeId,
                      String parentId,
@@ -127,12 +131,20 @@ public class DynamicFormComposer<T extends DynamicFormConfig> implements Compose
                 }
             }
         }
+
         if (CollectionUtils.isNotEmpty(extendedAttributes)) {
-            groupConfigs.addAll(getExtendedGroupConfigs(extendedAttributes));
+            Module module = modulesService.getModuleByObjectType(objectType);
+            if (module != null && SystemConstants.Objects.FRAMEWORK_CORE_MODULE_ID.equals(module.getId())) {
+                groupConfigs.addAll(getExtendedGroupConfigs(extendedAttributes, false));
+            } else {
+                groupConfigs.addAll(getExtendedGroupConfigs(extendedAttributes, true));
+            }
+
         }
         formConfig.setGroups(groupConfigs);
 
-        String createAPI = commonUtils.getFrameworkApi(objectType.getAddAPI());
+        //String createAPI = commonUtils.getFrameworkApi(objectType.getAddAPI());
+        String createAPI = objectType.getAddAPI();
         formConfig.setCreateAPI(createAPI);
 
         formConfig.setCancelLink(getCancelLink(parentObjectTypeId, parentId, objectType));
@@ -162,7 +174,7 @@ public class DynamicFormComposer<T extends DynamicFormConfig> implements Compose
         return cancelLink;
     }
 
-    private List<GroupConfig> getExtendedGroupConfigs(List<Attribute> attributes) {
+    private List<GroupConfig> getExtendedGroupConfigs(List<Attribute> attributes, boolean useKey) {
         List<GroupConfig> groupConfigs = new ArrayList<>();
         Map<String, List<FieldConfig>> groupToFieldConfig = new HashMap<>();
 
@@ -170,10 +182,10 @@ public class DynamicFormComposer<T extends DynamicFormConfig> implements Compose
             System.out.println("********** DynamicFormComposer, getExtendedGroupConfigs, attribute: " + attribute.getName());
             String groupName = attribute.getAttributeGroup().getPublicName();
             if (groupToFieldConfig.containsKey(groupName)) {
-                groupToFieldConfig.get(groupName).add(getExtendedFieldConfig(attribute));
+                groupToFieldConfig.get(groupName).add(getExtendedFieldConfig(attribute, useKey));
             } else {
                 List<FieldConfig> fieldConfigs1 = new ArrayList<>();
-                fieldConfigs1.add(getExtendedFieldConfig(attribute));
+                fieldConfigs1.add(getExtendedFieldConfig(attribute, useKey));
                 groupToFieldConfig.put(groupName, fieldConfigs1);
             }
         }
@@ -191,10 +203,15 @@ public class DynamicFormComposer<T extends DynamicFormConfig> implements Compose
         return groupConfigs;
     }
 
-    private FieldConfig getExtendedFieldConfig(Attribute attribute) {
+    private FieldConfig getExtendedFieldConfig(Attribute attribute, boolean useKey) {
         FieldConfig fieldConfig = getExtendedFieldConfigInstance(attribute);
         fieldConfig.setLabel(attribute.getPublicName());
-        fieldConfig.setName(attribute.getId());
+        if (useKey) {
+            fieldConfig.setName(attribute.getKey());
+        } else {
+            fieldConfig.setName(attribute.getId());
+        }
+
         fieldConfig.setMultiple(attribute.isMultiple());
         fieldConfig.setReadonly(attribute.isReadonly());
         fieldConfig.setRequired(attribute.isRequired());

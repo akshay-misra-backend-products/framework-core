@@ -14,6 +14,7 @@ import com.gbss.framework.core.impl.repositories.ObjectTypeRepository;
 import com.gbss.framework.core.impl.utils.CommonUtils;
 import com.gbss.framework.core.model.constants.SystemConstants;
 import com.gbss.framework.core.model.entities.*;
+import org.apache.commons.text.CaseUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
@@ -273,11 +274,16 @@ public class AttributeSchemaServiceImpl extends ApplicationAuditServiceImpl impl
     @Override
     public boolean updateAllAttribute(String attribute, String value) {
         System.out.println("updateAllAttribute, attribute: " + attribute + ", value: " + value);
-        List<Attribute> attributes = attributeRepository.findAllBySystemTrue();
+        /*List<Attribute> attributes = attributeRepository.findAllBySystemTrue();*/
+        List<Attribute> attributes = attributeRepository.findAll();
         attributes.stream().forEach(attr -> {
-                Field field = metadataHelper.getField(attr.getClass(), attribute);
+            String key = CaseUtils.toCamelCase(attr.getName(), false);
+            System.out.println("----------  ****** updateAllAttribute, key: " + key);
+            attr.setKey(key);
+            attributeRepository.save(attr);
+            /*Field field = metadataHelper.getField(attr.getClass(), attribute);
                 metadataHelper.setValue(attr, attr.getClass(), field, value);
-                attributeRepository.save(attr);
+                attributeRepository.save(attr);*/
             }
         );
 

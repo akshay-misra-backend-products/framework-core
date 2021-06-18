@@ -92,6 +92,8 @@ public class Attribute extends Base {
     @AttributeId(SystemConstants.Attributes.SHOW_IN_CREATE)
     private boolean showInCreate;
 
+    private String key;
+
     @AttributeId(SystemConstants.Attributes.DYNAMIC_PARAMETERS)
     private Map<String, Object> moduleParameters = new HashMap<>();
 
@@ -165,6 +167,14 @@ public class Attribute extends Base {
 
     public void setShowInCreate(boolean showInCreate) {
         this.showInCreate = showInCreate;
+    }
+
+    public String getKey() {
+        return key;
+    }
+
+    public void setKey(String key) {
+        this.key = key;
     }
 
     public Map<String, Object> getModuleParameters() {
