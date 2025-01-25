@@ -14,6 +14,11 @@ export class AuthGuard implements CanActivate {
   canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot) {
     console.log("canActivate, isTokenExpired: "+this.jwtHelper.isTokenExpired());
 
+    // DELETE BELOW BLOCK AFTER TESTING
+    if (true) {
+      return true
+    }
+
     if (this.jwtHelper.isTokenExpired()) {
       this.userService.logout();
       return false;

@@ -24,6 +24,11 @@ export class ApplicationHeaderComponent implements OnInit {
   ngOnInit() {
     this.user = {};
 
+    // DELETE BELOW BLOCK AFTER TESTING
+    if (true) {
+      return
+    }
+
     if (this.jwtHelper.isTokenExpired()) {
       this.authenticated = false;
     } else {

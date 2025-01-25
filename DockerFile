@@ -1,4 +1,4 @@
-FROM java:8
+FROM openjdk:17
 EXPOSE 8080
-ADD /framework-core/target/framework-core-0.0.1.jar framework-core-service.jar
-ENTRYPOINT ["java", "-jar", "framework-core-service.jar"]
+ADD /framework-core/target/framework-core-0.1.0.jar framework-core-0.1.0.jar
+ENTRYPOINT ["java", "-jar", "framework-core-0.1.0.jar"]

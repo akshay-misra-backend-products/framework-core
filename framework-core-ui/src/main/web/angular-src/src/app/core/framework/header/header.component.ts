@@ -78,6 +78,11 @@ export class HeaderComponent implements OnInit {
 
     this.user = {};
 
+    // DELETE BELOW BLOCK AFTER TESTING
+    if (true) {
+      return
+    }
+
     if (this.jwtHelper.isTokenExpired()) {
       this.authenticated = false;
     } else {

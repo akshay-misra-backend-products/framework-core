@@ -10,7 +10,7 @@ import javax.validation.Valid;
 import java.util.List;
 
 @RestController
-@RequestMapping("/application/api")
+@RequestMapping("/gbss-framework-core-service/application/api")
 @CrossOrigin(origins = "*", maxAge = 3600)
 public class LocaleController {
 

@@ -5,7 +5,7 @@
 
 	<groupId>com.framework.core</groupId>
 	<artifactId>framework-core-parent</artifactId>
-	<version>0.0.1</version>
+	<version>0.1.0</version>
 	<packaging>pom</packaging>
 
 	<name>framework-core-parent</name>
@@ -80,18 +80,18 @@
 			<scope>test</scope>
 		</dependency>
 
-		<dependency>
+		<!-- <dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
 			<optional>true</optional>
-		</dependency>
+		</dependency> -->
 
-		<dependency>
+		<!-- <dependency>
 			<groupId>com.web-app-authentication</groupId>
 			<artifactId>web-app-auth-framework</artifactId>
 			<version>0.0.4.RELEASE</version>
 			<scope>compile</scope>
-		</dependency>
+		</dependency> -->
 	</dependencies>
 
 	<dependencyManagement>
@@ -106,11 +106,12 @@
 		</dependencies>
 	</dependencyManagement>
 
+
 	<scm>
 		<connection>scm:git@github.com:akshay-misra-backend-products/framework-core.git</connection>
 		<developerConnection>scm:git:git@github.com:akshay-misra-backend-products/framework-core.git</developerConnection>
 		<url>https://github.com/akshay-misra-backend-products/framework-core</url>
-		<tag>0.0.1</tag>
+		<tag>0.1.0</tag>
 	</scm>
 
 	<distributionManagement>

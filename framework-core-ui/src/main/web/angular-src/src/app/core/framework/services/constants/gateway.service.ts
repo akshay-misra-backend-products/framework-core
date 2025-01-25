@@ -4,8 +4,8 @@ import { Injectable } from '@angular/core';
   providedIn: 'root'
 })
 export class GatewayService {
-
-  public GATEWAY_URL: string = 'http://localhost:8765';
+  
+  public GATEWAY_URL: string = 'https://app.deploisy.com';
 
   public FRAMEWORK_SERVICE_URL = this.GATEWAY_URL + '/gbss-framework-core-service';
 

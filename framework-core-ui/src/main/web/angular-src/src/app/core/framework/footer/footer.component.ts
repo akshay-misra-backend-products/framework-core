@@ -31,6 +31,11 @@ export class FooterComponent implements OnInit {
 
 
   ngOnInit() {
+    // DELETE BELOW BLOCK AFTER TESTING
+    if (true) {
+      return
+    }
+    
     if (this.jwtHelper.isTokenExpired()) {
       this.authenticated = false;
     } else {

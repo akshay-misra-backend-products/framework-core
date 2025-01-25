@@ -1,0 +1,1 @@
+helm install framework-core.0.1.0 ./framework-core --namespace deploisy-apps --create-namespace

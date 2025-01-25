@@ -15,7 +15,7 @@ import java.util.List;
  * Created by Akshay Misra on 15-06-2019.
  */
 @RestController
-@RequestMapping("/application/api")
+@RequestMapping("/gbss-framework-core-service/application/api")
 @CrossOrigin(origins = "*", maxAge = 3600)
 public class AttributeSchemaController {
 

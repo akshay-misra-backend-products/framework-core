@@ -23,3 +23,18 @@
 /dist/
 /nbdist/
 /.nb-gradle/
+
+# General
+*.log
+*.tmp
+*.swp
+*.bak
+*.old
+*.orig
+*.rej
+*.sublime-workspace
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.iml

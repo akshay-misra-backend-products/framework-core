@@ -37,6 +37,11 @@ export class AppComponent implements OnInit {
               private element: ElementRef,
               public location: Location) {
 
+    // DELETE BELOW BLOCK AFTER TESTING
+    if (true) {
+      return
+    }
+
     if (this.jwtHelper.isTokenExpired()) {
       this.authenticated = false;
     } else {
